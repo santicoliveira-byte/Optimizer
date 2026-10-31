@@ -24,7 +24,7 @@
 
 Não é necessário instalar nada nem configurar ambientes para usar o Optimizer:
 
-1. Aceda à secção de [**Releases no GitHub**](releases).
+1. Aceda à secção de [**Releases no GitHub**](https://github.com/santicoliveira-byte/Optimizer/releases).
 2. Na versão mais recente (ex.: `v1.0`, `v1.1`, etc.), faça o download do ficheiro executável:
    - **`Optimizer-Portable.exe`**
 3. Execute o ficheiro com **permissões de Administrador** (botão direito -> *Executar como Administrador*).
@@ -41,7 +41,7 @@ O versionamento deste projeto segue a regra de evolução contínua:
 - **Passagem de Versão Principal**:
   - Ao atingir a versão `1.10`, a versão seguinte avança automaticamente para **`2.0`** (ou `2`).
   - O ciclo recomeça em `2.1` ➔ `2.2` ➔ ... ➔ `2.10` ➔ `3.0`.
-- Cada nova versão gera automaticamente um novo executável na secção de [Releases](releases) com o changelog correspondente.
+- Cada nova versão gera automaticamente um novo executável na secção de [Releases](https://github.com/santicoliveira-byte/Optimizer/releases) com o changelog correspondente.
 
 ---
 
@@ -135,7 +135,7 @@ Módulo nativo desenvolvido com base em engenharia reversa do CPU-Z oficial:
 
 ### 1. Clonar e Instalar
 ```bash
-git clone https://github.com/SEU_USUARIO/Optimizer.git
+git clone https://github.com/santicoliveira-byte/Optimizer.git
 cd Optimizer
 npm install
 ```
