@@ -27,6 +27,7 @@ import { BottleneckGameService } from './engine/bottleneck-game-service';
 import { HowManyFpsService } from './engine/howmanyfps-service';
 import { CpuZInspectorService } from './engine/cpuz-inspector-service';
 import { AutoUpdaterService } from './engine/auto-updater-service';
+import { GameSensorService } from './engine/game-sensor-service';
 
 // Hardware & low-end PC performance switches
 app.commandLine.appendSwitch('disable-renderer-backgrounding');
@@ -644,6 +645,19 @@ function registerIpc() {
 
   ipcMain.handle('updater:download-install', async (_, downloadUrl: string) => {
     return AutoUpdaterService.getInstance().downloadAndApplyUpdate(downloadUrl);
+  });
+
+  // Game Sensor (Dynamic Game Detection across all platforms)
+  ipcMain.handle('game-sensor:scan', async () => {
+    return GameSensorService.getInstance().scanAllInstalledGames();
+  });
+
+  ipcMain.handle('game-sensor:add-custom', async (_, gameData: any) => {
+    return GameSensorService.getInstance().addCustomGame(gameData);
+  });
+
+  ipcMain.handle('game-sensor:remove-custom', async (_, gameId: string) => {
+    return GameSensorService.getInstance().removeCustomGame(gameId);
   });
 }
 

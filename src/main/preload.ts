@@ -105,6 +105,9 @@ export interface OptimizerApi {
   cpuzGetLiveMetrics: () => Promise<any>;
   updaterCheck: () => Promise<any>;
   updaterDownloadInstall: (downloadUrl: string) => Promise<{ success: boolean; path?: string; error?: string }>;
+  gameSensorScan: () => Promise<any[]>;
+  gameSensorAddCustom: (gameData: any) => Promise<any>;
+  gameSensorRemoveCustom: (gameId: string) => Promise<boolean>;
 }
 
 const api: OptimizerApi = {
@@ -242,7 +245,10 @@ const api: OptimizerApi = {
   cpuzStopStress: () => ipcRenderer.invoke('cpuz:stop-stress'),
   cpuzGetLiveMetrics: () => ipcRenderer.invoke('cpuz:get-live-metrics'),
   updaterCheck: () => ipcRenderer.invoke('updater:check'),
-  updaterDownloadInstall: (downloadUrl: string) => ipcRenderer.invoke('updater:download-install', downloadUrl)
+  updaterDownloadInstall: (downloadUrl: string) => ipcRenderer.invoke('updater:download-install', downloadUrl),
+  gameSensorScan: () => ipcRenderer.invoke('game-sensor:scan'),
+  gameSensorAddCustom: (gameData: any) => ipcRenderer.invoke('game-sensor:add-custom', gameData),
+  gameSensorRemoveCustom: (gameId: string) => ipcRenderer.invoke('game-sensor:remove-custom', gameId)
 };
 
 contextBridge.exposeInMainWorld('optimizerApi', api);

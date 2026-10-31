@@ -143,7 +143,7 @@ function main() {
       const ghPath = 'C:\\Program Files\\GitHub CLI\\gh.exe';
       const ghCmd = fs.existsSync(ghPath) ? `"${ghPath}"` : 'gh';
       
-      const releaseNotes = `### Novidades da versão ${newTag}\n\n- Interface Totalmente Simplificada e Sem Excesso de Poluição Visual\n- Cabeçalho Compacto e Elegante de 1 Linha (eliminada a barra de filtros redundante)\n- Navegação Consolidada em 5 Hubs Essenciais (Painel Geral, Gaming, Hardware & Rig-Z, Rede, Limpeza & Sistema)\n- Sub-abas simplificadas e diretas ao ponto (de 23 para 2-3 abas essenciais por módulo)\n- Redução de ~110 kB no peso da aplicação com melhoria de performance e fluidez`;
+      const releaseNotes = `### Novidades da versão ${newTag}\n\n- Sensor de Jogos Dinâmico Multi-PC: Varre automaticamente todas as unidades de disco (C:, D:, E:...) e deteta exclusivamente os jogos instalados na máquina atual (Steam, Epic Games, Riot, EA, Xbox)\n- Adaptação Universal: Ao abrir a aplicação noutro PC, a lista adapta-se de imediato aos jogos desse outro computador\n- Suporte para Adicionar Jogos Manualmente (.exe) e botão de Sensorizar / Rescan instantâneo\n- Badges de plataforma e capas oficiais com prioridade em latência 0.5ms`;
       const notesFile = path.join(rootDir, 'release', 'release-notes.tmp');
       fs.writeFileSync(notesFile, releaseNotes, 'utf8');
 

@@ -241,3 +241,19 @@ export interface ExitLagServerRoute {
   estimatedExitLagPing: number;
 }
 
+export interface DetectedGame {
+  id: string;
+  name: string;
+  category: string;
+  platform: 'Steam' | 'Epic Games' | 'Riot Games' | 'EA Desktop' | 'Ubisoft' | 'GOG Galaxy' | 'Xbox / Microsoft' | 'Personalizado' | 'Windows';
+  coverImage: string;
+  processNames: string[];
+  installDir?: string;
+  executablePath?: string;
+  recommendedOptimizations: string[];
+  description: string;
+  isRunning?: boolean;
+  isCustom?: boolean;
+}
+
+
