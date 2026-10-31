@@ -143,7 +143,7 @@ function main() {
       const ghPath = 'C:\\Program Files\\GitHub CLI\\gh.exe';
       const ghCmd = fs.existsSync(ghPath) ? `"${ghPath}"` : 'gh';
       
-      const releaseNotes = `### Novidades da versão ${newTag}\n\n- Sensor de Jogos Dinâmico Multi-PC: Varre automaticamente todas as unidades de disco (C:, D:, E:...) e deteta exclusivamente os jogos instalados na máquina atual (Steam, Epic Games, Riot, EA, Xbox)\n- Adaptação Universal: Ao abrir a aplicação noutro PC, a lista adapta-se de imediato aos jogos desse outro computador\n- Suporte para Adicionar Jogos Manualmente (.exe) e botão de Sensorizar / Rescan instantâneo\n- Badges de plataforma e capas oficiais com prioridade em latência 0.5ms`;
+      const releaseNotes = `### Novidades da versão ${newTag}\n\n- Novo Overlay Flutuante Ultra-Leve para Jogos (Consumo praticamente ZERO de CPU/GPU e sem perda de FPS)\n- Janela Transparente dedicada sempre no topo ('screen-saver') compatível com jogos em ecrã inteiro\n- Modo Fantasma (Click-Through): os cliques do rato atravessam 100% para o jogo sem atrapalhar a mira ou o disparo\n- Telemetria de Baixo Impacto (1500ms): Resolução de Timer 0.500ms, Ping, CPU %, GPU Temp/Carga, RAM GB e Jogo Ativo\n- Atalho Global Instantâneo: Pressiona Ctrl + Shift + F3 durante o jogo para ligar/desligar o HUD`;
       const notesFile = path.join(rootDir, 'release', 'release-notes.tmp');
       fs.writeFileSync(notesFile, releaseNotes, 'utf8');
 

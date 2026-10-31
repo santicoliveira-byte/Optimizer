@@ -14,6 +14,7 @@ export class HotkeyService {
   private static instance: HotkeyService;
   private window: BrowserWindow | null = null;
   private registered: Map<string, string> = new Map();
+  private overlayCallback: (() => void) | null = null;
 
   public static getInstance(): HotkeyService {
     if (!HotkeyService.instance) {
@@ -25,6 +26,10 @@ export class HotkeyService {
   public init(win: BrowserWindow) {
     this.window = win;
     this.registerDefaults();
+  }
+
+  public setOverlayCallback(cb: () => void) {
+    this.overlayCallback = cb;
   }
 
   public registerDefaults() {
@@ -61,6 +66,9 @@ export class HotkeyService {
     // 3. Ctrl+Shift+F3: Toggle Draggable HUD Overlay
     try {
       globalShortcut.register('CommandOrControl+Shift+F3', () => {
+        if (this.overlayCallback) {
+          try { this.overlayCallback(); } catch {}
+        }
         if (this.window && !this.window.isDestroyed()) {
           this.window.webContents.send('hotkey:trigger', {
             action: 'toggle-overlay',

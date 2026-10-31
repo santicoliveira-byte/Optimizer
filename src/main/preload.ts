@@ -108,6 +108,11 @@ export interface OptimizerApi {
   gameSensorScan: () => Promise<any[]>;
   gameSensorAddCustom: (gameData: any) => Promise<any>;
   gameSensorRemoveCustom: (gameId: string) => Promise<boolean>;
+  overlayToggle: () => Promise<{ isOpen: boolean; isClickThrough?: boolean }>;
+  overlaySetClickThrough: (ignore: boolean) => Promise<{ isClickThrough: boolean }>;
+  overlayGetStatus: () => Promise<{ isOpen: boolean; isClickThrough: boolean }>;
+  overlaySetPosition: (preset: 'top-right' | 'top-left' | 'top-center' | 'bottom-right' | 'bottom-left') => Promise<{ success: boolean }>;
+  overlayClose: () => Promise<{ success: boolean }>;
 }
 
 const api: OptimizerApi = {
@@ -248,7 +253,12 @@ const api: OptimizerApi = {
   updaterDownloadInstall: (downloadUrl: string) => ipcRenderer.invoke('updater:download-install', downloadUrl),
   gameSensorScan: () => ipcRenderer.invoke('game-sensor:scan'),
   gameSensorAddCustom: (gameData: any) => ipcRenderer.invoke('game-sensor:add-custom', gameData),
-  gameSensorRemoveCustom: (gameId: string) => ipcRenderer.invoke('game-sensor:remove-custom', gameId)
+  gameSensorRemoveCustom: (gameId: string) => ipcRenderer.invoke('game-sensor:remove-custom', gameId),
+  overlayToggle: () => ipcRenderer.invoke('overlay:toggle'),
+  overlaySetClickThrough: (ignore: boolean) => ipcRenderer.invoke('overlay:set-click-through', ignore),
+  overlayGetStatus: () => ipcRenderer.invoke('overlay:get-status'),
+  overlaySetPosition: (preset: any) => ipcRenderer.invoke('overlay:set-position', preset),
+  overlayClose: () => ipcRenderer.invoke('overlay:close')
 };
 
 contextBridge.exposeInMainWorld('optimizerApi', api);

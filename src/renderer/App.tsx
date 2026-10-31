@@ -245,7 +245,11 @@ export const App: React.FC = () => {
         if (data.action === 'ultra-game-mode') {
           handleApplyGamingMode();
         } else if (data.action === 'toggle-overlay') {
-          setIsOverlayOpen((prev) => !prev);
+          if (window.optimizerApi?.overlayToggle) {
+            window.optimizerApi.overlayToggle();
+          } else {
+            setIsOverlayOpen((prev) => !prev);
+          }
         }
         showNotification(data.message, 'success');
       });

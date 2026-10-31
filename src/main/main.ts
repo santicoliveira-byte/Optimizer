@@ -148,6 +148,110 @@ function createTray() {
   });
 }
 
+let overlayWindow: BrowserWindow | null = null;
+let isOverlayClickThrough = false;
+
+function toggleOverlayWindow() {
+  if (overlayWindow && !overlayWindow.isDestroyed()) {
+    if (overlayWindow.isVisible()) {
+      overlayWindow.hide();
+      return { isOpen: false, isClickThrough: isOverlayClickThrough };
+    } else {
+      overlayWindow.show();
+      return { isOpen: true, isClickThrough: isOverlayClickThrough };
+    }
+  }
+
+  const { screen } = require('electron');
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width } = primaryDisplay.workAreaSize;
+
+  overlayWindow = new BrowserWindow({
+    width: 450,
+    height: 44,
+    x: Math.max(0, width - 470),
+    y: 16,
+    frame: false,
+    transparent: true,
+    alwaysOnTop: true,
+    resizable: false,
+    movable: true,
+    skipTaskbar: true,
+    focusable: false,
+    hasShadow: false,
+    backgroundColor: '#00000000',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: false,
+      backgroundThrottling: false
+    }
+  });
+
+  overlayWindow.setAlwaysOnTop(true, 'screen-saver');
+  overlayWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+
+  if (isDev) {
+    overlayWindow.loadURL('http://localhost:5173/#overlay');
+  } else {
+    const rendererPath = path.resolve(app.getAppPath(), 'dist-renderer/index.html');
+    overlayWindow.loadFile(rendererPath, { hash: 'overlay' });
+  }
+
+  overlayWindow.on('closed', () => {
+    overlayWindow = null;
+  });
+
+  return { isOpen: true, isClickThrough: isOverlayClickThrough };
+}
+
+function setOverlayPositionPreset(preset: 'top-right' | 'top-left' | 'top-center' | 'bottom-right' | 'bottom-left') {
+  if (!overlayWindow || overlayWindow.isDestroyed()) return;
+  const { screen } = require('electron');
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width, height } = primaryDisplay.workAreaSize;
+  const overlayWidth = 450;
+  const overlayHeight = 44;
+
+  let x = width - overlayWidth - 20;
+  let y = 16;
+
+  switch (preset) {
+    case 'top-left':
+      x = 20;
+      y = 16;
+      break;
+    case 'top-center':
+      x = Math.round((width - overlayWidth) / 2);
+      y = 16;
+      break;
+    case 'bottom-right':
+      x = width - overlayWidth - 20;
+      y = height - overlayHeight - 20;
+      break;
+    case 'bottom-left':
+      x = 20;
+      y = height - overlayHeight - 20;
+      break;
+    case 'top-right':
+    default:
+      x = width - overlayWidth - 20;
+      y = 16;
+      break;
+  }
+
+  overlayWindow.setPosition(x, y);
+}
+
+function setOverlayClickThrough(ignore: boolean) {
+  isOverlayClickThrough = ignore;
+  if (overlayWindow && !overlayWindow.isDestroyed()) {
+    overlayWindow.setIgnoreMouseEvents(ignore, { forward: true });
+  }
+  return { isClickThrough: isOverlayClickThrough };
+}
+
 function registerIpc() {
   const engine = OptimizerEngine.getInstance();
   const profileService = ProfileService.getInstance();
@@ -659,6 +763,34 @@ function registerIpc() {
   ipcMain.handle('game-sensor:remove-custom', async (_, gameId: string) => {
     return GameSensorService.getInstance().removeCustomGame(gameId);
   });
+
+  // Ultra-Lightweight In-Game Overlay
+  ipcMain.handle('overlay:toggle', async () => {
+    return toggleOverlayWindow();
+  });
+
+  ipcMain.handle('overlay:set-click-through', async (_, ignore: boolean) => {
+    return setOverlayClickThrough(ignore);
+  });
+
+  ipcMain.handle('overlay:get-status', async () => {
+    return {
+      isOpen: Boolean(overlayWindow && !overlayWindow.isDestroyed() && overlayWindow.isVisible()),
+      isClickThrough: isOverlayClickThrough
+    };
+  });
+
+  ipcMain.handle('overlay:set-position', async (_, preset: any) => {
+    setOverlayPositionPreset(preset);
+    return { success: true };
+  });
+
+  ipcMain.handle('overlay:close', async () => {
+    if (overlayWindow && !overlayWindow.isDestroyed()) {
+      overlayWindow.hide();
+    }
+    return { success: true };
+  });
 }
 
 app.whenReady().then(() => {
@@ -667,6 +799,7 @@ app.whenReady().then(() => {
   if (mainWindow) {
     try {
       HotkeyService.getInstance().init(mainWindow);
+      HotkeyService.getInstance().setOverlayCallback(toggleOverlayWindow);
       GameBoosterDaemon.getInstance().setWindow(mainWindow);
     } catch {}
   }
