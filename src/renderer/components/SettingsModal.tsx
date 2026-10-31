@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Settings,
   X,
@@ -8,8 +8,13 @@ import {
   Check,
   RotateCcw,
   ExternalLink,
-  ShieldCheck,
-  Sparkles
+  Sparkles,
+  Keyboard,
+  Ghost,
+  MousePointer,
+  AlertTriangle,
+  CheckCircle2,
+  Zap
 } from 'lucide-react';
 import { useI18n, ACCENT_COLORS, ThemeAccent, Language } from '../i18n';
 
@@ -20,7 +25,50 @@ interface SettingsModalProps {
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   const { language, setLanguage, accent, setAccent, t } = useI18n();
-  const [activeTab, setActiveTab] = useState<'appearance' | 'language' | 'about'>('appearance');
+  const [activeTab, setActiveTab] = useState<'appearance' | 'language' | 'hotkeys' | 'about'>('appearance');
+
+  const [hotkeys, setHotkeys] = useState<any[]>([]);
+  const [isGhostActive, setIsGhostActive] = useState<boolean>(false);
+  const [feedbackMsg, setFeedbackMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const loadData = async () => {
+      try {
+        if (window.optimizerApi?.hotkeysGetList) {
+          const list = await window.optimizerApi.hotkeysGetList();
+          if (list) setHotkeys(list);
+        }
+        if (window.optimizerApi?.overlayGetStatus) {
+          const status = await window.optimizerApi.overlayGetStatus();
+          if (status && typeof status.isClickThrough === 'boolean') {
+            setIsGhostActive(status.isClickThrough);
+          }
+        }
+      } catch {}
+    };
+
+    loadData();
+
+    let unsubGhost: (() => void) | undefined;
+    if (window.optimizerApi?.onOverlayGhostChanged) {
+      unsubGhost = window.optimizerApi.onOverlayGhostChanged((isClickThrough) => {
+        setIsGhostActive(isClickThrough);
+      });
+    }
+
+    return () => {
+      unsubGhost?.();
+    };
+  }, [isOpen]);
+
+  // Clear feedback after 4 seconds
+  useEffect(() => {
+    if (!feedbackMsg) return;
+    const timer = setTimeout(() => setFeedbackMsg(null), 4000);
+    return () => clearTimeout(timer);
+  }, [feedbackMsg]);
 
   if (!isOpen) return null;
 
@@ -29,9 +77,67 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     setLanguage('pt');
   };
 
+  const handleDeactivateGhostNow = async () => {
+    try {
+      if (window.optimizerApi?.overlaySetClickThrough) {
+        await window.optimizerApi.overlaySetClickThrough(false);
+        setIsGhostActive(false);
+        setFeedbackMsg({
+          text: '✅ Modo Fantasma desativado! O rato voltou ao normal e o HUD é clicável.',
+          type: 'success'
+        });
+      }
+    } catch {
+      setFeedbackMsg({ text: 'Erro ao desativar Modo Fantasma.', type: 'error' });
+    }
+  };
+
+  const handleToggleGhost = async () => {
+    try {
+      if (window.optimizerApi?.overlayToggleGhost) {
+        const res = await window.optimizerApi.overlayToggleGhost();
+        setIsGhostActive(res.isClickThrough);
+        setFeedbackMsg({
+          text: res.isClickThrough
+            ? '👻 Modo Fantasma ativado: os cliques passam para o jogo.'
+            : '🖱️ Modo Fantasma desativado: controlo do rato restaurado.',
+          type: 'success'
+        });
+      }
+    } catch {}
+  };
+
+  const handleHotkeyChange = async (actionId: string, newAccelerator: string) => {
+    try {
+      if (window.optimizerApi?.hotkeyUpdate) {
+        const res = await window.optimizerApi.hotkeyUpdate(actionId, newAccelerator);
+        if (res.success) {
+          const updated = await window.optimizerApi.hotkeysGetList();
+          setHotkeys(updated);
+          setFeedbackMsg({ text: 'Combinação de teclas atualizada e ativa!', type: 'success' });
+        } else {
+          setFeedbackMsg({ text: res.message || 'Erro ao registar atalho.', type: 'error' });
+        }
+      }
+    } catch {
+      setFeedbackMsg({ text: 'Falha na comunicação com o sistema.', type: 'error' });
+    }
+  };
+
+  const handleResetHotkeys = async () => {
+    try {
+      if (window.optimizerApi?.hotkeysResetDefaults) {
+        await window.optimizerApi.hotkeysResetDefaults();
+        const updated = await window.optimizerApi.hotkeysGetList();
+        setHotkeys(updated);
+        setFeedbackMsg({ text: 'Atalhos restaurados para os valores padrão originais.', type: 'success' });
+      }
+    } catch {}
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
-      <div className="bg-[#0B101D] border border-[#232F4D] rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+      <div className="bg-[#0B101D] border border-[#232F4D] rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col max-h-[88vh]">
         {/* Header */}
         <div className="bg-gradient-to-r from-[#12192B] to-[#18233C] px-6 py-4 border-b border-[#1E293B] flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -54,6 +160,24 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             <X className="w-4 h-4" />
           </button>
         </div>
+
+        {/* Feedback Alert Toast */}
+        {feedbackMsg && (
+          <div
+            className={`px-6 py-2.5 text-xs font-semibold flex items-center gap-2 border-b transition-all ${
+              feedbackMsg.type === 'success'
+                ? 'bg-emerald-950/80 border-emerald-500/50 text-emerald-300'
+                : 'bg-rose-950/80 border-rose-500/50 text-rose-300'
+            }`}
+          >
+            {feedbackMsg.type === 'success' ? (
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+            ) : (
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+            )}
+            <span>{feedbackMsg.text}</span>
+          </div>
+        )}
 
         {/* Sub-tabs Navigation */}
         <div className="flex items-center gap-1 px-6 pt-3 border-b border-[#1E293B] bg-[#0E1526]/60">
@@ -78,6 +202,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
           >
             <Globe className="w-3.5 h-3.5" />
             <span>{t('settings.tab_language')}</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('hotkeys')}
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all ${
+              activeTab === 'hotkeys'
+                ? 'border-indigo-500 text-white'
+                : 'border-transparent text-gray-400 hover:text-gray-200'
+            }`}
+          >
+            <Keyboard className="w-3.5 h-3.5" />
+            <span>{t('settings.tab_hotkeys')}</span>
           </button>
           <button
             onClick={() => setActiveTab('about')}
@@ -243,7 +378,140 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             </div>
           )}
 
-          {/* TAB 3: ABOUT */}
+          {/* TAB 3: KEYBOARD HOTKEYS & GHOST MODE RECOVERY */}
+          {activeTab === 'hotkeys' && (
+            <div className="space-y-5">
+              {/* EMERGENCY GHOST MODE RECOVERY CARD */}
+              <div
+                className={`p-4 rounded-2xl border transition-all ${
+                  isGhostActive
+                    ? 'bg-amber-950/30 border-amber-500/70 shadow-lg ring-1 ring-amber-500/40'
+                    : 'bg-[#0E1526] border-[#1E293B]'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
+                        isGhostActive
+                          ? 'bg-amber-500/20 text-amber-400 border-amber-500/40 animate-pulse'
+                          : 'bg-[#151E33] text-gray-400 border-[#232F4D]'
+                      }`}
+                    >
+                      <Ghost className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                        {t('settings.ghost_title')}
+                        {isGhostActive ? (
+                          <span className="text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded bg-amber-500 text-black">
+                            Ativo Agora
+                          </span>
+                        ) : (
+                          <span className="text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            Normal
+                          </span>
+                        )}
+                      </h4>
+                      <p className="text-xs text-gray-300 mt-1 leading-relaxed">
+                        {t('settings.ghost_desc')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-[#1E293B] flex items-center gap-2.5 flex-wrap">
+                  {isGhostActive ? (
+                    <button
+                      onClick={handleDeactivateGhostNow}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-extrabold shadow-md shadow-amber-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                      <MousePointer className="w-4 h-4" />
+                      <span>{t('settings.ghost_deactivate_now')}</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleToggleGhost}
+                      className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#151E33] hover:bg-[#1E2B4B] border border-[#232F4D] text-gray-300 hover:text-white text-xs font-semibold transition-all"
+                    >
+                      <Ghost className="w-3.5 h-3.5 text-amber-400" />
+                      <span>{t('settings.ghost_activate_now')}</span>
+                    </button>
+                  )}
+                  <span className="text-[11px] text-gray-400 font-mono">
+                    (Ou pressiona <kbd className="px-1.5 py-0.5 rounded bg-gray-800 text-amber-300 border border-gray-700">Ctrl + Shift + F4</kbd> a qualquer altura)
+                  </span>
+                </div>
+              </div>
+
+              {/* HOTKEYS CONFIGURATION LIST */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                      <Keyboard className="w-4 h-4 text-indigo-400" />
+                      {t('settings.hotkeys_title')}
+                    </h4>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {t('settings.hotkeys_desc')}
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleResetHotkeys}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#151E33] hover:bg-[#1E2B4B] border border-[#232F4D] text-[11px] font-semibold text-gray-300 hover:text-white transition-all"
+                    title="Restaurar combinações padrão de fábrica"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>{t('settings.hotkeys_reset')}</span>
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {hotkeys.map((hk) => {
+                    return (
+                      <div
+                        key={hk.id}
+                        className="p-3.5 rounded-xl bg-[#0E1526] border border-[#1E293B] hover:border-[#2C3B63] transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                      >
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-white">
+                              {hk.name}
+                            </span>
+                            {hk.id === 'toggle-ghost' && (
+                              <span className="text-[9px] uppercase font-mono px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                Emergência
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-gray-400">
+                            {hk.description}
+                          </p>
+                        </div>
+
+                        {/* Dropdown Selector */}
+                        <div className="shrink-0 flex items-center gap-2">
+                          <select
+                            value={hk.accelerator}
+                            onChange={(e) => handleHotkeyChange(hk.id, e.target.value)}
+                            className="bg-[#151E33] border border-[#2B3B66] text-amber-300 font-mono text-xs font-bold rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                          >
+                            {hk.options?.map((opt: any) => (
+                              <option key={opt.value} value={opt.value} className="bg-[#0B101D] text-gray-200">
+                                {opt.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: ABOUT */}
           {activeTab === 'about' && (
             <div className="space-y-4">
               <div className="bg-[#0E1526] border border-[#1E293B] rounded-2xl p-5 space-y-4">
@@ -258,7 +526,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                     </div>
                   </div>
                   <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
-                    v1.2 PRO
+                    v1.7 PRO
                   </span>
                 </div>
 
@@ -269,7 +537,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                   </div>
                   <div className="flex items-center justify-between py-1 border-b border-[#172238]">
                     <span className="text-gray-400">{t('settings.current_version')}</span>
-                    <span className="font-mono text-emerald-400 font-bold">v1.2.0 (Portable)</span>
+                    <span className="font-mono text-emerald-400 font-bold">v1.7.0 (Portable)</span>
                   </div>
                   <div className="flex items-center justify-between py-1">
                     <span className="text-gray-400">Arquitetura:</span>

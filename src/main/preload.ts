@@ -55,6 +55,8 @@ export interface OptimizerApi {
   ramClean: () => Promise<{ success: boolean; freedEstimateMB: number; standbyCleared: boolean; message: string }>;
   ramSetCompression: (enable: boolean) => Promise<{ success: boolean; message: string }>;
   hotkeysGetList: () => Promise<any[]>;
+  hotkeyUpdate: (actionId: string, accelerator: string) => Promise<{ success: boolean; message?: string }>;
+  hotkeysResetDefaults: () => Promise<boolean>;
   onHotkeyTrigger: (callback: (data: { action: string; message: string }) => void) => () => void;
   runtimesGetStatus: () => Promise<any[]>;
   runtimesInstall: (item: any) => Promise<{ success: boolean; message: string }>;
@@ -110,9 +112,11 @@ export interface OptimizerApi {
   gameSensorRemoveCustom: (gameId: string) => Promise<boolean>;
   overlayToggle: () => Promise<{ isOpen: boolean; isClickThrough?: boolean }>;
   overlaySetClickThrough: (ignore: boolean) => Promise<{ isClickThrough: boolean }>;
+  overlayToggleGhost: () => Promise<{ isClickThrough: boolean }>;
   overlayGetStatus: () => Promise<{ isOpen: boolean; isClickThrough: boolean }>;
   overlaySetPosition: (preset: 'top-right' | 'top-left' | 'top-center' | 'bottom-right' | 'bottom-left') => Promise<{ success: boolean }>;
   overlayClose: () => Promise<{ success: boolean }>;
+  onOverlayGhostChanged: (callback: (isClickThrough: boolean) => void) => () => void;
 }
 
 const api: OptimizerApi = {
@@ -181,6 +185,8 @@ const api: OptimizerApi = {
   ramClean: () => ipcRenderer.invoke('ram:clean'),
   ramSetCompression: (enable: boolean) => ipcRenderer.invoke('ram:set-compression', enable),
   hotkeysGetList: () => ipcRenderer.invoke('hotkeys:get-list'),
+  hotkeyUpdate: (actionId: string, accelerator: string) => ipcRenderer.invoke('hotkeys:update', actionId, accelerator),
+  hotkeysResetDefaults: () => ipcRenderer.invoke('hotkeys:reset'),
   onHotkeyTrigger: (callback: (data: { action: string; message: string }) => void) => {
     const handler = (_: any, data: any) => callback(data);
     ipcRenderer.on('hotkey:trigger', handler);
@@ -256,9 +262,17 @@ const api: OptimizerApi = {
   gameSensorRemoveCustom: (gameId: string) => ipcRenderer.invoke('game-sensor:remove-custom', gameId),
   overlayToggle: () => ipcRenderer.invoke('overlay:toggle'),
   overlaySetClickThrough: (ignore: boolean) => ipcRenderer.invoke('overlay:set-click-through', ignore),
+  overlayToggleGhost: () => ipcRenderer.invoke('overlay:toggle-ghost'),
   overlayGetStatus: () => ipcRenderer.invoke('overlay:get-status'),
   overlaySetPosition: (preset: any) => ipcRenderer.invoke('overlay:set-position', preset),
-  overlayClose: () => ipcRenderer.invoke('overlay:close')
+  overlayClose: () => ipcRenderer.invoke('overlay:close'),
+  onOverlayGhostChanged: (callback: (isClickThrough: boolean) => void) => {
+    const handler = (_: any, val: boolean) => callback(val);
+    ipcRenderer.on('overlay:ghost-changed', handler);
+    return () => {
+      ipcRenderer.removeListener('overlay:ghost-changed', handler);
+    };
+  }
 };
 
 contextBridge.exposeInMainWorld('optimizerApi', api);

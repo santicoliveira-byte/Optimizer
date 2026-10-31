@@ -248,8 +248,32 @@ function setOverlayClickThrough(ignore: boolean) {
   isOverlayClickThrough = ignore;
   if (overlayWindow && !overlayWindow.isDestroyed()) {
     overlayWindow.setIgnoreMouseEvents(ignore, { forward: true });
+    try {
+      overlayWindow.webContents.send('overlay:ghost-changed', ignore);
+    } catch {}
+  }
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    try {
+      mainWindow.webContents.send('overlay:ghost-changed', ignore);
+    } catch {}
   }
   return { isClickThrough: isOverlayClickThrough };
+}
+
+function toggleOverlayGhost() {
+  const next = !isOverlayClickThrough;
+  setOverlayClickThrough(next);
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    try {
+      mainWindow.webContents.send('hotkey:trigger', {
+        action: 'toggle-ghost',
+        message: next
+          ? '👻 Modo Fantasma Ativado! Os cliques passam diretos para o jogo.'
+          : '🖱️ Modo Fantasma Desativado! O HUD volta a ser clicável.'
+      });
+    } catch {}
+  }
+  return { isClickThrough: next };
 }
 
 function registerIpc() {
@@ -773,6 +797,18 @@ function registerIpc() {
     return setOverlayClickThrough(ignore);
   });
 
+  ipcMain.handle('overlay:toggle-ghost', async () => {
+    return toggleOverlayGhost();
+  });
+
+  ipcMain.handle('hotkeys:update', async (_, actionId: string, accelerator: string) => {
+    return HotkeyService.getInstance().updateShortcut(actionId, accelerator);
+  });
+
+  ipcMain.handle('hotkeys:reset', async () => {
+    return HotkeyService.getInstance().resetDefaults();
+  });
+
   ipcMain.handle('overlay:get-status', async () => {
     return {
       isOpen: Boolean(overlayWindow && !overlayWindow.isDestroyed() && overlayWindow.isVisible()),
@@ -800,6 +836,7 @@ app.whenReady().then(() => {
     try {
       HotkeyService.getInstance().init(mainWindow);
       HotkeyService.getInstance().setOverlayCallback(toggleOverlayWindow);
+      HotkeyService.getInstance().setGhostToggleCallback(toggleOverlayGhost);
       GameBoosterDaemon.getInstance().setWindow(mainWindow);
     } catch {}
   }

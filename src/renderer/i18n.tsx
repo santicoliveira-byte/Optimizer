@@ -136,6 +136,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'settings.desc': 'Personaliza o tema visual, paleta de cores e o idioma da aplicação.',
     'settings.tab_appearance': 'Aparência & Cores',
     'settings.tab_language': 'Idioma / Language',
+    'settings.tab_hotkeys': 'Atalhos de Teclado',
     'settings.tab_about': 'Sobre o Optimizer',
     'settings.accent_color': 'Cor de Destaque da Aplicação',
     'settings.accent_color_desc': 'Escolhe a cor principal dos botões, medidores, abas ativas e realces.',
@@ -148,7 +149,16 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'settings.repository': 'Repositório Oficial no GitHub',
     'settings.author': 'Desenvolvido por:',
     'settings.close': 'Guardar e Fechar',
-    'settings.reset': 'Repor Padrões'
+    'settings.reset': 'Repor Padrões',
+    'settings.hotkeys_title': 'Combinações de Teclas Globais',
+    'settings.hotkeys_desc': 'Configura as combinações de teclas para ligar/desligar o HUD e controlar o rato em jogo.',
+    'settings.ghost_title': 'Controlo de Emergência: Modo Fantasma',
+    'settings.ghost_desc': 'Quando o Modo Fantasma está ativo, os cliques do rato passam 100% diretos para o jogo. Podes desativá-lo imediatamente aqui ou premir o atalho configurado.',
+    'settings.ghost_deactivate_now': 'Desativar Modo Fantasma Agora (Recuperar Rato)',
+    'settings.ghost_activate_now': 'Ativar Modo Fantasma (Passar Cliques ao Jogo)',
+    'settings.ghost_active_badge': 'Modo Fantasma Ativo (Rato passa ao jogo)',
+    'settings.ghost_inactive_badge': 'Modo Normal (HUD clicável)',
+    'settings.hotkeys_reset': 'Restaurar Atalhos Padrão'
   },
   en: {
     // Brand & Header
@@ -197,6 +207,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'settings.desc': 'Customize visual theme, accent color palette and interface language.',
     'settings.tab_appearance': 'Appearance & Colors',
     'settings.tab_language': 'Language / Idioma',
+    'settings.tab_hotkeys': 'Keyboard Shortcuts',
     'settings.tab_about': 'About Optimizer',
     'settings.accent_color': 'App Accent Color',
     'settings.accent_color_desc': 'Choose the primary color for buttons, meters, active tabs and glows.',
@@ -209,7 +220,16 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'settings.repository': 'Official GitHub Repository',
     'settings.author': 'Developed by:',
     'settings.close': 'Save & Close',
-    'settings.reset': 'Reset Defaults'
+    'settings.reset': 'Reset Defaults',
+    'settings.hotkeys_title': 'Global Keyboard Hotkeys',
+    'settings.hotkeys_desc': 'Configure keyboard shortcuts to toggle HUD and control mouse click-through during games.',
+    'settings.ghost_title': 'Emergency Control: Ghost Mode',
+    'settings.ghost_desc': 'When Ghost Mode is active, mouse clicks pass straight through to the game. You can disable it here or press the designated global hotkey.',
+    'settings.ghost_deactivate_now': 'Disable Ghost Mode Now (Restore Mouse)',
+    'settings.ghost_activate_now': 'Enable Ghost Mode (Click-Through)',
+    'settings.ghost_active_badge': 'Ghost Mode Active (Clicks pass through)',
+    'settings.ghost_inactive_badge': 'Normal Mode (HUD clickable)',
+    'settings.hotkeys_reset': 'Reset Default Hotkeys'
   },
   es: {
     // Brand & Header
@@ -258,6 +278,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'settings.desc': 'Personaliza el tema visual, la paleta de colores y el idioma de la aplicación.',
     'settings.tab_appearance': 'Apariencia y Colores',
     'settings.tab_language': 'Idioma / Language',
+    'settings.tab_hotkeys': 'Atajos de Teclado',
     'settings.tab_about': 'Acerca de Optimizer',
     'settings.accent_color': 'Color de Énfasis de la Aplicación',
     'settings.accent_color_desc': 'Elige el color principal para botones, medidores, pestañas activas y destellos.',
@@ -270,7 +291,16 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     'settings.repository': 'Repositorio Oficial en GitHub',
     'settings.author': 'Desarrollado por:',
     'settings.close': 'Guardar y Cerrar',
-    'settings.reset': 'Restaurar Valores por Defecto'
+    'settings.reset': 'Restaurar Valores por Defecto',
+    'settings.hotkeys_title': 'Atajos de Teclado Globales',
+    'settings.hotkeys_desc': 'Configura las combinaciones de teclas para activar el HUD y controlar el ratón mientras juegas.',
+    'settings.ghost_title': 'Control de Emergencia: Modo Fantasma',
+    'settings.ghost_desc': 'Cuando el Modo Fantasma está activo, los clics del ratón pasan directamente al juego. Puedes desactivarlo aquí o pulsar el atajo global.',
+    'settings.ghost_deactivate_now': 'Desactivar Modo Fantasma Ahora (Restaurar Ratón)',
+    'settings.ghost_activate_now': 'Activar Modo Fantasma (Pasar Clics al Juego)',
+    'settings.ghost_active_badge': 'Modo Fantasma Activo (Clics pasan al juego)',
+    'settings.ghost_inactive_badge': 'Modo Normal (HUD interactivo)',
+    'settings.hotkeys_reset': 'Restaurar Atajos por Defecto'
   }
 };
 

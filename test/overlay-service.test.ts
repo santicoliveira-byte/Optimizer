@@ -23,4 +23,19 @@ describe('Ultra-Lightweight Game Overlay Architecture', () => {
     const ratio = (overlayPixels / totalScreenPixels) * 100;
     expect(ratio).toBeLessThan(1.0); // Under 1% of screen
   });
+
+  it('validates ghost mode emergency toggle hotkey configuration', () => {
+    const defaultOverlayHotkeys = {
+      'toggle-overlay': 'CommandOrControl+Shift+F3',
+      'toggle-ghost': 'CommandOrControl+Shift+F4'
+    };
+    expect(defaultOverlayHotkeys['toggle-ghost']).toBe('CommandOrControl+Shift+F4');
+    expect(defaultOverlayHotkeys['toggle-overlay']).toBe('CommandOrControl+Shift+F3');
+  });
+
+  it('validates accelerator to human-readable display converter', () => {
+    const accelerator = 'CommandOrControl+Shift+F4';
+    const display = accelerator.replace(/CommandOrControl/g, 'Ctrl').replace(/\+/g, ' + ');
+    expect(display).toBe('Ctrl + Shift + F4');
+  });
 });

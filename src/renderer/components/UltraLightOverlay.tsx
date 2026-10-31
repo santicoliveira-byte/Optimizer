@@ -21,6 +21,21 @@ export const UltraLightOverlay: React.FC = () => {
   useEffect(() => {
     let isMounted = true;
 
+    if (window.optimizerApi?.overlayGetStatus) {
+      window.optimizerApi.overlayGetStatus().then((st) => {
+        if (isMounted && st && typeof st.isClickThrough === 'boolean') {
+          setIsGhostMode(st.isClickThrough);
+        }
+      });
+    }
+
+    let unsubGhost: (() => void) | undefined;
+    if (window.optimizerApi?.onOverlayGhostChanged) {
+      unsubGhost = window.optimizerApi.onOverlayGhostChanged((val) => {
+        if (isMounted) setIsGhostMode(val);
+      });
+    }
+
     const fetchTelemetry = async () => {
       try {
         if (window.optimizerApi?.getSystemMetrics) {
@@ -48,6 +63,7 @@ export const UltraLightOverlay: React.FC = () => {
     return () => {
       isMounted = false;
       clearInterval(interval);
+      unsubGhost?.();
     };
   }, []);
 
@@ -159,8 +175,8 @@ export const UltraLightOverlay: React.FC = () => {
             }`}
             title={
               isGhostMode
-                ? 'Modo Fantasma Ativo (Cliques atravessam para o jogo)'
-                : 'Ativar Modo Fantasma (Cliques do rato passam diretos para o jogo)'
+                ? 'Modo Fantasma Ativo (Cliques atravessam para o jogo - Pressiona Ctrl+Shift+F4 ou usa as Definições para sair)'
+                : 'Ativar Modo Fantasma (Cliques do rato passam diretos para o jogo - Atalho: Ctrl+Shift+F4)'
             }
           >
             <Ghost className="w-3 h-3" />

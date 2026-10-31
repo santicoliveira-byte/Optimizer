@@ -143,7 +143,7 @@ function main() {
       const ghPath = 'C:\\Program Files\\GitHub CLI\\gh.exe';
       const ghCmd = fs.existsSync(ghPath) ? `"${ghPath}"` : 'gh';
       
-      const releaseNotes = `### Novidades da versão ${newTag}\n\n- Novo Overlay Flutuante Ultra-Leve para Jogos (Consumo praticamente ZERO de CPU/GPU e sem perda de FPS)\n- Janela Transparente dedicada sempre no topo ('screen-saver') compatível com jogos em ecrã inteiro\n- Modo Fantasma (Click-Through): os cliques do rato atravessam 100% para o jogo sem atrapalhar a mira ou o disparo\n- Telemetria de Baixo Impacto (1500ms): Resolução de Timer 0.500ms, Ping, CPU %, GPU Temp/Carga, RAM GB e Jogo Ativo\n- Atalho Global Instantâneo: Pressiona Ctrl + Shift + F3 durante o jogo para ligar/desligar o HUD`;
+      const releaseNotes = `### Novidades da versão ${newTag}\n\n- Recuperação Instantânea do Modo Fantasma: Novo botão direto nas Definições para desativar o Modo Fantasma e restaurar imediatamente o rato\n- Novo Separador de Atalhos nas Definições: Permite escolher combinações personalizadas de teclas para ligar/desligar o HUD e o Modo Fantasma\n- Atalho Global de Emergência para Modo Fantasma: Pressiona Ctrl + Shift + F4 para alternar a passagem de cliques em jogo\n- Sincronização em Tempo Real: O HUD atualiza imediatamente quando o atalho de teclado é premido\n- Persistência Total: Todas as teclas de atalho personalizadas são guardadas no sistema`;
       const notesFile = path.join(rootDir, 'release', 'release-notes.tmp');
       fs.writeFileSync(notesFile, releaseNotes, 'utf8');
 
