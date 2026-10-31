@@ -143,7 +143,7 @@ function main() {
       const ghPath = 'C:\\Program Files\\GitHub CLI\\gh.exe';
       const ghCmd = fs.existsSync(ghPath) ? `"${ghPath}"` : 'gh';
       
-      const releaseNotes = `### Novidades da versão ${newTag}\n\n- Novo Contador de FPS em Tempo Real no HUD Overlay: Medidor dedicado de fotogramas por segundo (FPS) com indicador visual de alta visibilidade\n- Cores Dinâmicas Adaptativas para FPS: Verde Esmeralda (>=120 FPS), Azul Ciano (60-120 FPS) e Âmbar (<60 FPS)\n- Telemetria de Frame Rate Inteligente: Mede o loop de renderização do monitor e calcula a fluidez 3D real com base na carga do jogo e GPU\n- Largura Ajustada do HUD: Redimensionado para 550px para exibir perfeitamente FPS, Ping, CPU, GPU Temp/Carga e RAM`;
+      const releaseNotes = `### Novidades da versão ${newTag}\n\n- Correção Crítica do Atalho do HUD Overlay: Corrigido o conflito de duplo toggle instantâneo onde o HUD abria e fechava imediatamente ao premir as teclas\n- Novos Atalhos Rápidos Ergonómicos de 1 Mão: Pressiona Alt + O para alternar o HUD e Alt + G para alternar o Modo Fantasma (perfeito para portáteis sem necessidade de carregar na tecla Fn)\n- Suporte Simultâneo: Tanto Ctrl + Shift + F3 como Alt + O funcionam ativamente em qualquer momento\n- Novo Botão de Teste nas Definições: Testa o aparecimento do HUD com 1 clique no separador Atalhos de Teclado`;
       const notesFile = path.join(rootDir, 'release', 'release-notes.tmp');
       fs.writeFileSync(notesFile, releaseNotes, 'utf8');
 

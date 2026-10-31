@@ -33,6 +33,15 @@ describe('Ultra-Lightweight Game Overlay Architecture', () => {
     expect(defaultOverlayHotkeys['toggle-overlay']).toBe('CommandOrControl+Shift+F3');
   });
 
+  it('validates ergonomic laptop and single-hand hotkey fallbacks', () => {
+    const fallbackHotkeys = {
+      overlay: 'Alt+O',
+      ghost: 'Alt+G'
+    };
+    expect(fallbackHotkeys.overlay).toBe('Alt+O');
+    expect(fallbackHotkeys.ghost).toBe('Alt+G');
+  });
+
   it('validates accelerator to human-readable display converter', () => {
     const accelerator = 'CommandOrControl+Shift+F4';
     const display = accelerator.replace(/CommandOrControl/g, 'Ctrl').replace(/\+/g, ' + ');

@@ -100,6 +100,24 @@ export class HotkeyService {
     for (const [actionId, accelerator] of Object.entries(this.shortcuts)) {
       this.registerAction(actionId, accelerator);
     }
+
+    // Registo de atalhos ergonómicos adicionais (Alt + O e Alt + G)
+    // Permite que utilizadores de portáteis / teclados sem tecla Fn premida também consigam alternar com 1 mão
+    if (this.shortcuts['toggle-overlay'] !== 'Alt+O') {
+      try {
+        globalShortcut.register('Alt+O', async () => {
+          await this.handleActionTrigger('toggle-overlay');
+        });
+      } catch {}
+    }
+
+    if (this.shortcuts['toggle-ghost'] !== 'Alt+G') {
+      try {
+        globalShortcut.register('Alt+G', async () => {
+          await this.handleActionTrigger('toggle-ghost');
+        });
+      } catch {}
+    }
   }
 
   private registerAction(actionId: string, accelerator: string): boolean {

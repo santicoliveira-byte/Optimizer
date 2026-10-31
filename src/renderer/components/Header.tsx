@@ -106,7 +106,7 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           onClick={() => window.optimizerApi?.overlayToggle?.()}
           className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#151E33] hover:bg-[#1E293B] border border-[#232F4D] text-xs font-semibold text-amber-300 hover:text-white transition-all shadow-sm"
-          title="Alternar Overlay Flutuante de Alto Desempenho (Atalho Global: Ctrl + Shift + F3)"
+          title="Alternar Overlay Flutuante de Alto Desempenho (Atalhos: Alt + O ou Ctrl + Shift + F3)"
         >
           <Radio className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
           <span className="hidden lg:inline">HUD Overlay</span>

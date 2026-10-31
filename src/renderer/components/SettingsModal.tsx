@@ -456,14 +456,37 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                       {t('settings.hotkeys_desc')}
                     </p>
                   </div>
-                  <button
-                    onClick={handleResetHotkeys}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#151E33] hover:bg-[#1E2B4B] border border-[#232F4D] text-[11px] font-semibold text-gray-300 hover:text-white transition-all"
-                    title="Restaurar combinações padrão de fábrica"
-                  >
-                    <RotateCcw className="w-3 h-3" />
-                    <span>{t('settings.hotkeys_reset')}</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={async () => {
+                        if (window.optimizerApi?.overlayToggle) {
+                          await window.optimizerApi.overlayToggle();
+                          setFeedbackMsg({ text: '🎮 HUD Overlay alternado no ecrã!', type: 'success' });
+                        }
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-[11px] font-bold text-white transition-all shadow-sm"
+                      title="Testa a abertura do HUD Overlay imediatamente"
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      <span>Testar HUD</span>
+                    </button>
+                    <button
+                      onClick={handleResetHotkeys}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#151E33] hover:bg-[#1E2B4B] border border-[#232F4D] text-[11px] font-semibold text-gray-300 hover:text-white transition-all"
+                      title="Restaurar combinações padrão de fábrica"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      <span>{t('settings.hotkeys_reset')}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Helpful Laptop / Game Tip Banner */}
+                <div className="bg-indigo-950/40 border border-indigo-500/30 rounded-xl p-3 mb-3 text-xs text-indigo-200 flex items-start gap-2.5">
+                  <Sparkles className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  <div className="leading-relaxed">
+                    <strong className="text-white">Atalhos rápidos suportados:</strong> Podes premir <kbd className="px-1.5 py-0.5 bg-indigo-900 border border-indigo-600 rounded text-amber-300 font-mono text-[10px]">Ctrl + Shift + F3</kbd> ou o atalho de 1 mão <kbd className="px-1.5 py-0.5 bg-indigo-900 border border-indigo-600 rounded text-amber-300 font-mono text-[10px]">Alt + O</kbd> para abrir/fechar o HUD. Em portáteis sem tecla Fn ativa, o atalho <span className="font-mono text-amber-300 font-bold">Alt + O</span> funciona sem necessitar de premir a tecla Fn.
+                  </div>
                 </div>
 
                 <div className="space-y-3">

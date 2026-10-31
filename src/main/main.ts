@@ -158,7 +158,8 @@ function toggleOverlayWindow() {
       overlayWindow.hide();
       return { isOpen: false, isClickThrough: isOverlayClickThrough };
     } else {
-      overlayWindow.show();
+      overlayWindow.showInactive();
+      overlayWindow.setAlwaysOnTop(true, 'screen-saver');
       return { isOpen: true, isClickThrough: isOverlayClickThrough };
     }
   }
@@ -839,9 +840,9 @@ app.whenReady().then(() => {
   createWindow();
   if (mainWindow) {
     try {
-      HotkeyService.getInstance().init(mainWindow);
       HotkeyService.getInstance().setOverlayCallback(toggleOverlayWindow);
       HotkeyService.getInstance().setGhostToggleCallback(toggleOverlayGhost);
+      HotkeyService.getInstance().init(mainWindow);
       GameBoosterDaemon.getInstance().setWindow(mainWindow);
     } catch {}
   }

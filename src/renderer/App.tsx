@@ -245,11 +245,9 @@ export const App: React.FC = () => {
         if (data.action === 'ultra-game-mode') {
           handleApplyGamingMode();
         } else if (data.action === 'toggle-overlay') {
-          if (window.optimizerApi?.overlayToggle) {
-            window.optimizerApi.overlayToggle();
-          } else {
-            setIsOverlayOpen((prev) => !prev);
-          }
+          // O HotkeyService no processo principal do Electron já alternou a janela do overlay.
+          // Não chamar overlayToggle() aqui para evitar toggle duplo instantâneo (abrir e fechar em 2ms).
+          setIsOverlayOpen((prev) => !prev);
         }
         showNotification(data.message, 'success');
       });
