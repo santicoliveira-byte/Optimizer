@@ -9,6 +9,7 @@ import {
   Square,
   X
 } from 'lucide-react';
+import { useI18n } from '../i18n';
 import { OptimizationRisk, OptimizationType } from '../../shared/types';
 
 interface HeaderProps {
@@ -52,6 +53,8 @@ export const Header: React.FC<HeaderProps> = ({
   hasUpdateAvailable = false,
   currentAppVersion = '1.0'
 }) => {
+  const { t } = useI18n();
+
   return (
     <header
       className="bg-[#0D1322] border-b border-[#1E293B] px-5 py-2.5 select-none flex flex-col gap-2.5"
@@ -67,7 +70,7 @@ export const Header: React.FC<HeaderProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Pesquisar entre as 500 otimizações (nome, registo, comando)..."
+            placeholder={t('search.placeholder')}
             className="w-full bg-[#131B2E] border border-[#232F4D] rounded-lg pl-9 pr-4 py-1.5 text-xs text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
           />
         </div>
@@ -99,7 +102,7 @@ export const Header: React.FC<HeaderProps> = ({
               title="Ativa 0.5ms Timer + Purga RAM + Max Clocks GPU + QoS de Jogo simultaneamente"
             >
               <span>🏆</span>
-              <span>{isTournamentMode ? 'Torneio eSports ATIVO' : 'Modo Torneio'}</span>
+              <span>{isTournamentMode ? t('header.tourney_active') : t('header.tourney_mode')}</span>
             </button>
           )}
 
@@ -113,7 +116,7 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           >
             <ShieldAlert className={`w-3.5 h-3.5 ${isDryRun ? 'text-amber-400' : 'text-gray-500'}`} />
-            <span>Simulação</span>
+            <span>{t('header.simulation')}</span>
             <div
               className={`w-7 h-4 rounded-full transition-colors relative flex items-center p-0.5 ${
                 isDryRun ? 'bg-amber-500' : 'bg-gray-700'
@@ -134,7 +137,7 @@ export const Header: React.FC<HeaderProps> = ({
             title="Criar Ponto de Restauro do Windows imediatamente"
           >
             <BookmarkPlus className="w-3.5 h-3.5 text-indigo-400" />
-            <span className="hidden sm:inline">Ponto de Restauro</span>
+            <span className="hidden sm:inline">{t('header.restore_point')}</span>
           </button>
 
           {/* Revert All Button */}
@@ -144,7 +147,7 @@ export const Header: React.FC<HeaderProps> = ({
             title="Restaura todas as alterações guardadas no histórico de backups"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>Repor Tudo</span>
+            <span>{t('header.revert_all')}</span>
           </button>
 
           {/* Version / Updates Badge */}
@@ -200,7 +203,7 @@ export const Header: React.FC<HeaderProps> = ({
         className="flex items-center gap-2 overflow-x-auto text-[11px] pb-0.5"
         style={{ WebkitAppRegion: 'no-drag' } as any}
       >
-        <span className="text-gray-400 font-medium mr-1">Filtros:</span>
+        <span className="text-gray-400 font-medium mr-1">{t('header.filters')}</span>
 
         {/* Risk filters */}
         <button
@@ -211,7 +214,7 @@ export const Header: React.FC<HeaderProps> = ({
               : 'bg-[#151E33] text-gray-400 hover:text-white border border-[#232F4D]'
           }`}
         >
-          Todos os Riscos
+          {t('header.all_risks')}
         </button>
 
         <button
@@ -222,7 +225,7 @@ export const Header: React.FC<HeaderProps> = ({
               : 'bg-[#151E33] text-gray-400 hover:text-emerald-300 border border-[#232F4D]'
           }`}
         >
-          [Seguro] Apenas
+          [{t('header.safe')}]
         </button>
 
         <button
@@ -233,7 +236,7 @@ export const Header: React.FC<HeaderProps> = ({
               : 'bg-[#151E33] text-gray-400 hover:text-amber-300 border border-[#232F4D]'
           }`}
         >
-          [M] Moderados
+          [{t('header.moderate')}]
         </button>
 
         <div className="w-[1px] h-4 bg-[#1E293B] mx-1" />
@@ -247,7 +250,7 @@ export const Header: React.FC<HeaderProps> = ({
               : 'bg-[#151E33] text-gray-400 hover:text-white border border-[#232F4D]'
           }`}
         >
-          Todas as Ações
+          {t('header.all_types')}
         </button>
 
         <button
@@ -258,7 +261,7 @@ export const Header: React.FC<HeaderProps> = ({
               : 'bg-[#151E33] text-gray-400 hover:text-indigo-300 border border-[#232F4D]'
           }`}
         >
-          Altera Sistema
+          {t('header.alters')}
         </button>
 
         <button
@@ -269,7 +272,7 @@ export const Header: React.FC<HeaderProps> = ({
               : 'bg-[#151E33] text-gray-400 hover:text-cyan-300 border border-[#232F4D]'
           }`}
         >
-          Informa / Diagnóstico
+          {t('header.informs')}
         </button>
 
         <div className="w-[1px] h-4 bg-[#1E293B] mx-1" />
@@ -284,7 +287,7 @@ export const Header: React.FC<HeaderProps> = ({
           }`}
         >
           <Sparkles className="w-3 h-3 text-amber-400" />
-          <span>Recomendadas</span>
+          <span>{t('header.recommended_only')}</span>
         </button>
       </div>
     </header>

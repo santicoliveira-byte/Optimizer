@@ -25,6 +25,7 @@ import { WindowsMaintenanceView } from './components/WindowsMaintenanceView';
 import { BottleneckCanIRunItView } from './components/BottleneckCanIRunItView';
 import { CpuZHardwareView } from './components/CpuZHardwareView';
 import { AutoUpdaterModal } from './components/AutoUpdaterModal';
+import { SettingsModal } from './components/SettingsModal';
 
 import {
   AuditLogEntry,
@@ -92,6 +93,7 @@ export const App: React.FC = () => {
   const [isShaderModalOpen, setIsShaderModalOpen] = useState(false);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [isUpdaterOpen, setIsUpdaterOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [updateInfo, setUpdateInfo] = useState<any>(null);
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
 
@@ -710,6 +712,7 @@ export const App: React.FC = () => {
         onOpenShaderModal={() => setIsShaderModalOpen(true)}
         onToggleOverlay={() => setIsOverlayOpen(!isOverlayOpen)}
         isOverlayOpen={isOverlayOpen}
+        onOpenSettings={() => setIsSettingsOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -1249,6 +1252,12 @@ export const App: React.FC = () => {
         updateInfo={updateInfo}
         onCheckUpdates={checkUpdates}
         isChecking={isCheckingUpdate}
+      />
+
+      {/* Settings Modal (Theme Color & Language) */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
       />
 
       {/* Floating Notification Toast */}

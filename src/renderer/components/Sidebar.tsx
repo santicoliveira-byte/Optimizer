@@ -7,8 +7,10 @@ import {
   Wrench,
   Shield,
   Sparkles,
-  Gauge
+  Gauge,
+  Settings
 } from 'lucide-react';
+import { useI18n, ACCENT_COLORS } from '../i18n';
 
 export type MainSection =
   | 'dashboard'
@@ -31,6 +33,7 @@ interface SidebarProps {
   onOpenShaderModal?: () => void;
   onToggleOverlay?: () => void;
   isOverlayOpen?: boolean;
+  onOpenSettings?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -39,8 +42,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   sectionStats,
   onOpenShaderModal,
   onToggleOverlay,
-  isOverlayOpen
+  isOverlayOpen,
+  onOpenSettings
 }) => {
+  const { t, accent } = useI18n();
   const sections: {
     id: MainSection;
     name: string;
@@ -50,77 +55,96 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }[] = [
     {
       id: 'dashboard',
-      name: 'Painel Geral',
-      description: 'Visão global e telemetria',
+      name: t('nav.dashboard'),
+      description: t('nav.dashboard.desc'),
       icon: <LayoutDashboard className="w-4 h-4" />,
       color: 'text-indigo-400'
     },
     {
       id: 'gaming',
-      name: 'Gaming & Latência',
-      description: 'Perfis de jogos, input delay e FPS',
+      name: t('nav.gaming'),
+      description: t('nav.gaming.desc'),
       icon: <Gamepad2 className="w-4 h-4" />,
       color: 'text-rose-400'
     },
     {
       id: 'bottleneck',
-      name: 'Gargalo & Game Ready',
-      description: 'Calculador de CPU/GPU e estimativa de FPS',
+      name: t('nav.bottleneck'),
+      description: t('nav.bottleneck.desc'),
       icon: <Gauge className="w-4 h-4" />,
       color: 'text-purple-400'
     },
     {
       id: 'cpuz',
-      name: 'Rig-Z • Hardware Suite',
-      description: 'Inspetor de silício, SPD e Benchmark',
+      name: t('nav.hardware'),
+      description: t('nav.hardware.desc'),
       icon: <Cpu className="w-4 h-4" />,
       color: 'text-amber-400'
     },
     {
       id: 'network',
-      name: 'Rede, Wi-Fi & Ping',
-      description: 'QoS, Wi-Fi 6, DNS e rotas',
+      name: t('nav.network'),
+      description: t('nav.network.desc'),
       icon: <Network className="w-4 h-4" />,
       color: 'text-cyan-400'
     },
     {
       id: 'system',
-      name: 'Hardware & Sistema',
-      description: 'CPU, GPU, RAM, arranque e apps',
+      name: t('nav.system'),
+      description: t('nav.system.desc'),
       icon: <Cpu className="w-4 h-4" />,
       color: 'text-amber-400'
     },
     {
       id: 'maintenance',
-      name: 'Manutenção & Perfis',
-      description: 'Limpeza, privacidade e backups',
+      name: t('nav.maintenance'),
+      description: t('nav.maintenance.desc'),
       icon: <Wrench className="w-4 h-4" />,
       color: 'text-emerald-400'
     }
   ];
 
+  const currentAccentConfig = ACCENT_COLORS.find((c) => c.id === accent) || ACCENT_COLORS[0];
+
   return (
     <aside className="w-64 bg-[#0B0F19] border-r border-[#1E293B] flex flex-col h-screen select-none">
       {/* Brand Header */}
       <div
-        className="p-4 border-b border-[#1E293B] flex items-center gap-3 cursor-move"
+        className="p-4 border-b border-[#1E293B] flex items-center justify-between cursor-move"
         style={{ WebkitAppRegion: 'drag' } as any}
       >
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center shadow-lg shadow-indigo-500/25">
-          <Gamepad2 className="w-5 h-5 text-white" />
+        <div className="flex items-center gap-3">
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg transition-colors"
+            style={{ backgroundColor: currentAccentConfig.hex }}
+          >
+            <Gamepad2 className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="font-extrabold text-base tracking-tight text-white flex items-center gap-1.5">
+              Optimizer <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-500/30">PRO</span>
+            </h1>
+            <p className="text-[10px] text-gray-400 font-medium">{t('brand.subtitle')}</p>
+          </div>
         </div>
-        <div>
-          <h1 className="font-extrabold text-base tracking-tight text-white flex items-center gap-1.5">
-            Optimizer <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-500/30">PRO</span>
-          </h1>
-          <p className="text-[10px] text-gray-400 font-medium">Windows Performance Suite</p>
-        </div>
+
+        {/* Settings button */}
+        {onOpenSettings && (
+          <button
+            onClick={onOpenSettings}
+            style={{ WebkitAppRegion: 'no-drag' } as any}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#151E33] border border-transparent hover:border-[#232F4D] transition-colors"
+            title={t('settings.title')}
+          >
+            <Settings className="w-4 h-4 hover:rotate-45 transition-transform" />
+          </button>
+        )}
       </div>
 
       {/* Main Navigation - 5 Consolidated Hubs */}
       <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
         <div className="px-3 pt-2 pb-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-          Módulos Principais
+          {t('nav.main_modules')}
         </div>
 
         {sections.map((sec) => {
@@ -138,14 +162,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }`}
             >
               {isActive && (
-                <div className="absolute left-0 top-2 bottom-2 w-1 bg-indigo-500 rounded-r" />
+                <div
+                  className="absolute left-0 top-2 bottom-2 w-1 rounded-r shadow-sm"
+                  style={{ backgroundColor: currentAccentConfig.hex }}
+                />
               )}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div
                     className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
-                      isActive ? 'bg-indigo-600 text-white shadow-md' : 'bg-[#141C30] text-gray-400 group-hover:text-white'
+                      isActive ? 'text-white shadow-md' : 'bg-[#141C30] text-gray-400 group-hover:text-white'
                     }`}
+                    style={isActive ? { backgroundColor: currentAccentConfig.hex } : undefined}
                   >
                     {sec.icon}
                   </div>
