@@ -27,6 +27,9 @@ interface HeaderProps {
   isTournamentMode?: boolean;
   onToggleTournamentMode?: () => void;
   timerResolutionMs?: number;
+  onOpenUpdates?: () => void;
+  hasUpdateAvailable?: boolean;
+  currentAppVersion?: string;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -44,7 +47,10 @@ export const Header: React.FC<HeaderProps> = ({
   onRevertAll,
   isTournamentMode = false,
   onToggleTournamentMode,
-  timerResolutionMs = 1.0
+  timerResolutionMs = 1.0,
+  onOpenUpdates,
+  hasUpdateAvailable = false,
+  currentAppVersion = '1.0'
 }) => {
   return (
     <header
@@ -140,6 +146,27 @@ export const Header: React.FC<HeaderProps> = ({
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Repor Tudo</span>
           </button>
+
+          {/* Version / Updates Badge */}
+          {onOpenUpdates && (
+            <button
+              onClick={onOpenUpdates}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
+                hasUpdateAvailable
+                  ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border-emerald-500/60 text-emerald-300 shadow-md shadow-emerald-500/10 animate-bounce'
+                  : 'bg-[#151E33] hover:bg-[#1C2844] border-[#232F4D] text-gray-300 hover:text-white'
+              }`}
+              title="Verificar atualizações automáticas do Optimizer no GitHub"
+            >
+              <span className={`w-2 h-2 rounded-full ${hasUpdateAvailable ? 'bg-emerald-400 animate-ping' : 'bg-indigo-400'}`} />
+              <span className="font-mono text-[11px]">v{currentAppVersion}</span>
+              {hasUpdateAvailable ? (
+                <span className="text-[10px] bg-emerald-500/30 text-emerald-200 px-1 py-0.5 rounded font-bold">
+                  Novo!
+                </span>
+              ) : null}
+            </button>
+          )}
 
           {/* Window Control Buttons (Minimize, Maximize, Close) */}
           <div className="flex items-center ml-2 border-l border-[#1E293B] pl-2 gap-0.5">

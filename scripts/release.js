@@ -147,7 +147,10 @@ function main() {
       const notesFile = path.join(rootDir, 'release', 'release-notes.tmp');
       fs.writeFileSync(notesFile, releaseNotes, 'utf8');
 
-      const createReleaseCmd = `${ghCmd} release create ${tag} "${exePath}#Optimizer-Portable.exe" --title "Optimizer v${newTag}" --notes-file "${notesFile}"`;
+      const portableAliasPath = path.join(rootDir, 'release', 'Optimizer-Portable.exe');
+      fs.copyFileSync(exePath, portableAliasPath);
+
+      const createReleaseCmd = `${ghCmd} release create ${tag} "${portableAliasPath}" --title "Optimizer v${newTag}" --notes-file "${notesFile}"`;
       run(createReleaseCmd);
       console.log(`🎉 Release ${tag} publicada com sucesso no GitHub com o ficheiro Optimizer-Portable.exe!`);
       

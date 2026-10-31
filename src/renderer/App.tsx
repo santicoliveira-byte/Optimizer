@@ -24,6 +24,7 @@ import { HoneSuiteView } from './components/HoneSuiteView';
 import { WindowsMaintenanceView } from './components/WindowsMaintenanceView';
 import { BottleneckCanIRunItView } from './components/BottleneckCanIRunItView';
 import { CpuZHardwareView } from './components/CpuZHardwareView';
+import { AutoUpdaterModal } from './components/AutoUpdaterModal';
 
 import {
   AuditLogEntry,
@@ -90,6 +91,9 @@ export const App: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(true);
   const [isShaderModalOpen, setIsShaderModalOpen] = useState(false);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+  const [isUpdaterOpen, setIsUpdaterOpen] = useState(false);
+  const [updateInfo, setUpdateInfo] = useState<any>(null);
+  const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
 
   // Stealth Mode & Game Detection
   const [detectedGame, setDetectedGame] = useState<string | null>(null);
@@ -132,6 +136,24 @@ export const App: React.FC = () => {
         unsubEnd();
       };
     }
+  }, []);
+
+  const checkUpdates = async () => {
+    setIsCheckingUpdate(true);
+    try {
+      if (window.optimizerApi?.updaterCheck) {
+        const info = await window.optimizerApi.updaterCheck();
+        setUpdateInfo(info);
+      }
+    } catch {
+      // Ignora erro silenciosamente
+    } finally {
+      setIsCheckingUpdate(false);
+    }
+  };
+
+  useEffect(() => {
+    checkUpdates();
   }, []);
 
   useEffect(() => {
@@ -709,6 +731,9 @@ export const App: React.FC = () => {
           isTournamentMode={isTournamentMode}
           onToggleTournamentMode={handleToggleTournament}
           timerResolutionMs={timerResolutionMs}
+          onOpenUpdates={() => setIsUpdaterOpen(true)}
+          hasUpdateAvailable={!!updateInfo?.hasUpdate}
+          currentAppVersion={updateInfo?.currentVersion || '1.0'}
         />
 
         {/* Stealth Mode Indicator Banner when game is running */}
@@ -1216,6 +1241,15 @@ export const App: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Auto Updater Modal */}
+      <AutoUpdaterModal
+        isOpen={isUpdaterOpen}
+        onClose={() => setIsUpdaterOpen(false)}
+        updateInfo={updateInfo}
+        onCheckUpdates={checkUpdates}
+        isChecking={isCheckingUpdate}
+      />
 
       {/* Floating Notification Toast */}
       {notification && (

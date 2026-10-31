@@ -103,6 +103,8 @@ export interface OptimizerApi {
   cpuzRunBench: (mode: 'single' | 'multi' | 'stress') => Promise<any>;
   cpuzStopStress: () => Promise<{ success: boolean }>;
   cpuzGetLiveMetrics: () => Promise<any>;
+  updaterCheck: () => Promise<any>;
+  updaterDownloadInstall: (downloadUrl: string) => Promise<{ success: boolean; path?: string; error?: string }>;
 }
 
 const api: OptimizerApi = {
@@ -238,7 +240,9 @@ const api: OptimizerApi = {
   cpuzGetData: () => ipcRenderer.invoke('cpuz:get-data'),
   cpuzRunBench: (mode: 'single' | 'multi' | 'stress') => ipcRenderer.invoke('cpuz:run-bench', mode),
   cpuzStopStress: () => ipcRenderer.invoke('cpuz:stop-stress'),
-  cpuzGetLiveMetrics: () => ipcRenderer.invoke('cpuz:get-live-metrics')
+  cpuzGetLiveMetrics: () => ipcRenderer.invoke('cpuz:get-live-metrics'),
+  updaterCheck: () => ipcRenderer.invoke('updater:check'),
+  updaterDownloadInstall: (downloadUrl: string) => ipcRenderer.invoke('updater:download-install', downloadUrl)
 };
 
 contextBridge.exposeInMainWorld('optimizerApi', api);

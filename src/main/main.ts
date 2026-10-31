@@ -26,6 +26,7 @@ import { WindowsMaintenanceService } from './engine/windows-maintenance-service'
 import { BottleneckGameService } from './engine/bottleneck-game-service';
 import { HowManyFpsService } from './engine/howmanyfps-service';
 import { CpuZInspectorService } from './engine/cpuz-inspector-service';
+import { AutoUpdaterService } from './engine/auto-updater-service';
 
 // Hardware & low-end PC performance switches
 app.commandLine.appendSwitch('disable-renderer-backgrounding');
@@ -635,6 +636,14 @@ function registerIpc() {
 
   ipcMain.handle('cpuz:get-live-metrics', async () => {
     return CpuZInspectorService.getInstance().getLiveMetrics();
+  });
+
+  ipcMain.handle('updater:check', async () => {
+    return AutoUpdaterService.getInstance().checkForUpdates();
+  });
+
+  ipcMain.handle('updater:download-install', async (_, downloadUrl: string) => {
+    return AutoUpdaterService.getInstance().downloadAndApplyUpdate(downloadUrl);
   });
 }
 
