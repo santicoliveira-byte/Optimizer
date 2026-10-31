@@ -143,7 +143,7 @@ function main() {
       const ghPath = 'C:\\Program Files\\GitHub CLI\\gh.exe';
       const ghCmd = fs.existsSync(ghPath) ? `"${ghPath}"` : 'gh';
       
-      const releaseNotes = `### Novidades da versão ${newTag}\n\n- Novo Ícone de Definições no cabeçalho da barra lateral\n- Seletor de Cores com 7 Paletas Dinâmicas (Índigo, Cyberpunk, Cyan, Carmesim, Âmbar, Roxo, Rosa Neon)\n- Suporte Multi-Idioma completo: Português (PT), English (EN) e Español (ES)\n- Suite de Hardware Rig-Z completa (CPU, Motherboard, DDR5, SPD e GPU)\n- Calculador de Gargalo & Game Ready (FPS Matrix Engine)\n- Executável portátil 100% autónomo (sem instalação necessária)`;
+      const releaseNotes = `### Novidades da versão ${newTag}\n\n- Interface Totalmente Simplificada e Sem Excesso de Poluição Visual\n- Cabeçalho Compacto e Elegante de 1 Linha (eliminada a barra de filtros redundante)\n- Navegação Consolidada em 5 Hubs Essenciais (Painel Geral, Gaming, Hardware & Rig-Z, Rede, Limpeza & Sistema)\n- Sub-abas simplificadas e diretas ao ponto (de 23 para 2-3 abas essenciais por módulo)\n- Redução de ~110 kB no peso da aplicação com melhoria de performance e fluidez`;
       const notesFile = path.join(rootDir, 'release', 'release-notes.tmp');
       fs.writeFileSync(notesFile, releaseNotes, 'utf8');
 

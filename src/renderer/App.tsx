@@ -68,10 +68,10 @@ const COMMON_GAME_PROCESSES = [
 
 export const App: React.FC = () => {
   const [currentSection, setCurrentSection] = useState<MainSection>('dashboard');
-  const [gamingTab, setGamingTab] = useState<'profiles' | 'hone_suite' | 'lasso' | 'input' | 'pipeline' | 'game_catalog'>('profiles');
-  const [networkTab, setNetworkTab] = useState<'router' | 'priority' | 'dns' | 'net_catalog' | 'wifi_catalog'>('router');
-  const [systemTab, setSystemTab] = useState<'toolkit' | 'gpu_driver' | 'cpu_gpu' | 'memory' | 'startup' | 'apps'>('toolkit');
-  const [maintTab, setMaintTab] = useState<'windows_maint' | 'cleanup' | 'debloater' | 'privacy' | 'profiles' | 'history'>('windows_maint');
+  const [gamingTab, setGamingTab] = useState<'profiles' | 'pipeline'>('profiles');
+  const [hardwareTab, setHardwareTab] = useState<'inspector' | 'bottleneck'>('inspector');
+  const [networkTab, setNetworkTab] = useState<'router' | 'dns'>('router');
+  const [maintTab, setMaintTab] = useState<'windows_maint' | 'debloater' | 'history'>('windows_maint');
 
   const [states, setStates] = useState<OptimizationState[]>([]);
   const [metrics, setMetrics] = useState<SystemMetrics | null>(null);
@@ -328,6 +328,19 @@ export const App: React.FC = () => {
       return true;
     });
   }, [states, metrics]);
+
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const q = searchQuery.toLowerCase().trim();
+    return hardwareFilteredStates.filter((s) => {
+      return (
+        s.item.name.toLowerCase().includes(q) ||
+        s.item.description.toLowerCase().includes(q) ||
+        (s.item.exactChange || '').toLowerCase().includes(q) ||
+        s.item.id.toLowerCase().includes(q)
+      );
+    });
+  }, [hardwareFilteredStates, searchQuery]);
 
   // Helper function to get filtered states by category
   const getStatesByCategory = (category: CategoryId) => {
@@ -736,7 +749,7 @@ export const App: React.FC = () => {
           timerResolutionMs={timerResolutionMs}
           onOpenUpdates={() => setIsUpdaterOpen(true)}
           hasUpdateAvailable={!!updateInfo?.hasUpdate}
-          currentAppVersion={updateInfo?.currentVersion || '1.0'}
+          currentAppVersion={updateInfo?.currentVersion || '1.3'}
         />
 
         {/* Stealth Mode Indicator Banner when game is running */}
@@ -809,373 +822,227 @@ export const App: React.FC = () => {
 
         {/* Dynamic Main View */}
         <main className="flex-1 overflow-y-auto p-6">
-          {/* Section 1: Painel Geral (Dashboard) */}
-          {currentSection === 'dashboard' && (
-            <DashboardView
-              healthScore={healthScore}
-              appliedCount={appliedCount}
-              totalAlterCount={totalAlterCount}
-              metrics={metrics}
-              states={hardwareFilteredStates}
-              onRevertItem={handleRevertClick}
-              onApplyRecommended={handleApplyRecommended}
-              onApplyGamingProfile={handleApplyGamingMode}
-              onExportReport={handleExportReport}
-              onRescanSystem={handleRescanSystem}
-              onSelectCategory={(cat) => {
-                if (cat === 'input_latency' || cat === 'gaming') {
-                  setCurrentSection('gaming');
-                  setGamingTab(cat === 'input_latency' ? 'input' : 'game_catalog');
-                } else if (cat === 'network_internet' || cat === 'wifi') {
-                  setCurrentSection('network');
-                  setNetworkTab(cat === 'network_internet' ? 'net_catalog' : 'wifi_catalog');
-                } else if (cat === 'cpu_gpu_power' || cat === 'memory_storage' || cat === 'startup_services') {
-                  setCurrentSection('system');
-                  setSystemTab(cat === 'cpu_gpu_power' ? 'cpu_gpu' : cat === 'memory_storage' ? 'memory' : 'startup');
-                } else {
-                  setCurrentSection('maintenance');
-                  setMaintTab(cat === 'maintenance_diag' ? 'windows_maint' : cat === 'safe_cleanup' ? 'cleanup' : cat === 'privacy_telemetry' ? 'privacy' : 'history');
-                }
-              }}
-              isOperating={isOperating}
-              isScanning={isScanning || isInitialScanning}
-              isApplyingGaming={isApplyingGaming}
-              gamingProgress={gamingProgress}
-              onShowNotification={showNotification}
-            />
-          )}
-
-          {/* Section 2: Gaming & Latência Hub */}
-          {currentSection === 'gaming' && (
-            <div>
-              <TopTabBar
-                accentColor="rose"
-                activeTab={gamingTab}
-                onSelectTab={(t: any) => setGamingTab(t)}
-                tabs={[
-                  { id: 'profiles', label: 'Perfis de Jogos (12 Títulos)', badge: 'Ultra Boost' },
-                  { id: 'hone_suite', label: 'Apex eSports & In-Game Configs', badge: 'Pro Suite' },
-                  { id: 'lasso', label: 'Gestor P-Cores & Prioridade', badge: 'Core Shield' },
-                  { id: 'input', label: 'Input Delay & Latência', badge: `${sectionStats.gaming.applied}/${sectionStats.gaming.total}` },
-                  { id: 'pipeline', label: 'Pipeline de Latência (0.5ms)', badge: '5 Fases' },
-                  { id: 'game_catalog', label: 'Otimizações Gaming', badge: `${getStatesByCategory('gaming').filter(s => s.status === 'applied').length}/${getStatesByCategory('gaming').length}` }
-                ]}
-              />
-
-              {gamingTab === 'profiles' && (
-                <GameModeView
-                  states={hardwareFilteredStates}
-                  onApplyProfile={async (ids) => {
-                    setIsOperating(true);
-                    try {
-                      let count = 0;
-                      for (const id of ids) {
-                        const res = await window.optimizerApi.apply(id, isDryRun);
-                        if (res.success) count++;
-                      }
-                      showNotification(
-                        isDryRun
-                          ? `[Simulação] Perfil de Jogo: ${count} otimizações simuladas.`
-                          : `Perfil de Jogo aplicado: ${count} otimizações ativadas com sucesso!`,
-                        'success'
-                      );
-                      await loadAllData();
-                    } catch (e: any) {
-                      showNotification(`Erro: ${e.message}`, 'error');
-                    } finally {
-                      setIsOperating(false);
-                    }
-                  }}
-                  isOperating={isOperating}
-                />
-              )}
-
-              {gamingTab === 'hone_suite' && (
-                <HoneSuiteView onShowNotification={showNotification} />
-              )}
-
-              {gamingTab === 'lasso' && (
-                <ProcessLassoView onShowNotification={showNotification} />
-              )}
-
-              {gamingTab === 'input' && (
-                <CategoryView
-                  title="Input Delay & Latência do Sistema"
-                  description="Otimizações cirúrgicas de tempo de resposta do rato, teclado e taxa de amostragem de ecrã para latência mínima e precisão de mira."
-                  states={getStatesByCategory('input_latency')}
-                  onApply={handleApplyClick}
-                  onRevert={handleRevertClick}
-                  isOperating={isOperating}
-                />
-              )}
-
-              {gamingTab === 'pipeline' && (
-                <LatencyPipelineView
-                  states={hardwareFilteredStates}
-                  onApply={handleApplyClick}
-                  onRevert={handleRevertClick}
-                  onApplyAllLatency={async () => {
-                    const latencyIds = [
-                      'input_power_plan',
-                      'input_game_mode',
-                      'input_mouse_accel',
-                      'input_pointer_speed',
-                      'input_sticky_keys',
-                      'input_filter_keys',
-                      'input_toggle_keys',
-                      'input_game_dvr',
-                      'input_windowed_optimizations',
-                      'input_usb_selective_suspend',
-                      'net_tcp_autotuning',
-                      'net_flush_dns',
-                      'net_rss'
-                    ];
-                    setIsOperating(true);
-                    try {
-                      let count = 0;
-                      for (const id of latencyIds) {
-                        const res = await window.optimizerApi.apply(id, isDryRun);
-                        if (res.success) count++;
-                      }
-                      showNotification(`Pipeline de Latência: ${count} nós ativados na cadeia!`, 'success');
-                      await loadAllData();
-                    } catch (e: any) {
-                      showNotification(`Erro: ${e.message}`, 'error');
-                    } finally {
-                      setIsOperating(false);
-                    }
-                  }}
-                  isOperating={isOperating}
-                />
-              )}
-
-              {gamingTab === 'game_catalog' && (
-                <CategoryView
-                  title="Otimizações do Sistema para Jogos"
-                  description="Ajustes de Windows Game Mode, pausa de atualizações durante partidas e configurações de V-Sync e limitador de FPS."
-                  states={getStatesByCategory('gaming')}
-                  onApply={handleApplyClick}
-                  onRevert={handleRevertClick}
-                  isOperating={isOperating}
-                />
-              )}
-            </div>
-          )}
-
-          {/* Section 3: Rede, Wi-Fi & Ping Hub */}
-          {currentSection === 'network' && (
-            <div>
-              <TopTabBar
-                accentColor="cyan"
-                activeTab={networkTab}
-                onSelectTab={(t: any) => setNetworkTab(t)}
-                tabs={[
-                  { id: 'router', label: 'ZeroLag QoS Router', badge: 'DSCP 46' },
-                  { id: 'priority', label: 'Prioridade de Conexão', badge: 'IPv4 Metric' },
-                  { id: 'dns', label: 'DNS Benchmark', badge: 'Ping 53' },
-                  { id: 'net_catalog', label: 'Tweaks de Rede', badge: `${getStatesByCategory('network_internet').filter(s => s.status === 'applied').length}/${getStatesByCategory('network_internet').length}` },
-                  { id: 'wifi_catalog', label: 'Tweaks de Wi-Fi', badge: `${getStatesByCategory('wifi').filter(s => s.status === 'applied').length}/${getStatesByCategory('wifi').length}` }
-                ]}
-              />
-
-              {networkTab === 'router' && (
-                <GameRouterView onShowNotification={showNotification} />
-              )}
-
-              {networkTab === 'priority' && (
-                <div className="space-y-4">
-                  <div className="bg-[#10172A] border border-[#1E293B] rounded-2xl p-5">
-                    <h2 className="text-base font-bold text-white tracking-tight">Gestor de Prioridade de Adaptador</h2>
-                    <p className="text-xs text-gray-400 mt-0.5">Define se o Windows deve direcionar tráfego preferencialmente pela porta Ethernet ou pela antena Wi-Fi.</p>
-                  </div>
-                  <NetworkPriorityWidget />
+          {searchQuery.trim().length > 0 ? (
+            /* Search Results View */
+            <div className="space-y-4">
+              <div className="bg-[#10172A] border border-[#1E293B] rounded-2xl p-5 flex items-center justify-between">
+                <div>
+                  <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+                    <span>Resultados da Pesquisa:</span>
+                    <span className="text-indigo-400 font-mono">"{searchQuery}"</span>
+                  </h2>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {searchResults.length} otimizações encontradas no catálogo.
+                  </p>
                 </div>
-              )}
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="px-3 py-1.5 rounded-lg bg-[#151E33] hover:bg-[#1E2B4B] border border-[#232F4D] text-xs text-gray-300 hover:text-white transition-colors"
+                >
+                  Limpar Pesquisa
+                </button>
+              </div>
 
-              {networkTab === 'dns' && <DnsBenchmarkView />}
-
-              {networkTab === 'net_catalog' && (
-                <CategoryView
-                  title="Rede & Otimização TCP/UDP"
-                  description="Tuning de pilha TCP, janelas de recepção, RSS e redução drástica de bufferbloat em jogos online."
-                  states={getStatesByCategory('network_internet')}
-                  onApply={handleApplyClick}
-                  onRevert={handleRevertClick}
-                  isOperating={isOperating}
-                />
-              )}
-
-              {networkTab === 'wifi_catalog' && (
-                <CategoryView
-                  title="Wi-Fi & Estabilidade Sem Fios"
-                  description="Priorização de bandas 5/6GHz, mitigação de scans de rede em segundo plano e eliminação de perdas de pacotes."
-                  states={getStatesByCategory('wifi')}
-                  onApply={handleApplyClick}
-                  onRevert={handleRevertClick}
-                  isOperating={isOperating}
-                />
-              )}
-            </div>
-          )}
-
-          {/* Section 4: Hardware & Sistema Hub */}
-          {currentSection === 'system' && (
-            <div>
-              <TopTabBar
-                accentColor="amber"
-                activeTab={systemTab}
-                onSelectTab={(t: any) => setSystemTab(t)}
-                tabs={[
-                  { id: 'toolkit', label: 'Power Toolkit', badge: 'RAM • MPO • Hotkeys' },
-                  { id: 'gpu_driver', label: 'Tuning GPU (NVIDIA/AMD)', badge: 'Ultra Latency' },
-                  { id: 'cpu_gpu', label: 'CPU, GPU & Energia', badge: `${getStatesByCategory('cpu_gpu_power').filter(s => s.status === 'applied').length}/${getStatesByCategory('cpu_gpu_power').length}` },
-                  { id: 'memory', label: 'Memória & Disco', badge: `${getStatesByCategory('memory_storage').filter(s => s.status === 'applied').length}/${getStatesByCategory('memory_storage').length}` },
-                  { id: 'startup', label: 'Gestor de Arranque', badge: 'Boot Pro' },
-                  { id: 'apps', label: 'App Tuner', badge: '10 Apps' }
-                ]}
+              <CategoryView
+                title="Otimizações Encontradas"
+                description={`Apresentando todos os ajustes correspondentes a "${searchQuery}".`}
+                states={searchResults}
+                onApply={handleApplyClick}
+                onRevert={handleRevertClick}
+                isOperating={isOperating}
               />
-
-              {systemTab === 'toolkit' && (
-                <PowerToolkitView onShowNotification={showNotification} />
-              )}
-
-              {systemTab === 'gpu_driver' && (
-                <GpuTuningView onShowNotification={showNotification} />
-              )}
-
-              {systemTab === 'cpu_gpu' && (
-                <CategoryView
-                  title="CPU, Placa Gráfica & Energia"
-                  description="Planos de energia de desempenho máximo, destravamento de frequências, unparking de núcleos e pipeline PCIe."
-                  states={getStatesByCategory('cpu_gpu_power')}
-                  onApply={handleApplyClick}
-                  onRevert={handleRevertClick}
+            </div>
+          ) : (
+            <>
+              {/* Section 1: Painel Geral (Dashboard) */}
+              {currentSection === 'dashboard' && (
+                <DashboardView
+                  healthScore={healthScore}
+                  appliedCount={appliedCount}
+                  totalAlterCount={totalAlterCount}
+                  metrics={metrics}
+                  states={hardwareFilteredStates}
+                  onRevertItem={handleRevertClick}
+                  onApplyRecommended={handleApplyRecommended}
+                  onApplyGamingProfile={handleApplyGamingMode}
+                  onExportReport={handleExportReport}
+                  onRescanSystem={handleRescanSystem}
+                  onSelectCategory={(cat) => {
+                    if (cat === 'input_latency' || cat === 'gaming') {
+                      setCurrentSection('gaming');
+                      setGamingTab(cat === 'input_latency' ? 'pipeline' : 'profiles');
+                    } else if (cat === 'network_internet' || cat === 'wifi') {
+                      setCurrentSection('network');
+                      setNetworkTab('router');
+                    } else {
+                      setCurrentSection('maintenance');
+                      setMaintTab('windows_maint');
+                    }
+                  }}
                   isOperating={isOperating}
+                  isScanning={isScanning || isInitialScanning}
+                  isApplyingGaming={isApplyingGaming}
+                  gamingProgress={gamingProgress}
+                  onShowNotification={showNotification}
                 />
               )}
 
-              {systemTab === 'memory' && (
-                <CategoryView
-                  title="Memória RAM & Armazenamento"
-                  description="Instrução TRIM para SSDs, gestão de memória virtual (paging), cache do sistema e otimização de ficheiros."
-                  states={getStatesByCategory('memory_storage')}
-                  onApply={handleApplyClick}
-                  onRevert={handleRevertClick}
-                  isOperating={isOperating}
-                />
-              )}
+              {/* Section 2: Gaming & Latência Hub */}
+              {currentSection === 'gaming' && (
+                <div>
+                  <TopTabBar
+                    accentColor="rose"
+                    activeTab={gamingTab}
+                    onSelectTab={(t: any) => setGamingTab(t)}
+                    tabs={[
+                      { id: 'profiles', label: 'Perfis de Jogos & Modo Ultra', badge: '12 Títulos' },
+                      { id: 'pipeline', label: 'Input Delay & Latência', badge: '0.5ms' }
+                    ]}
+                  />
 
-              {systemTab === 'startup' && (
-                <div className="space-y-6">
-                  <StartupManagerView />
-                  <div className="border-t border-[#1E293B] pt-6">
-                    <h3 className="text-sm font-bold text-white mb-3">Tweaks de Serviços do Windows no Arranque</h3>
-                    <CategoryView
-                      title="Serviços & Inicialização Limpa"
-                      description="Desativação de serviços redundantes do Windows que consomem CPU em segundo plano."
-                      states={getStatesByCategory('startup_services')}
-                      onApply={handleApplyClick}
-                      onRevert={handleRevertClick}
+                  {gamingTab === 'profiles' ? (
+                    <GameModeView
+                      states={hardwareFilteredStates}
+                      onApplyProfile={async (ids) => {
+                        setIsOperating(true);
+                        try {
+                          let count = 0;
+                          for (const id of ids) {
+                            const res = await window.optimizerApi.apply(id, isDryRun);
+                            if (res.success) count++;
+                          }
+                          showNotification(
+                            isDryRun
+                              ? `[Simulação] Perfil de Jogo: ${count} otimizações simuladas.`
+                              : `Perfil de Jogo aplicado: ${count} otimizações ativadas com sucesso!`,
+                            'success'
+                          );
+                          await loadAllData();
+                        } catch (e: any) {
+                          showNotification(`Erro: ${e.message}`, 'error');
+                        } finally {
+                          setIsOperating(false);
+                        }
+                      }}
                       isOperating={isOperating}
                     />
-                  </div>
+                  ) : (
+                    <LatencyPipelineView
+                      states={hardwareFilteredStates}
+                      onApply={handleApplyClick}
+                      onRevert={handleRevertClick}
+                      onApplyAllLatency={async () => {
+                        const latencyIds = [
+                          'input_power_plan',
+                          'input_game_mode',
+                          'input_mouse_accel',
+                          'input_pointer_speed',
+                          'input_sticky_keys',
+                          'input_filter_keys',
+                          'input_toggle_keys',
+                          'input_game_dvr',
+                          'input_windowed_optimizations',
+                          'input_usb_selective_suspend',
+                          'net_tcp_autotuning',
+                          'net_flush_dns',
+                          'net_rss'
+                        ];
+                        setIsOperating(true);
+                        try {
+                          let count = 0;
+                          for (const id of latencyIds) {
+                            const res = await window.optimizerApi.apply(id, isDryRun);
+                            if (res.success) count++;
+                          }
+                          showNotification(`Pipeline de Latência: ${count} nós ativados na cadeia!`, 'success');
+                          await loadAllData();
+                        } catch (e: any) {
+                          showNotification(`Erro: ${e.message}`, 'error');
+                        } finally {
+                          setIsOperating(false);
+                        }
+                      }}
+                      isOperating={isOperating}
+                    />
+                  )}
                 </div>
               )}
 
-              {systemTab === 'apps' && (
-                <AppTunerView
-                  onApplyTune={async (appName, actionDesc) => {
-                    showNotification(`A otimizar ${appName}: ${actionDesc}...`, 'info');
-                    try {
-                      await window.optimizerApi.apply('clean_directx_shader_cache', isDryRun);
-                      await window.optimizerApi.apply('srv_disable_restart_apps', isDryRun);
-                      showNotification(`${appName} otimizado com sucesso!`, 'success');
-                    } catch (e: any) {
-                      showNotification(`Erro ao otimizar ${appName}: ${e.message}`, 'error');
-                    }
-                  }}
-                  isOperating={isOperating}
-                />
-              )}
-            </div>
-          )}
+              {/* Section 3: Hardware & Rig-Z (Unified Hardware Hub) */}
+              {(currentSection === 'cpuz' || currentSection === 'bottleneck') && (
+                <div>
+                  <TopTabBar
+                    accentColor="amber"
+                    activeTab={hardwareTab}
+                    onSelectTab={(t: any) => setHardwareTab(t)}
+                    tabs={[
+                      { id: 'inspector', label: 'Inspetor de Hardware Rig-Z', badge: 'CPU • GPU • RAM' },
+                      { id: 'bottleneck', label: 'Calculador de Gargalo & FPS', badge: 'Game Ready' }
+                    ]}
+                  />
 
-          {/* Section 5: Manutenção & Perfis Hub */}
-          {currentSection === 'maintenance' && (
-            <div>
-              <TopTabBar
-                accentColor="emerald"
-                activeTab={maintTab}
-                onSelectTab={(t: any) => setMaintTab(t)}
-                tabs={[
-                  { id: 'windows_maint', label: 'Manutenção do Windows', badge: '1-Clique • SFC • TRIM' },
-                  { id: 'cleanup', label: 'Limpeza Segura', badge: `${getStatesByCategory('safe_cleanup').filter(s => s.status === 'applied').length}/${getStatesByCategory('safe_cleanup').length}` },
-                  { id: 'debloater', label: 'Windows Debloater (UWP)', badge: 'Apps • OneDrive' },
-                  { id: 'privacy', label: 'Privacidade & Telemetria', badge: `${getStatesByCategory('privacy_telemetry').filter(s => s.status === 'applied').length}/${getStatesByCategory('privacy_telemetry').length}` },
-                  { id: 'profiles', label: 'Perfis Globais', badge: `${profiles.length}` },
-                  { id: 'history', label: 'Histórico & Backups', badge: `${logs.length}` }
-                ]}
-              />
-
-              {maintTab === 'windows_maint' && (
-                <WindowsMaintenanceView onShowNotification={showNotification} isAdmin={isAdmin} />
+                  {hardwareTab === 'inspector' ? (
+                    <CpuZHardwareView />
+                  ) : (
+                    <BottleneckCanIRunItView />
+                  )}
+                </div>
               )}
 
-              {maintTab === 'cleanup' && (
-                <CategoryView
-                  title="Limpeza Segura do Sistema"
-                  description="Remoção de caches obsoletas, ficheiros temporários e resíduos do Windows sem nunca tocar nos teus ficheiros pessoais."
-                  states={getStatesByCategory('safe_cleanup')}
-                  onApply={handleApplyClick}
-                  onRevert={handleRevertClick}
-                  isOperating={isOperating}
-                />
+              {/* Section 4: Rede, Wi-Fi & Ping Hub */}
+              {currentSection === 'network' && (
+                <div>
+                  <TopTabBar
+                    accentColor="cyan"
+                    activeTab={networkTab}
+                    onSelectTab={(t: any) => setNetworkTab(t)}
+                    tabs={[
+                      { id: 'router', label: 'ZeroLag QoS & Otimização de Ping', badge: 'DSCP 46' },
+                      { id: 'dns', label: 'DNS Benchmark', badge: 'Ping 53' }
+                    ]}
+                  />
+
+                  {networkTab === 'router' ? (
+                    <GameRouterView onShowNotification={showNotification} />
+                  ) : (
+                    <DnsBenchmarkView />
+                  )}
+                </div>
               )}
 
-              {maintTab === 'debloater' && (
-                <UwpDebloaterView onShowNotification={showNotification} />
+              {/* Section 5: Sistema & Manutenção Hub */}
+              {(currentSection === 'maintenance' || currentSection === 'system') && (
+                <div>
+                  <TopTabBar
+                    accentColor="emerald"
+                    activeTab={maintTab}
+                    onSelectTab={(t: any) => setMaintTab(t)}
+                    tabs={[
+                      { id: 'windows_maint', label: 'Manutenção do Windows', badge: '1-Clique • SFC • TRIM' },
+                      { id: 'debloater', label: 'Windows Debloater', badge: 'Apps • Telemetria' },
+                      { id: 'history', label: 'Histórico & Restauro', badge: `${logs.length}` }
+                    ]}
+                  />
+
+                  {maintTab === 'windows_maint' && (
+                    <WindowsMaintenanceView onShowNotification={showNotification} isAdmin={isAdmin} />
+                  )}
+
+                  {maintTab === 'debloater' && (
+                    <UwpDebloaterView onShowNotification={showNotification} />
+                  )}
+
+                  {maintTab === 'history' && (
+                    <HistoryBackupView
+                      logs={logs}
+                      onCreateRestorePoint={handleCreateRestorePoint}
+                      onRevertAll={handleRevertAll}
+                      isOperating={isOperating}
+                    />
+                  )}
+                </div>
               )}
-
-              {maintTab === 'privacy' && (
-                <CategoryView
-                  title="Privacidade & Telemetria Oficial"
-                  description="Políticas oficiais da Microsoft para desativar telemetria opcional, publicidade oculta e diagnósticos desnecessários."
-                  states={getStatesByCategory('privacy_telemetry')}
-                  onApply={handleApplyClick}
-                  onRevert={handleRevertClick}
-                  isOperating={isOperating}
-                />
-              )}
-
-              {maintTab === 'profiles' && (
-                <ProfilesView
-                  profiles={profiles}
-                  states={hardwareFilteredStates}
-                  onApplyProfile={handleApplyProfile}
-                  onRevertProfile={handleRevertProfile}
-                  isOperating={isOperating}
-                />
-              )}
-
-              {maintTab === 'history' && (
-                <HistoryBackupView
-                  logs={logs}
-                  onCreateRestorePoint={handleCreateRestorePoint}
-                  onRevertAll={handleRevertAll}
-                  isOperating={isOperating}
-                />
-              )}
-            </div>
-          )}
-
-          {/* Section 6: Gargalo & Game Ready */}
-          {currentSection === 'bottleneck' && (
-            <BottleneckCanIRunItView />
-          )}
-
-          {/* Section 7: Rig-Z • Hardware Suite */}
-          {currentSection === 'cpuz' && (
-            <CpuZHardwareView />
+            </>
           )}
         </main>
       </div>

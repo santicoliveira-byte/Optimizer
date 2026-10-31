@@ -5,9 +5,6 @@ import {
   Network,
   Cpu,
   Wrench,
-  Shield,
-  Sparkles,
-  Gauge,
   Settings
 } from 'lucide-react';
 import { useI18n, ACCENT_COLORS } from '../i18n';
@@ -40,12 +37,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   currentSection,
   onSelectSection,
   sectionStats,
-  onOpenShaderModal,
-  onToggleOverlay,
-  isOverlayOpen,
   onOpenSettings
 }) => {
   const { t, accent } = useI18n();
+
+  // 5 Essential Hubs
   const sections: {
     id: MainSection;
     name: string;
@@ -68,13 +64,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       color: 'text-rose-400'
     },
     {
-      id: 'bottleneck',
-      name: t('nav.bottleneck'),
-      description: t('nav.bottleneck.desc'),
-      icon: <Gauge className="w-4 h-4" />,
-      color: 'text-purple-400'
-    },
-    {
       id: 'cpuz',
       name: t('nav.hardware'),
       description: t('nav.hardware.desc'),
@@ -89,13 +78,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       color: 'text-cyan-400'
     },
     {
-      id: 'system',
-      name: t('nav.system'),
-      description: t('nav.system.desc'),
-      icon: <Cpu className="w-4 h-4" />,
-      color: 'text-amber-400'
-    },
-    {
       id: 'maintenance',
       name: t('nav.maintenance'),
       description: t('nav.maintenance.desc'),
@@ -107,7 +89,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const currentAccentConfig = ACCENT_COLORS.find((c) => c.id === accent) || ACCENT_COLORS[0];
 
   return (
-    <aside className="w-64 bg-[#0B0F19] border-r border-[#1E293B] flex flex-col h-screen select-none">
+    <aside className="w-64 bg-[#0B0F19] border-r border-[#1E293B] flex flex-col h-screen select-none shrink-0">
       {/* Brand Header */}
       <div
         className="p-4 border-b border-[#1E293B] flex items-center justify-between cursor-move"
@@ -141,14 +123,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
         )}
       </div>
 
-      {/* Main Navigation - 5 Consolidated Hubs */}
+      {/* Main Navigation - 5 Sleek Hubs */}
       <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
         <div className="px-3 pt-2 pb-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
           {t('nav.main_modules')}
         </div>
 
         {sections.map((sec) => {
-          const isActive = currentSection === sec.id;
+          // Check active section (supports legacy alias redirects)
+          const isActive =
+            currentSection === sec.id ||
+            (sec.id === 'cpuz' && currentSection === 'bottleneck') ||
+            (sec.id === 'maintenance' && currentSection === 'system');
+
           const stats = sectionStats[sec.id];
 
           return (
@@ -158,28 +145,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
               className={`w-full text-left p-2.5 rounded-xl transition-all duration-200 border relative group ${
                 isActive
                   ? 'bg-gradient-to-r from-indigo-600/20 to-indigo-900/10 border-indigo-500/60 shadow-lg shadow-indigo-500/10 text-white'
-                  : 'bg-[#0E1526]/40 border-transparent hover:border-[#1E293B] hover:bg-[#131C32] text-gray-300'
+                  : 'bg-transparent hover:bg-[#12192B] border-transparent hover:border-[#1E293B] text-gray-400 hover:text-gray-200'
               }`}
             >
-              {isActive && (
-                <div
-                  className="absolute left-0 top-2 bottom-2 w-1 rounded-r shadow-sm"
-                  style={{ backgroundColor: currentAccentConfig.hex }}
-                />
-              )}
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-3">
                   <div
-                    className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
-                      isActive ? 'text-white shadow-md' : 'bg-[#141C30] text-gray-400 group-hover:text-white'
+                    className={`p-1.5 rounded-lg transition-colors ${
+                      isActive
+                        ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30'
+                        : 'bg-[#151E33] text-gray-400 group-hover:text-white'
                     }`}
-                    style={isActive ? { backgroundColor: currentAccentConfig.hex } : undefined}
                   >
                     {sec.icon}
                   </div>
                   <div>
                     <span className="text-xs font-bold block leading-tight">{sec.name}</span>
-                    <span className="text-[10px] text-gray-400 block mt-0.5 leading-none">
+                    <span className="text-[10px] text-gray-400 block leading-tight mt-0.5">
                       {sec.description}
                     </span>
                   </div>
@@ -202,48 +184,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
         })}
       </div>
 
-      {/* Quick Tools & Safety Badge */}
-      <div className="p-3 border-t border-[#1E293B] bg-[#080D1A] space-y-2">
-        {onToggleOverlay && (
-          <button
-            onClick={onToggleOverlay}
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all border group ${
-              isOverlayOpen
-                ? 'bg-amber-500/20 border-amber-500/50 text-amber-200'
-                : 'text-amber-300 hover:bg-amber-900/20 hover:text-amber-100 border-amber-500/20 bg-amber-500/5'
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <Gamepad2 className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
-              <span>Game HUD Overlay</span>
-            </div>
-            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">
-              {isOverlayOpen ? 'Ativo' : '0.5ms'}
-            </span>
-          </button>
-        )}
-
-        {onOpenShaderModal && (
-          <button
-            onClick={onOpenShaderModal}
-            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all text-purple-300 hover:bg-purple-900/30 hover:text-purple-100 border border-purple-500/20 bg-purple-500/5 group"
-          >
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-400 group-hover:rotate-12 transition-transform" />
-              <span>Limpar Shaders GPU</span>
-            </div>
-            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300">
-              DirectX
-            </span>
-          </button>
-        )}
-
-        <div className="flex items-center justify-center gap-2 text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 rounded-xl">
-          <Shield className="w-4 h-4 shrink-0 text-emerald-400" />
-          <span className="font-extrabold text-xs tracking-wider text-emerald-400 uppercase">
-            100% Reversível & Seguro
-          </span>
+      {/* Sleek Safety Status Footer */}
+      <div className="p-3.5 border-t border-[#1E293B] bg-[#080D1A]/70 flex items-center justify-between text-xs">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="font-semibold text-emerald-300 text-[11px] tracking-wide">100% Seguro & Reversível</span>
         </div>
+        <span className="text-[10px] font-mono text-gray-500 bg-[#121A2F] px-1.5 py-0.5 rounded border border-[#1E293B]">v1.3</span>
       </div>
     </aside>
   );

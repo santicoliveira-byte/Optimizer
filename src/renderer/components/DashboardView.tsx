@@ -24,7 +24,6 @@ import {
   Wand2
 } from 'lucide-react';
 import { SystemMetrics, CategoryId, OptimizationState } from '../../shared/types';
-import { NetworkPriorityWidget } from './NetworkPriorityWidget';
 
 export type TelemetryType = 'cpu' | 'ram' | 'gpu' | 'disk' | 'network';
 
@@ -1153,8 +1152,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         )}
       </div>
 
-      {/* Network Traffic Priority Switcher (Ethernet vs Wi-Fi) */}
-      <NetworkPriorityWidget />
 
       {/* Quick Category Access Cards */}
       <div>
