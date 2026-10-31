@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Optimizer - Desempenho, Input Delay & Rede</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-[#0B0F19] text-gray-100 font-sans antialiased overflow-hidden select-none m-0 p-0">
+    <div id="root">
+      <div style="height: 100vh; width: 100vw; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0B0F19; font-family: 'Inter', system-ui, sans-serif; color: #FFFFFF; user-select: none;">
+        <div style="position: relative; margin-bottom: 24px;">
+          <div style="width: 64px; height: 64px; border-radius: 18px; background: linear-gradient(135deg, #6366F1, #4338CA); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.35);">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+          </div>
+          <div style="position: absolute; -webkit-inset: -6px; inset: -6px; border: 2px solid rgba(99, 102, 241, 0.4); border-top-color: #818CF8; border-radius: 24px; animation: spin 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;"></div>
+        </div>
+
+        <h1 style="font-size: 20px; font-weight: 800; letter-spacing: -0.025em; margin: 0 0 6px 0; color: #FFFFFF;">
+          Optimizer
+        </h1>
+        <p style="font-size: 12px; color: #94A3B8; margin: 0 0 20px 0; font-family: monospace;">
+          A carregar 364 otimizações e dados de hardware...
+        </p>
+
+        <div style="width: 220px; height: 4px; background: #1E293B; border-radius: 9999px; overflow: hidden;">
+          <div style="height: 100%; width: 45%; background: linear-gradient(90deg, #6366F1, #818CF8); border-radius: 9999px; animation: pulse-bar 1.5s ease-in-out infinite;"></div>
+        </div>
+      </div>
+      <style>
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes pulse-bar {
+          0% { transform: translateX(-100%); width: 30%; }
+          50% { width: 70%; }
+          100% { transform: translateX(350%); width: 30%; }
+        }
+      </style>
+    </div>
+    <script type="module" src="./main.tsx"></script>
+  </body>
+</html>
