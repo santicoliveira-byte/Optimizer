@@ -143,7 +143,7 @@ function main() {
       const ghPath = 'C:\\Program Files\\GitHub CLI\\gh.exe';
       const ghCmd = fs.existsSync(ghPath) ? `"${ghPath}"` : 'gh';
       
-      const releaseNotes = `### Novidades da versão ${newTag}\n\n- Recuperação Instantânea do Modo Fantasma: Novo botão direto nas Definições para desativar o Modo Fantasma e restaurar imediatamente o rato\n- Novo Separador de Atalhos nas Definições: Permite escolher combinações personalizadas de teclas para ligar/desligar o HUD e o Modo Fantasma\n- Atalho Global de Emergência para Modo Fantasma: Pressiona Ctrl + Shift + F4 para alternar a passagem de cliques em jogo\n- Sincronização em Tempo Real: O HUD atualiza imediatamente quando o atalho de teclado é premido\n- Persistência Total: Todas as teclas de atalho personalizadas são guardadas no sistema`;
+      const releaseNotes = `### Novidades da versão ${newTag}\n\n- Novo Contador de FPS em Tempo Real no HUD Overlay: Medidor dedicado de fotogramas por segundo (FPS) com indicador visual de alta visibilidade\n- Cores Dinâmicas Adaptativas para FPS: Verde Esmeralda (>=120 FPS), Azul Ciano (60-120 FPS) e Âmbar (<60 FPS)\n- Telemetria de Frame Rate Inteligente: Mede o loop de renderização do monitor e calcula a fluidez 3D real com base na carga do jogo e GPU\n- Largura Ajustada do HUD: Redimensionado para 550px para exibir perfeitamente FPS, Ping, CPU, GPU Temp/Carga e RAM`;
       const notesFile = path.join(rootDir, 'release', 'release-notes.tmp');
       fs.writeFileSync(notesFile, releaseNotes, 'utf8');
 

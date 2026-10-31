@@ -117,6 +117,7 @@ export interface OptimizerApi {
   overlaySetPosition: (preset: 'top-right' | 'top-left' | 'top-center' | 'bottom-right' | 'bottom-left') => Promise<{ success: boolean }>;
   overlayClose: () => Promise<{ success: boolean }>;
   onOverlayGhostChanged: (callback: (isClickThrough: boolean) => void) => () => void;
+  fpsGetLive: () => Promise<{ fps: number; min1Fps: number; isGameActive: boolean; gameName?: string; refreshRate: number }>;
 }
 
 const api: OptimizerApi = {
@@ -272,7 +273,8 @@ const api: OptimizerApi = {
     return () => {
       ipcRenderer.removeListener('overlay:ghost-changed', handler);
     };
-  }
+  },
+  fpsGetLive: () => ipcRenderer.invoke('fps:get-live')
 };
 
 contextBridge.exposeInMainWorld('optimizerApi', api);

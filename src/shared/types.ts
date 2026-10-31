@@ -80,6 +80,7 @@ export interface SystemMetrics {
   diskModel?: string;
   networkBytesSec: number;
   currentPingMs?: number;
+  fps?: number;
   networkAdapterName?: string;
   isLaptop: boolean;
   hasBattery: boolean;

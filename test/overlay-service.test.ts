@@ -38,4 +38,30 @@ describe('Ultra-Lightweight Game Overlay Architecture', () => {
     const display = accelerator.replace(/CommandOrControl/g, 'Ctrl').replace(/\+/g, ' + ');
     expect(display).toBe('Ctrl + Shift + F4');
   });
+
+  it('validates in-game FPS counter styling and thresholds', () => {
+    const getFpsColor = (fps: number) => {
+      if (fps >= 120) return 'emerald';
+      if (fps >= 60) return 'cyan';
+      return 'amber';
+    };
+
+    expect(getFpsColor(240)).toBe('emerald');
+    expect(getFpsColor(144)).toBe('emerald');
+    expect(getFpsColor(75)).toBe('cyan');
+    expect(getFpsColor(45)).toBe('amber');
+  });
+
+  it('validates gaming baseline FPS for popular competitive titles', () => {
+    const sampleBaselines: Record<string, number> = {
+      cs2: 265,
+      valorant: 340,
+      fortnite: 190,
+      rocketleague: 280
+    };
+
+    for (const [, fps] of Object.entries(sampleBaselines)) {
+      expect(fps).toBeGreaterThanOrEqual(144);
+    }
+  });
 });

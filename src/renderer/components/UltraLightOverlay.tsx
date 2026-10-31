@@ -6,7 +6,8 @@ import {
   Zap,
   Activity,
   Cpu,
-  Radio
+  Radio,
+  Gauge
 } from 'lucide-react';
 import { SystemMetrics } from '../../shared/types';
 
@@ -14,8 +15,32 @@ export const UltraLightOverlay: React.FC = () => {
   const [metrics, setMetrics] = useState<SystemMetrics | null>(null);
   const [timerMs, setTimerMs] = useState<number>(0.5);
   const [activeGame, setActiveGame] = useState<string | null>(null);
+  const [fps, setFps] = useState<number>(60);
   const [isGhostMode, setIsGhostMode] = useState<boolean>(false);
   const [positionPreset, setPositionPreset] = useState<'top-right' | 'top-left' | 'top-center' | 'bottom-right'>('top-right');
+
+  // Measure genuine display refresh rate / render loop
+  useEffect(() => {
+    let frameCounter = 0;
+    let prevTimestamp = performance.now();
+    let animId: number;
+
+    const frameTick = (timestamp: number) => {
+      frameCounter++;
+      if (timestamp - prevTimestamp >= 1000) {
+        const measured = Math.round((frameCounter * 1000) / (timestamp - prevTimestamp));
+        frameCounter = 0;
+        prevTimestamp = timestamp;
+        if (!activeGame) {
+          setFps(measured);
+        }
+      }
+      animId = requestAnimationFrame(frameTick);
+    };
+
+    animId = requestAnimationFrame(frameTick);
+    return () => cancelAnimationFrame(animId);
+  }, [activeGame]);
 
   // Low-overhead polling: 1500ms interval (near 0% CPU impact)
   useEffect(() => {
@@ -50,6 +75,14 @@ export const UltraLightOverlay: React.FC = () => {
           const b = await window.optimizerApi.boosterGetState();
           if (isMounted && b?.activeGame) {
             setActiveGame(b.activeGame.replace('.exe', ''));
+          } else if (isMounted && !b?.activeGame) {
+            setActiveGame(null);
+          }
+        }
+        if (window.optimizerApi?.fpsGetLive) {
+          const f = await window.optimizerApi.fpsGetLive();
+          if (isMounted && f && f.fps > 0) {
+            setFps(f.fps);
           }
         }
       } catch (err) {
@@ -128,7 +161,23 @@ export const UltraLightOverlay: React.FC = () => {
         </div>
 
         {/* Center: In-Game Ultra-Light Telemetry Ribbon */}
-        <div className="flex items-center gap-2.5 text-xs font-mono font-bold shrink-0">
+        <div className="flex items-center gap-2 text-xs font-mono font-bold shrink-0">
+          {/* FPS Counter (Contador de FPS em Tempo Real) */}
+          <div
+            className="flex items-center gap-1 px-1.5 py-0.5 rounded border font-extrabold text-xs transition-all shadow-sm"
+            style={{
+              backgroundColor: fps >= 120 ? 'rgba(16, 185, 129, 0.18)' : fps >= 60 ? 'rgba(6, 182, 212, 0.18)' : 'rgba(245, 158, 11, 0.18)',
+              borderColor: fps >= 120 ? 'rgba(16, 185, 129, 0.45)' : fps >= 60 ? 'rgba(6, 182, 212, 0.45)' : 'rgba(245, 158, 11, 0.45)',
+              color: fps >= 120 ? '#34d399' : fps >= 60 ? '#22d3ee' : '#fbbf24'
+            }}
+            title={`Taxa de Fotogramas por Segundo (FPS): ${fps} FPS ${activeGame ? `(Jogo: ${activeGame})` : '(Ambiente de Trabalho)'}`}
+          >
+            <Gauge className="w-3 h-3" />
+            <span>{fps}<span className="text-[9px] font-bold opacity-85 ml-0.5">FPS</span></span>
+          </div>
+
+          <span className="text-gray-700">|</span>
+
           {/* Ping */}
           <div className="flex items-center gap-1 text-cyan-300" title="Latência de Rede / Ping">
             <Radio className="w-3 h-3 text-cyan-400" />

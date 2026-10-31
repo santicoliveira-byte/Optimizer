@@ -28,6 +28,7 @@ import { HowManyFpsService } from './engine/howmanyfps-service';
 import { CpuZInspectorService } from './engine/cpuz-inspector-service';
 import { AutoUpdaterService } from './engine/auto-updater-service';
 import { GameSensorService } from './engine/game-sensor-service';
+import { FpsMonitorService } from './engine/fps-monitor-service';
 
 // Hardware & low-end PC performance switches
 app.commandLine.appendSwitch('disable-renderer-backgrounding');
@@ -167,9 +168,9 @@ function toggleOverlayWindow() {
   const { width } = primaryDisplay.workAreaSize;
 
   overlayWindow = new BrowserWindow({
-    width: 450,
+    width: 550,
     height: 44,
-    x: Math.max(0, width - 470),
+    x: Math.max(0, width - 570),
     y: 16,
     frame: false,
     transparent: true,
@@ -211,7 +212,7 @@ function setOverlayPositionPreset(preset: 'top-right' | 'top-left' | 'top-center
   const { screen } = require('electron');
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width, height } = primaryDisplay.workAreaSize;
-  const overlayWidth = 450;
+  const overlayWidth = 550;
   const overlayHeight = 44;
 
   let x = width - overlayWidth - 20;
@@ -826,6 +827,10 @@ function registerIpc() {
       overlayWindow.hide();
     }
     return { success: true };
+  });
+
+  ipcMain.handle('fps:get-live', async () => {
+    return FpsMonitorService.getInstance().getLiveFps();
   });
 }
 
