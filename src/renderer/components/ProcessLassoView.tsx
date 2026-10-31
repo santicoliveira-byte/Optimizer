@@ -144,7 +144,7 @@ export const ProcessLassoView: React.FC<ProcessLassoViewProps> = ({ onShowNotifi
               <div className="flex items-center gap-2.5">
                 <h2 className="text-lg font-bold text-white tracking-tight">Gestor Dinâmico de Prioridades & P-Cores</h2>
                 <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">
-                  Process Lasso Pro
+                  Process Core Shield Pro
                 </span>
               </div>
               <p className="text-xs text-gray-400 mt-1 max-w-2xl leading-relaxed">

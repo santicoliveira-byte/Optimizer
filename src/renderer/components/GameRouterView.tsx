@@ -242,7 +242,7 @@ export const GameRouterView: React.FC<GameRouterViewProps> = ({ onShowNotificati
           <div>
             <div className="flex items-center gap-2 mb-2">
               <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                ExitLag Engine v2.0
+                ZeroLag QoS Engine v2.0
               </span>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#162038] text-gray-400 border border-[#243358]">
                 Multi-Route QoS & TCP Stack
@@ -250,7 +250,7 @@ export const GameRouterView: React.FC<GameRouterViewProps> = ({ onShowNotificati
             </div>
             <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
               <Globe className="w-5 h-5 text-emerald-400" />
-              Priorização de Tráfego de Jogos & Motor ExitLag
+              Priorização de Tráfego de Jogos & Motor ZeroLag
             </h2>
             <p className="text-xs text-gray-300 mt-1 max-w-2xl leading-relaxed">
               Otimização profunda de rede eSports: priorização <strong>DSCP 46 (Expedited Forwarding)</strong>, desativação de Nagle (<strong>TCP NoDelay</strong>), supressão de *throttling* de rede e eliminação de *lag spikes* de Wi-Fi sem mensalidades.
@@ -525,7 +525,7 @@ export const GameRouterView: React.FC<GameRouterViewProps> = ({ onShowNotificati
             <div>
               <div className="flex items-center gap-2">
                 <Zap className="w-5 h-5 text-cyan-400" />
-                <h3 className="text-base font-bold text-white">Motor do Protocolo TCP/IP ExitLag</h3>
+                <h3 className="text-base font-bold text-white">Motor do Protocolo TCP/IP ZeroLag</h3>
               </div>
               <p className="text-xs text-gray-400 mt-1 max-w-xl">
                 Ajusta as propriedades de socket do kernel do Windows para gaming competitivo, eliminando o algoritmo de Nagle, forçando respostas ACK imediatas e anulando o bufferbloat.
@@ -543,7 +543,7 @@ export const GameRouterView: React.FC<GameRouterViewProps> = ({ onShowNotificati
                 }`}
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                <span>{isStackFullActive ? 'Desativar Motor TCP/IP' : 'Ativar Motor ExitLag (1-Clique)'}</span>
+                <span>{isStackFullActive ? 'Desativar Motor TCP/IP' : 'Ativar Motor ZeroLag (1-Clique)'}</span>
               </button>
             </div>
           </div>
@@ -682,7 +682,7 @@ export const GameRouterView: React.FC<GameRouterViewProps> = ({ onShowNotificati
                 Radar Multirrota de Servidores eSports
               </h3>
               <p className="text-xs text-gray-400 mt-0.5">
-                Latência em tempo real, jitter e comparação estimada com rotas otimizadas pelo motor ExitLag.
+                Latência em tempo real, jitter e comparação estimada com rotas otimizadas pelo motor ZeroLag.
               </p>
             </div>
 
@@ -737,7 +737,7 @@ export const GameRouterView: React.FC<GameRouterViewProps> = ({ onShowNotificati
                   </div>
 
                   <div className="p-2 rounded-lg bg-emerald-950/20 border border-emerald-500/20">
-                    <div className="text-[9px] text-emerald-400 uppercase font-bold">ExitLag QoS</div>
+                    <div className="text-[9px] text-emerald-400 uppercase font-bold">ZeroLag QoS</div>
                     <div className="text-base font-extrabold text-emerald-300 mt-0.5 flex items-baseline gap-1">
                       <span>{route.estimatedExitLagPing}</span>
                       <span className="text-[10px] text-emerald-400 font-normal">ms</span>

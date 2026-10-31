@@ -295,10 +295,10 @@ export const BottleneckCanIRunItView: React.FC = () => {
         <div>
           <h1 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
             <Gauge className="w-6 h-6 text-purple-400" />
-            Can I Run It & Calculador de Hardware
+            Game Ready & Calculador de Gargalo
           </h1>
           <p className="text-xs text-gray-400 mt-1">
-            Mede a compatibilidade exata do teu hardware pelos padrões do System Requirements Lab e calcula o equilíbrio entre CPU e GPU.
+            Mede a compatibilidade do hardware com jogos de topo e calcula o equilíbrio exato entre CPU e GPU.
           </p>
         </div>
 
@@ -313,7 +313,7 @@ export const BottleneckCanIRunItView: React.FC = () => {
             }`}
           >
             <Gamepad2 className="w-4 h-4" />
-            Can I Run It? (Verificador)
+            Game Ready (Verificador)
           </button>
           <button
             onClick={() => setActiveTab('bottleneck')}
@@ -659,10 +659,10 @@ export const BottleneckCanIRunItView: React.FC = () => {
                     <div>
                       <div className="flex items-center gap-2">
                         <h4 className="text-sm font-black text-white tracking-wide flex items-center gap-1.5">
-                          HowManyFPS™ Live Benchmark Engine
+                          FPS Matrix™ Live Benchmark Engine
                         </h4>
                         <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40">
-                          Oficial
+                          PRO
                         </span>
                       </div>
                       <p className="text-xs text-gray-400 mt-0.5">
@@ -799,7 +799,7 @@ export const BottleneckCanIRunItView: React.FC = () => {
                   {/* Performance Rating & Hardware Card */}
                   <div className="bg-[#090E1A] border border-emerald-500/30 rounded-xl p-4 text-center relative overflow-hidden">
                     <div className="text-[10px] uppercase font-extrabold text-emerald-400 tracking-wider">
-                      Índice HowManyFPS
+                      Índice FPS Matrix
                     </div>
                     <div className="text-3xl font-black text-emerald-300 mt-1.5 flex items-baseline justify-center gap-1">
                       {isHmfLoading ? (
@@ -821,7 +821,7 @@ export const BottleneckCanIRunItView: React.FC = () => {
                 <div className="flex items-center justify-between text-[11px] text-gray-500 pt-1 px-1">
                   <span className="flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
-                    Fonte: {hmfPrediction?.source || 'HowManyFPS Benchmark Data'}
+                    Fonte: {hmfPrediction?.source || 'FPS Matrix Benchmark Data'}
                   </span>
                   <span>
                     Hardware detectado: <strong>{rig?.cpuName?.replace(/with.*graphics/i, '').trim()}</strong> + <strong>{rig?.gpuName}</strong>
@@ -838,7 +838,7 @@ export const BottleneckCanIRunItView: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-white font-extrabold text-sm">
                     <Key className="w-4 h-4 text-purple-400" />
-                    <span>Configuração HowManyFPS Developer API</span>
+                    <span>Configuração FPS Matrix Telemetry API</span>
                   </div>
                   <button
                     onClick={() => setShowApiKeyModal(false)}
@@ -849,7 +849,7 @@ export const BottleneckCanIRunItView: React.FC = () => {
                 </div>
 
                 <p className="text-xs text-gray-300 leading-relaxed">
-                  O Optimizer já se conecta automaticamente à live API do HowManyFPS. Caso possuas uma chave de desenvolvedor comercial própria obtida em <strong>howmanyfps.com/api</strong>, insere-a abaixo para autenticação dedicada.
+                  O Optimizer conecta-se automaticamente ao motor em tempo real FPS Matrix. Caso possuas uma chave de telemetria personalizada, podes inseri-la abaixo para autenticação dedicada.
                 </p>
 
                 <div className="space-y-1.5">

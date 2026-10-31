@@ -64,15 +64,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'bottleneck',
-      name: 'Gargalo & Can I Run It',
-      description: 'Calculador de CPU/GPU e requisitos',
+      name: 'Gargalo & Game Ready',
+      description: 'Calculador de CPU/GPU e estimativa de FPS',
       icon: <Gauge className="w-4 h-4" />,
       color: 'text-purple-400'
     },
     {
       id: 'cpuz',
-      name: 'CPU-Z & Hardware',
-      description: 'Inspetor profundo, SPD e Benchmark',
+      name: 'Rig-Z • Hardware Suite',
+      description: 'Inspetor de silício, SPD e Benchmark',
       icon: <Cpu className="w-4 h-4" />,
       color: 'text-amber-400'
     },

@@ -851,8 +851,8 @@ export const App: React.FC = () => {
                 onSelectTab={(t: any) => setGamingTab(t)}
                 tabs={[
                   { id: 'profiles', label: 'Perfis de Jogos (12 Títulos)', badge: 'Ultra Boost' },
-                  { id: 'hone_suite', label: 'Hone eSports & In-Game Configs', badge: '100% Free' },
-                  { id: 'lasso', label: 'Gestor P-Cores & Prioridade', badge: 'Process Lasso' },
+                  { id: 'hone_suite', label: 'Apex eSports & In-Game Configs', badge: 'Pro Suite' },
+                  { id: 'lasso', label: 'Gestor P-Cores & Prioridade', badge: 'Core Shield' },
                   { id: 'input', label: 'Input Delay & Latência', badge: `${sectionStats.gaming.applied}/${sectionStats.gaming.total}` },
                   { id: 'pipeline', label: 'Pipeline de Latência (0.5ms)', badge: '5 Fases' },
                   { id: 'game_catalog', label: 'Otimizações Gaming', badge: `${getStatesByCategory('gaming').filter(s => s.status === 'applied').length}/${getStatesByCategory('gaming').length}` }
@@ -967,7 +967,7 @@ export const App: React.FC = () => {
                 activeTab={networkTab}
                 onSelectTab={(t: any) => setNetworkTab(t)}
                 tabs={[
-                  { id: 'router', label: 'ExitLag QoS Router', badge: 'DSCP 46' },
+                  { id: 'router', label: 'ZeroLag QoS Router', badge: 'DSCP 46' },
                   { id: 'priority', label: 'Prioridade de Conexão', badge: 'IPv4 Metric' },
                   { id: 'dns', label: 'DNS Benchmark', badge: 'Ping 53' },
                   { id: 'net_catalog', label: 'Tweaks de Rede', badge: `${getStatesByCategory('network_internet').filter(s => s.status === 'applied').length}/${getStatesByCategory('network_internet').length}` },
@@ -1165,12 +1165,12 @@ export const App: React.FC = () => {
             </div>
           )}
 
-          {/* Section 6: Gargalo & Can I Run It */}
+          {/* Section 6: Gargalo & Game Ready */}
           {currentSection === 'bottleneck' && (
             <BottleneckCanIRunItView />
           )}
 
-          {/* Section 7: CPU-Z & Hardware Suite */}
+          {/* Section 7: Rig-Z • Hardware Suite */}
           {currentSection === 'cpuz' && (
             <CpuZHardwareView />
           )}

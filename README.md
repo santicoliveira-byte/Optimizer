@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Aplicação Desktop Profissional Tudo-em-Um para Windows 10 e Windows 11</strong><br>
-  Otimizações de Baixa Latência, Suite de Hardware CPU-Z Nativa, Calculador de Gargalo & Can I Run It (HowManyFPS) e Central de Manutenção.
+  Otimizações de Baixa Latência, Suite de Hardware Rig-Z, Calculador de Gargalo & Game Ready (FPS Matrix) e Central de Manutenção.
 </p>
 
 <p align="center">
@@ -51,11 +51,11 @@ O versionamento deste projeto segue a regra de evolução contínua:
 ┌────────────────────────────────────────────────────────────────────────┐
 │                          OPTIMIZER SUITE                               │
 ├──────────────────┬──────────────────┬─────────────────┬────────────────┤
-│   OTIMIZAÇÕES    │      CPU-Z       │ GARGALO & CAN I │  MANUTENÇÃO &   │
-│   (166 ITENS)    │  HARDWARE SUITE  │     RUN IT      │   DIAGNÓSTICO  │
+│   OTIMIZAÇÕES    │    RIG-Z LAB     │ GARGALO & READY │  MANUTENÇÃO &   │
+│   (166 ITENS)    │  HARDWARE SUITE  │  GAME CHECKER   │   DIAGNÓSTICO  │
 ├──────────────────┼──────────────────┼─────────────────┼────────────────┤
 │ • Input Delay    │ • CPU & Cores    │ • Gargalo %     │ • DISM & SFC   │
-│ • GPU & Vídeo    │ • Placa-Mãe      │ • HowManyFPS    │ • Shaders GPU  │
+│ • GPU & Vídeo    │ • Placa-Mãe      │ • FPS Matrix    │ • Shaders GPU  │
 │ • Rede & Ping    │ • Memória RAM    │ • Presets Res.  │ • CHKDSK       │
 │ • Serviços       │ • SPD por Slot   │ • 1080p/1440p/4K│ • Ponto Rest.  │
 │ • Privacidade    │ • GPU Detalhada  │ • Balanço Rig   │ • Temp Files   │
@@ -73,27 +73,27 @@ O versionamento deste projeto segue a regra de evolução contínua:
 
 ---
 
-### 2. 🔍 CPU-Z Hardware Inspector & Benchmark Suite
-Módulo nativo desenvolvido com base em engenharia reversa do CPU-Z oficial:
+### 2. 🔍 Rig-Z Hardware Inspector & Benchmark Engine
+Módulo nativo desenvolvido para análise aprofundada de microarquitetura:
 - **CPU**: Nome completo, Codename da arquitetura (Phoenix, Zen, Raptor Lake, etc.), Socket/Package, Litografia (nm), TDP, Caches L1/L2/L3, Instruções suportadas (AVX-512, SSE4.2, FMA3, etc.) com **medidores em tempo real** de frequência (MHz) e tensão VID dos núcleos.
 - **Mainboard**: Fabricante, modelo da placa-mãe, chipset/southbridge, versão da BIOS e data, barramento PCIe da GPU.
 - **Memory**: Tipo (DDR5/DDR4), capacidade total, canais ativos (Dual Channel), frequência real e efetiva (MT/s) e sub-timings completos (CL-tRCD-tRP-tRAS-tRC-CR).
 - **SPD**: Inspeção slot por slot (`DIMMA2`, `DIMMB2`, etc.), fabricante do módulo, Part Number, e comparação de perfis JEDEC padrão vs AMD EXPO / Intel XMP (1.35V).
 - **Graphics**: Inspeção da GPU primária e integrada, memória VRAM dedicada, barramento e versão do driver.
 - **Bench & Stress**:
-  - Benchmark Single-Thread e Multi-Thread com pontuações calibradas na escala oficial do CPU-Z v17.01.64.
+  - Benchmark Single-Thread e Multi-Thread com pontuações calibradas de capacidade computacional por núcleo e paralela.
   - Comparador visual de barras lado a lado com processadores de referência (Ryzen 7 7800X3D, Core i9-14900K, Ryzen 5 7600X, Core i5-13600K).
   - Teste de estabilidade térmica contínuo (**Stress CPU**).
-  - Botão de exportação **Guardar Relatório TXT** formatado como validação oficial.
+  - Botão de exportação **Guardar Relatório TXT** formatado como validação oficial de hardware.
 
 ---
 
-### 3. ⚖️ Calculador de Gargalo (Bottleneck) & Can I Run It
+### 3. ⚖️ Calculador de Gargalo (Bottleneck) & Game Ready Checker
 - **Cálculo de Gargalo em Tempo Real**:
   - Deteta se o gargalo está centrado no Processador (CPU Bottleneck) ou na Placa Gráfica (GPU Bottleneck).
   - Simulações em 3 resoluções chave: **1080p (FHD)**, **1440p (QHD)** e **4K (UHD)**.
-- **Can I Run It & HowManyFPS**:
-  - Base de dados calibrada e integração com API do HowManyFPS.
+- **Game Ready & FPS Matrix Engine**:
+  - Base de dados calibrada e integração com algoritmo de previsão em tempo real FPS Matrix.
   - Estimativa realista de FPS médios, 1% lows e avaliação de fluidez em jogos competitivos e títulos AAA (CS2, Valorant, GTA V, Cyberpunk 2077, Warzone, Fortnite, etc.).
   - Configurações gráficas em Baixo, Médio, Alto e Ultra com DLSS / FSR.
 

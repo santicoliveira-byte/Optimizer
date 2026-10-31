@@ -136,13 +136,13 @@ export const HoneSuiteView: React.FC<HoneSuiteViewProps> = ({ onShowNotification
             </div>
             <div>
               <div className="flex items-center gap-2.5">
-                <h2 className="text-lg font-bold text-white tracking-tight">Hone eSports & In-Game Config Tuner</h2>
+                <h2 className="text-lg font-bold text-white tracking-tight">Apex eSports & In-Game Config Tuner</h2>
                 <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-gradient-to-r from-orange-500/20 to-amber-500/20 text-amber-300 border border-amber-500/30">
-                  Hone Premium 100% Gratuito
+                  Apex Pro Latency Suite
                 </span>
               </div>
               <p className="text-xs text-gray-400 mt-1 max-w-2xl leading-relaxed">
-                Todas as otimizações pagas da <strong>Hone (hone.gg)</strong> desbloqueadas sem mensalidades, combinadas com o <strong>In-Game Config Tuner</strong> que ajusta diretamente os ficheiros de configuração interna dos teus jogos instalados para máxima taxa de quadros e menor latência.
+                Otimizações profundas de baixa latência e precisão eSports, combinadas com o <strong>In-Game Config Tuner</strong> que ajusta diretamente os ficheiros de configuração interna dos teus jogos instalados para máxima taxa de quadros e menor latência.
               </p>
             </div>
           </div>
@@ -154,7 +154,7 @@ export const HoneSuiteView: React.FC<HoneSuiteViewProps> = ({ onShowNotification
               className="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-lg bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-black shadow-orange-950/40"
             >
               <Zap className={`w-3.5 h-3.5 ${isApplyingSuite ? 'animate-spin' : ''}`} />
-              <span>{isApplyingSuite ? 'A Aplicar Suite...' : '1-Clique: Desbloquear Hone Suite'}</span>
+              <span>{isApplyingSuite ? 'A Aplicar Suite...' : '1-Clique: Aplicar Apex Pro Suite'}</span>
             </button>
             <button
               onClick={handleOptimizeAllConfigs}
@@ -188,8 +188,8 @@ export const HoneSuiteView: React.FC<HoneSuiteViewProps> = ({ onShowNotification
           <div className="bg-[#0B0F19] rounded-xl p-3 border border-[#1E293B] flex items-center gap-3">
             <Cpu className="w-5 h-5 text-orange-400 shrink-0" />
             <div>
-              <div className="text-[10px] text-gray-400 uppercase font-semibold">Hone Premium Tweaks</div>
-              <div className="text-sm font-bold text-emerald-400 font-mono">6 Tweaks Prontos (0€ vs 120€/ano)</div>
+              <div className="text-[10px] text-gray-400 uppercase font-semibold">Apex Pro Tweaks</div>
+              <div className="text-sm font-bold text-emerald-400 font-mono">6 Tweaks de Alta Performance Prontos</div>
             </div>
           </div>
 
@@ -314,9 +314,9 @@ export const HoneSuiteView: React.FC<HoneSuiteViewProps> = ({ onShowNotification
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-orange-400" />
-            <h3 className="text-sm font-bold text-white tracking-tight">Tweaks da Suite Hone Premium (Desbloqueados)</h3>
+            <h3 className="text-sm font-bold text-white tracking-tight">Tweaks da Suite Apex Pro Latency</h3>
           </div>
-          <span className="text-[11px] font-mono text-emerald-400 font-semibold">100% Gratuito no Optimizer</span>
+          <span className="text-[11px] font-mono text-emerald-400 font-semibold">Incluído no Optimizer</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">

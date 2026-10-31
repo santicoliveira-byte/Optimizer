@@ -214,7 +214,7 @@ export const CpuZHardwareView: React.FC = () => {
     if (!data) return;
     const txt = `
 -------------------------------------------------------------------------
-  CPUID CPU-Z v2.18.0.x64 Report - Optimizer Hardware Suite
+  Rig-Z Hardware Suite v2.0 Report - Optimizer System
 -------------------------------------------------------------------------
 
 Processor (CPU)
@@ -252,7 +252,7 @@ Graphics (GPU)
 GPU:              ${data.graphics.devices[0]?.name}
 Memory:           ${data.graphics.devices[0]?.memorySizeMb} MB ${data.graphics.devices[0]?.memoryType} (${data.graphics.devices[0]?.busWidthBits} bits)
 
-CPU Benchmark Results (CPU-Z Standard Version 17.01.64)
+CPU Benchmark Results (Rig-Z Engine Calibration)
 -------------------------------------------------------------------------
 CPU Single Thread: ${benchScores.singleScore}
 CPU Multi Thread:  ${benchScores.multiScore}
@@ -263,7 +263,7 @@ Multi Thread Ratio: ${benchScores.ratio}
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `CPU-Z_Report_${new Date().toISOString().slice(0, 10)}.txt`;
+    a.download = `Rig-Z_Report_${new Date().toISOString().slice(0, 10)}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -288,14 +288,14 @@ Multi Thread Ratio: ${benchScores.ratio}
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-black text-white tracking-wide">
-                  CPUID CPU-Z Inspector & Benchmark Suite
+                  Rig-Z • Hardware Inspector & Benchmark Suite
                 </h2>
                 <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40">
-                  v2.18 x64
+                  v2.0 PRO
                 </span>
               </div>
               <p className="text-xs text-gray-400 mt-1">
-                Inspeção aprofundada de microarquitetura, frequências em tempo real, módulos SPD e benchmark CPU-Z.
+                Inspeção aprofundada de microarquitetura, frequências em tempo real, módulos SPD e benchmark de silício.
               </p>
             </div>
           </div>
@@ -924,9 +924,9 @@ Multi Thread Ratio: ${benchScores.ratio}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-[#1E293B] pb-4">
               <div>
                 <h4 className="text-sm font-black text-white flex items-center gap-2">
-                  <span>CPU-Z Benchmark (Version 17.01.64)</span>
+                  <span>Rig-Z Multi-Core Benchmark Engine</span>
                   <span className="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full font-bold">
-                    Official Point Scale
+                    Calibrated Point Scale
                   </span>
                 </h4>
                 <p className="text-xs text-gray-400 mt-0.5">
