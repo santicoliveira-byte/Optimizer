@@ -143,7 +143,7 @@ function main() {
       const ghPath = 'C:\\Program Files\\GitHub CLI\\gh.exe';
       const ghCmd = fs.existsSync(ghPath) ? `"${ghPath}"` : 'gh';
       
-      const releaseNotes = `### Novidades da versão ${newTag}\n\n- Otimizações para Windows 10/11\n- Suite de Hardware CPU-Z completa\n- Calculador de Gargalo & Can I Run It\n- Central de Manutenção e Diagnóstico\n- Executável portátil 100% autónomo (sem instalação necessária)`;
+      const releaseNotes = `### Novidades da versão ${newTag}\n\n- Otimizações de Baixa Latência para Windows 10/11\n- Suite de Hardware Rig-Z completa (CPU, Motherboard, DDR5, SPD e GPU)\n- Calculador de Gargalo & Game Ready (FPS Matrix Engine)\n- Central de Manutenção e Diagnóstico do Sistema\n- Executável portátil 100% autónomo (sem instalação necessária)`;
       const notesFile = path.join(rootDir, 'release', 'release-notes.tmp');
       fs.writeFileSync(notesFile, releaseNotes, 'utf8');
 
