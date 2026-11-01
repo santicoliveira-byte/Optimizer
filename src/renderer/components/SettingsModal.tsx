@@ -42,9 +42,10 @@ interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialTab?: 'appearance' | 'overlay' | 'gsync' | 'benchmark' | 'hotkeys' | 'language' | 'pro' | 'about';
+  onOpenWhatsNew?: () => void;
 }
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, initialTab = 'appearance' }) => {
+export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, initialTab = 'appearance', onOpenWhatsNew }) => {
   const { language, setLanguage, accent, setAccent, t } = useI18n();
   const [activeTab, setActiveTab] = useState<'appearance' | 'overlay' | 'gsync' | 'benchmark' | 'hotkeys' | 'language' | 'pro' | 'about'>(initialTab);
 
@@ -1785,15 +1786,28 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, i
                   </div>
                 </div>
 
-                <a
-                  href="https://github.com/santicoliveira-byte/Optimizer"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#151E33] hover:bg-[#1E2B4B] border border-[#232F4D] text-xs font-bold text-white transition-all shadow-md"
-                >
-                  <ExternalLink className="w-4 h-4 text-indigo-400" />
-                  <span>{t('settings.repository')}</span>
-                </a>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+                  <button
+                    onClick={() => {
+                      onClose();
+                      onOpenWhatsNew?.();
+                    }}
+                    className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600/30 to-purple-600/30 hover:from-indigo-600/50 hover:to-purple-600/50 border border-indigo-500/40 text-xs font-bold text-white transition-all shadow-md"
+                  >
+                    <Sparkles className="w-4 h-4 text-indigo-300" />
+                    <span>Ver Novidades Desta Versão</span>
+                  </button>
+
+                  <a
+                    href="https://github.com/santicoliveira-byte/Optimizer"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#151E33] hover:bg-[#1E2B4B] border border-[#232F4D] text-xs font-bold text-white transition-all shadow-md"
+                  >
+                    <ExternalLink className="w-4 h-4 text-indigo-400" />
+                    <span>{t('settings.repository')}</span>
+                  </a>
+                </div>
               </div>
             </div>
           )}

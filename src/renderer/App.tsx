@@ -17,6 +17,7 @@ import { BottleneckCanIRunItView } from './components/BottleneckCanIRunItView';
 import { CpuZHardwareView } from './components/CpuZHardwareView';
 import { AutoUpdaterModal } from './components/AutoUpdaterModal';
 import { SettingsModal } from './components/SettingsModal';
+import { WhatsNewModal } from './components/WhatsNewModal';
 import { APP_VERSION } from './utils/version';
 
 import {
@@ -84,6 +85,7 @@ export const App: React.FC = () => {
   const [isShaderModalOpen, setIsShaderModalOpen] = useState(false);
   const [isUpdaterOpen, setIsUpdaterOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isWhatsNewOpen, setIsWhatsNewOpen] = useState(false);
   const [settingsInitialTab, setSettingsInitialTab] = useState<'appearance' | 'overlay' | 'gsync' | 'benchmark' | 'hotkeys' | 'language' | 'pro' | 'about'>('appearance');
   const [isPro, setIsPro] = useState<boolean>(false);
   const [appVersion, setAppVersion] = useState<string>(APP_VERSION);
@@ -174,6 +176,25 @@ export const App: React.FC = () => {
   useEffect(() => {
     checkUpdates();
   }, []);
+
+  // Check if app was updated and show What's New initial screen
+  useEffect(() => {
+    if (appVersion) {
+      try {
+        const lastSeen = localStorage.getItem('optimizer_last_seen_version');
+        if (!lastSeen || lastSeen !== appVersion) {
+          setIsWhatsNewOpen(true);
+        }
+      } catch {}
+    }
+  }, [appVersion]);
+
+  const handleCloseWhatsNew = () => {
+    try {
+      localStorage.setItem('optimizer_last_seen_version', appVersion);
+    } catch {}
+    setIsWhatsNewOpen(false);
+  };
 
   useEffect(() => {
     isStealthRef.current = isStealthMode;
@@ -1054,6 +1075,13 @@ export const App: React.FC = () => {
         isChecking={isCheckingUpdate}
       />
 
+      {/* What's New & Release Highlights Welcome Modal */}
+      <WhatsNewModal
+        isOpen={isWhatsNewOpen}
+        onClose={handleCloseWhatsNew}
+        version={appVersion}
+      />
+
       {/* Settings Modal (Theme Color, Language & PRO Activation) */}
       <SettingsModal
         isOpen={isSettingsOpen}
@@ -1066,6 +1094,7 @@ export const App: React.FC = () => {
           }
         }}
         initialTab={settingsInitialTab}
+        onOpenWhatsNew={() => setIsWhatsNewOpen(true)}
       />
 
       {/* Floating Notification Toast */}

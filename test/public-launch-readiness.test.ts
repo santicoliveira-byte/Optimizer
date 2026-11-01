@@ -154,4 +154,16 @@ describe('Public Launch Readiness Master QA Suite', () => {
       expect(settingsContent).not.toContain('v2.1.0');
     });
   });
+
+  describe('7. In-App Updates & What\'s New Welcome Modal', () => {
+    it('verifies that WhatsNewModal exists and contains curated release highlights', () => {
+      const whatsNewContent = fs.readFileSync(path.join(rootDir, 'src/renderer/components/WhatsNewModal.tsx'), 'utf-8');
+      expect(whatsNewContent).toContain('RELEASES_CHANGELOG');
+      expect(whatsNewContent).toContain('Novidades da Versão');
+      
+      const appContent = fs.readFileSync(path.join(rootDir, 'src/renderer/App.tsx'), 'utf-8');
+      expect(appContent).toContain('optimizer_last_seen_version');
+      expect(appContent).toContain('WhatsNewModal');
+    });
+  });
 });
