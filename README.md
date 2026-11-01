@@ -132,6 +132,26 @@ O Optimizer foi desenhado com foco absoluto na segurança e integridade do teu c
 
 ---
 
+## 👑 Planos & Edições
+
+| Recurso | Plano Gratuito | Optimizer PRO (2,00€ - Vitalício) 👑 |
+|---|:---:|:---:|
+| **364 Tweaks de Registro Windows** | ✅ Incluído | ✅ Incluído |
+| **Limpeza de Disco & Shaders** | ✅ Incluído | ✅ Incluído |
+| **Benchmark & Otimizador DNS** | ✅ Incluído | ✅ Incluído |
+| **Monitor de Hardware & CPU-Z** | ✅ Incluído | ✅ Incluído |
+| **In-Game HUD Overlay (Alt+O)** | ❌ | ✅ Exclusivo PRO |
+| **Gravação de Benchmark & 1% Lows (Alt+B)** | ❌ | ✅ Exclusivo PRO |
+| **Bloqueio de Temporizador 0.500ms** | ❌ | ✅ Exclusivo PRO |
+| **Isolamento de P-Cores (Process Lasso)** | ❌ | ✅ Exclusivo PRO |
+| **Perfil Competitivo de Drivers GPU** | ❌ | ✅ Exclusivo PRO |
+| **Otimizador de Configurações eSports (CS2, Fortnite, etc.)** | ❌ | ✅ Exclusivo PRO |
+| **Suporte & Atualizações Vitalícias** | ✅ Incluído | ✅ Prioritário |
+
+> **Licença PRO**: Pagamento único seguro de apenas **2,00€** (vitalício, sem mensalidades). Adquire a tua chave e ativa instantaneamente na aba **Definições > Licença PRO**.
+
+---
+
 ## 🛠️ Tecnologias & Desenvolvimento
 
 - **Runtime**: Electron 34 & Node.js

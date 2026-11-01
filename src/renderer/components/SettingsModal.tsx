@@ -1920,7 +1920,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, i
                   <div className="bg-[#121A2E] border border-amber-500/20 rounded-2xl p-4 flex items-center justify-between">
                     <div>
                       <strong className="text-xs text-white block">Ainda não tens a tua chave?</strong>
-                      <span className="text-[11px] text-gray-400">Adquire a tua licença vitalícia por apenas 4,99€ (pagamento único seguro via MB WAY, Cartão ou PayPal).</span>
+                      <span className="text-[11px] text-gray-400">Adquire a tua licença vitalícia por apenas 2,00€ (pagamento único seguro via MB WAY, Cartão ou PayPal).</span>
                     </div>
 
                     <a
@@ -1930,7 +1930,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, i
                       className="px-4 py-2 rounded-xl text-xs font-extrabold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black shadow-lg shadow-amber-500/20 transition-all flex items-center gap-1.5 shrink-0"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
-                      <span>Comprar PRO (4,99€)</span>
+                      <span>Comprar PRO (2,00€)</span>
                     </a>
                   </div>
                 </div>
