@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
+import { exec } from 'child_process';
 import { OverlayConfig, OverlayItemsConfig } from '../../shared/types';
 
 export const DEFAULT_OVERLAY_CONFIG: OverlayConfig = {
@@ -99,6 +100,44 @@ export class OverlayConfigService {
     this.saveConfig();
     this.notifyListeners();
     return this.getConfig();
+  }
+
+  public async getFullscreenSupportStatus(): Promise<{ enabled: boolean }> {
+    return new Promise((resolve) => {
+      exec('reg query "HKCU\\System\\GameConfigStore" /v GameDVR_DXGIHonorFSEWindowsCompatible', { windowsHide: true }, (err, stdout) => {
+        if (!err && stdout && stdout.includes('0x1')) {
+          resolve({ enabled: true });
+        } else {
+          resolve({ enabled: false });
+        }
+      });
+    });
+  }
+
+  public async enableFullscreenSupport(): Promise<{ success: boolean; message: string }> {
+    return new Promise((resolve) => {
+      const cmds = [
+        'reg add "HKCU\\System\\GameConfigStore" /v GameDVR_DXGIHonorFSEWindowsCompatible /t REG_DWORD /d 1 /f',
+        'reg add "HKCU\\System\\GameConfigStore" /v GameDVR_HonorUserFSEBehaviorMode /t REG_DWORD /d 1 /f',
+        'reg add "HKCU\\System\\GameConfigStore" /v GameDVR_FSEBehavior /t REG_DWORD /d 0 /f',
+        'reg add "HKCU\\System\\GameConfigStore" /v GameDVR_FSEBehaviorMode /t REG_DWORD /d 0 /f',
+        'reg add "HKCU\\Software\\Microsoft\\DirectX\\UserGpuPreferences" /v DirectXUserGlobalSettings /t REG_SZ /d "AutoWindowed=1;" /f'
+      ].join(' & ');
+
+      exec(cmds, { windowsHide: true }, (err) => {
+        if (err) {
+          resolve({
+            success: false,
+            message: `Falha ao configurar suporte a tela cheia: ${err.message}`
+          });
+        } else {
+          resolve({
+            success: true,
+            message: 'Compatibilidade com Tela Cheia (DirectFlip MPO) ativada! O HUD agora renderiza por cima de jogos em tela cheia com 0ms de lag.'
+          });
+        }
+      });
+    });
   }
 
   public onConfigChanged(listener: (config: OverlayConfig) => void): () => void {

@@ -140,10 +140,11 @@ export class HoneSuiteService {
         if (-not (Test-Path $ptPath)) { New-Item -Path $ptPath -Force | Out-Null }
         Set-ItemProperty -Path $ptPath -Name "PowerThrottlingOff" -Value 1 -Type DWord -Force
 
-        # 4. Disable GameDVR
+        # 4. Disable GameDVR (Keep Fullscreen Optimizations & DirectFlip active for Overlays)
         $dvrPath = "HKCU:\\System\\GameConfigStore"
         Set-ItemProperty -Path $dvrPath -Name "GameDVR_Enabled" -Value 0 -Type DWord -Force
-        Set-ItemProperty -Path $dvrPath -Name "GameDVR_FSEBehaviorMode" -Value 2 -Type DWord -Force
+        Set-ItemProperty -Path $dvrPath -Name "GameDVR_FSEBehaviorMode" -Value 0 -Type DWord -Force
+        Set-ItemProperty -Path $dvrPath -Name "GameDVR_DXGIHonorFSEWindowsCompatible" -Value 1 -Type DWord -Force
 
         $policyPath = "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\GameDVR"
         if (-not (Test-Path $policyPath)) { New-Item -Path $policyPath -Force | Out-Null }

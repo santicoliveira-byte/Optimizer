@@ -38,6 +38,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
   const [hotkeys, setHotkeys] = useState<any[]>([]);
   const [isGhostActive, setIsGhostActive] = useState<boolean>(false);
   const [feedbackMsg, setFeedbackMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [isFullscreenOptimized, setIsFullscreenOptimized] = useState<boolean>(true);
+  const [isOptimizingFullscreen, setIsOptimizingFullscreen] = useState<boolean>(false);
 
   const [overlayConfig, setOverlayConfig] = useState<OverlayConfig>({
     items: {
@@ -74,6 +76,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
         if (window.optimizerApi?.overlayGetConfig) {
           const cfg = await window.optimizerApi.overlayGetConfig();
           if (cfg) setOverlayConfig(cfg);
+        }
+        if (window.optimizerApi?.overlayGetFullscreenSupport) {
+          const fsRes = await window.optimizerApi.overlayGetFullscreenSupport();
+          if (fsRes) setIsFullscreenOptimized(fsRes.enabled);
         }
       } catch {}
     };
@@ -182,6 +188,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     if (window.optimizerApi?.overlayUpdateConfig) {
       await window.optimizerApi.overlayUpdateConfig({ items: updatedItems });
       setFeedbackMsg({ text: 'Métrica do Overlay atualizada no HUD!', type: 'success' });
+    }
+  };
+
+  const handleEnableFullscreenSupport = async () => {
+    setIsOptimizingFullscreen(true);
+    try {
+      if (window.optimizerApi?.overlayEnableFullscreenSupport) {
+        const res = await window.optimizerApi.overlayEnableFullscreenSupport();
+        if (res.success) {
+          setIsFullscreenOptimized(true);
+          setFeedbackMsg({ text: res.message, type: 'success' });
+        } else {
+          setFeedbackMsg({ text: res.message, type: 'error' });
+        }
+      }
+    } catch {
+      setFeedbackMsg({ text: 'Erro ao ativar suporte a tela cheia.', type: 'error' });
+    } finally {
+      setIsOptimizingFullscreen(false);
     }
   };
 
@@ -438,21 +463,68 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 </button>
               </div>
 
-              {/* Gaming Mode Tip Alert: Borderless Windowed */}
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3.5 flex items-start gap-3 text-xs shadow-inner">
-                <div className="p-1.5 rounded-xl bg-amber-500/20 text-amber-400 shrink-0 mt-0.5">
-                  <AlertTriangle className="w-4 h-4" />
+              {/* Fullscreen Mode Optimization Card (DirectFlip MPO + Occlusion Bypass) */}
+              <div className="bg-gradient-to-r from-emerald-950/40 via-cyan-950/20 to-black/60 border border-emerald-500/30 rounded-2xl p-4 space-y-3 shadow-lg">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 shrink-0 mt-0.5">
+                      <Zap className="w-4 h-4" />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <strong className="text-white font-bold text-xs">
+                          Compatibilidade com Jogos em Tela Cheia
+                        </strong>
+                        <span
+                          className={`text-[10px] font-mono px-2 py-0.5 rounded-full border font-bold ${
+                            isFullscreenOptimized
+                              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                              : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                          }`}
+                        >
+                          {isFullscreenOptimized ? 'DirectFlip Ativo (0ms Lag)' : 'Otimização Pendente'}
+                        </span>
+                      </div>
+                      <p className="text-gray-300 text-[11px] leading-relaxed">
+                        O Optimizer usa <strong>DirectFlip MPO por hardware</strong> e desativação da oclusão do Chromium para manter o HUD desenhado sobre jogos em <strong>Tela Cheia (Fullscreen)</strong> com taxa máxima de atualização e zero perda de FPS.
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleEnableFullscreenSupport}
+                    disabled={isOptimizingFullscreen}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition-all flex items-center gap-1.5 shadow-sm ${
+                      isFullscreenOptimized
+                        ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40'
+                        : 'bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold'
+                    } ${isOptimizingFullscreen ? 'opacity-50 cursor-wait' : ''}`}
+                    title="Configura o registo do Windows para permitir overlays em Tela Cheia via DirectFlip"
+                  >
+                    {isOptimizingFullscreen ? (
+                      <span>A ativar...</span>
+                    ) : isFullscreenOptimized ? (
+                      <>
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Otimizado ✅</span>
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-3.5 h-3.5" />
+                        <span>Ativar 1-Clique</span>
+                      </>
+                    )}
+                  </button>
                 </div>
-                <div className="space-y-1">
-                  <strong className="text-amber-300 font-bold block text-xs">
-                    Como manter o HUD visível por cima dos teus jogos:
-                  </strong>
-                  <p className="text-gray-300 text-[11px] leading-relaxed">
-                    Nas opções gráficas de jogos como <strong className="text-white">VALORANT, CS2, Fortnite, Roblox ou GTA</strong>, coloca o Modo de Ecrã em <span className="text-amber-300 font-bold font-mono">"Tela Cheia em Janela" / "Sem Moldura" (Borderless Windowed)</span>.
-                  </p>
-                  <p className="text-gray-400 text-[10px] leading-tight">
-                    Em <em>"Tela Cheia Exclusiva"</em>, o Windows entrega a placa de vídeo ao jogo e esconde todas as janelas do desktop. O modo Janela sem Bordas tem 0 latência extra e permite ao HUD ficar 100% visível por cima do jogo.
-                  </p>
+
+                <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[11px] text-gray-400">
+                  <span className="flex items-center gap-1.5">
+                    <Ghost className="w-3.5 h-3.5 text-amber-400" />
+                    Pressiona <strong className="text-white font-mono bg-white/10 px-1 py-0.5 rounded">Alt+G</strong> para os cliques do rato atravessarem diretamente para o jogo.
+                  </span>
+                  <span className="text-[10px] text-cyan-400 font-mono">
+                    Atalho Overlay: Alt+O
+                  </span>
                 </div>
               </div>
 

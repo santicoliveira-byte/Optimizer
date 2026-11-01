@@ -123,6 +123,8 @@ export interface OptimizerApi {
   overlayUpdateConfig: (config: Partial<OverlayConfig>) => Promise<OverlayConfig>;
   overlayResetConfig: () => Promise<OverlayConfig>;
   onOverlayConfigChanged: (callback: (config: OverlayConfig) => void) => () => void;
+  overlayGetFullscreenSupport: () => Promise<{ enabled: boolean }>;
+  overlayEnableFullscreenSupport: () => Promise<{ success: boolean; message: string }>;
 }
 
 const api: OptimizerApi = {
@@ -290,7 +292,9 @@ const api: OptimizerApi = {
     return () => {
       ipcRenderer.removeListener('overlay:config-changed', handler);
     };
-  }
+  },
+  overlayGetFullscreenSupport: () => ipcRenderer.invoke('overlay:get-fullscreen-support'),
+  overlayEnableFullscreenSupport: () => ipcRenderer.invoke('overlay:enable-fullscreen-support')
 };
 
 contextBridge.exposeInMainWorld('optimizerApi', api);

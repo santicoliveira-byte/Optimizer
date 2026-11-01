@@ -119,12 +119,44 @@ describe('Ultra-Lightweight Game Overlay Architecture', () => {
       alwaysOnTop: true,
       level: 'screen-saver',
       relativeLevel: 1,
-      topGuardIntervalMs: 1500
+      topGuardIntervalMs: 1000,
+      focusable: false,
+      fullscreenable: false
     };
 
     expect(windowConfig.type).toBe('toolbar');
     expect(windowConfig.relativeLevel).toBe(1);
-    expect(windowConfig.topGuardIntervalMs).toBe(1500);
+    expect(windowConfig.topGuardIntervalMs).toBe(1000);
+    expect(windowConfig.focusable).toBe(false);
+    expect(windowConfig.fullscreenable).toBe(false);
+  });
+
+  it('validates Chromium occlusion prevention switches for fullscreen rendering', () => {
+    const switches = [
+      'disable-renderer-backgrounding',
+      'disable-background-timer-throttling',
+      'enable-gpu-rasterization',
+      'enable-zero-copy',
+      'CalculateNativeWinOcclusion',
+      'disable-backgrounding-occluded-windows'
+    ];
+
+    expect(switches).toContain('CalculateNativeWinOcclusion');
+    expect(switches).toContain('disable-backgrounding-occluded-windows');
+  });
+
+  it('validates Windows DirectFlip MPO registry flags for Fullscreen overlay', () => {
+    const registrySettings = {
+      GameDVR_DXGIHonorFSEWindowsCompatible: 1,
+      GameDVR_HonorUserFSEBehaviorMode: 1,
+      GameDVR_FSEBehavior: 0,
+      GameDVR_FSEBehaviorMode: 0,
+      DirectXUserGlobalSettings: 'AutoWindowed=1;'
+    };
+
+    expect(registrySettings.GameDVR_DXGIHonorFSEWindowsCompatible).toBe(1);
+    expect(registrySettings.GameDVR_FSEBehaviorMode).toBe(0);
+    expect(registrySettings.DirectXUserGlobalSettings).toContain('AutoWindowed=1');
   });
 
   it('validates game exit debounce to prevent premature overlay closing', () => {

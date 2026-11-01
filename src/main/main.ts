@@ -37,6 +37,10 @@ app.commandLine.appendSwitch('disable-background-timer-throttling', 'false');
 app.commandLine.appendSwitch('enable-gpu-rasterization');
 app.commandLine.appendSwitch('enable-zero-copy');
 
+// Critical for In-Game Overlays: prevents Chromium from hiding HUD when games cover screen in Fullscreen
+app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion');
+app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
+
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let isQuitting = false;
@@ -164,7 +168,7 @@ function startOverlayTopGuard() {
         overlayWindow.moveTop();
       } catch {}
     }
-  }, 1500);
+  }, 1000);
 }
 
 function stopOverlayTopGuard() {
@@ -222,7 +226,9 @@ function toggleOverlayWindow(isManual: boolean = true) {
     movable: true,
     skipTaskbar: true,
     focusable: false,
+    fullscreenable: false,
     hasShadow: false,
+    show: false,
     backgroundColor: '#00000000',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -233,6 +239,7 @@ function toggleOverlayWindow(isManual: boolean = true) {
     }
   });
 
+  overlayWindow.showInactive();
   overlayWindow.setAlwaysOnTop(true, 'screen-saver', 1);
   overlayWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   overlayWindow.moveTop();
@@ -923,6 +930,14 @@ function registerIpc() {
 
   ipcMain.handle('overlay:reset-config', async () => {
     return OverlayConfigService.getInstance().resetDefaults();
+  });
+
+  ipcMain.handle('overlay:get-fullscreen-support', async () => {
+    return OverlayConfigService.getInstance().getFullscreenSupportStatus();
+  });
+
+  ipcMain.handle('overlay:enable-fullscreen-support', async () => {
+    return OverlayConfigService.getInstance().enableFullscreenSupport();
   });
 }
 
