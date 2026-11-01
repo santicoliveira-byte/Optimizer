@@ -11,7 +11,10 @@
     "build": "npm run build:renderer && npm run build:electron",
     "dist": "npm run build && electron-builder --win nsis",
     "dist:portable": "npm run build && electron-builder --win portable",
-    "release": "node scripts/release.js",
+    "release": "node scripts/release.js --patch",
+    "release:patch": "node scripts/release.js --patch",
+    "release:minor": "node scripts/release.js --minor",
+    "release:major": "node scripts/release.js --major",
     "test": "vitest run",
     "test:watch": "vitest"
   },

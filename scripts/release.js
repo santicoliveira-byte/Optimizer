@@ -6,29 +6,39 @@ const { execSync } = require('child_process');
 const rootDir = path.resolve(__dirname, '..');
 const pkgPath = path.join(rootDir, 'package.json');
 
-function getNextVersion(currentVersion, isMajor = false) {
-  // Supports formats like "1.0.0", "1.1", "1.10", "1"
-  const parts = currentVersion.split('.').map(Number);
+function getNextVersion(currentVersion, type = 'patch') {
+  // Se for booleano (retrocompatibilidade com isMajor):
+  if (typeof type === 'boolean') {
+    type = type ? 'major' : 'minor';
+  }
+
+  const parts = currentVersion.split('.').map((p) => parseInt(p, 10) || 0);
   let major = parts[0] || 1;
   let minor = parts.length > 1 ? parts[1] : 0;
+  let patch = parts.length > 2 ? parts[2] : 0;
 
-  if (isMajor) {
+  if (type === 'major') {
     major += 1;
     minor = 0;
-  } else {
+    patch = 0;
+  } else if (type === 'minor' || type === 'feature') {
+    patch = 0;
     if (minor >= 10) {
-      // Rule: When it reaches 1.10, rolls over to 2.0
+      // Regra: Ao atingir .10, passa para a versão principal seguinte .0
       major += 1;
       minor = 0;
     } else {
       minor += 1;
     }
+  } else {
+    // 'patch' / 'fix' (correção de erro: 1.1 -> 1.1.1 -> 1.1.2)
+    patch += 1;
   }
 
-  // Returns semver string and display tag
-  const displayTag = minor === 0 ? `${major}.0` : `${major}.${minor}`;
-  const semver = `${major}.${minor}.0`;
-  return { semver, displayTag, major, minor };
+  // Retorna semver string e display tag
+  const semver = `${major}.${minor}.${patch}`;
+  const displayTag = patch > 0 ? `${major}.${minor}.${patch}` : (minor === 0 ? `${major}.0` : `${major}.${minor}`);
+  return { semver, displayTag, major, minor, patch };
 }
 
 function run(cmd, options = {}) {
@@ -42,21 +52,30 @@ function main() {
   const currentVersion = pkg.version || '1.0.0';
 
   const isMajor = args.includes('--major');
+  const isMinor = args.includes('--minor') || args.includes('--feature');
+  const isPatch = args.includes('--patch') || args.includes('--fix') || args.includes('--bugfix');
   const customVersionIdx = args.indexOf('--version');
   
   let newSemver, newTag;
   if (customVersionIdx !== -1 && args[customVersionIdx + 1]) {
     const raw = args[customVersionIdx + 1].replace(/^v/, '');
-    const parts = raw.split('.').map(Number);
+    const parts = raw.split('.').map((p) => parseInt(p, 10) || 0);
     const major = parts[0] || 1;
     const minor = parts.length > 1 ? parts[1] : 0;
-    newTag = minor === 0 ? `${major}.0` : `${major}.${minor}`;
-    newSemver = `${major}.${minor}.0`;
+    const patch = parts.length > 2 ? parts[2] : 0;
+    newTag = patch > 0 ? `${major}.${minor}.${patch}` : (minor === 0 ? `${major}.0` : `${major}.${minor}`);
+    newSemver = `${major}.${minor}.${patch}`;
   } else if (args.includes('--init')) {
     newTag = '1.0';
     newSemver = '1.0.0';
   } else {
-    const next = getNextVersion(currentVersion, isMajor);
+    let releaseType = 'patch'; // Por padrão, incrementa correção de erro (ex: 1.1.1, 1.1.2)
+    if (isMajor) {
+      releaseType = 'major';
+    } else if (isMinor) {
+      releaseType = 'minor';
+    }
+    const next = getNextVersion(currentVersion, releaseType);
     newSemver = next.semver;
     newTag = next.displayTag;
   }
