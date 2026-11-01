@@ -52,6 +52,7 @@ export interface OptimizerApi {
   gameRouteRemoveCustom: (gameId: string) => Promise<{ success: boolean; message: string }>;
   aiRecommend: (metrics: any) => Promise<any>;
   aiAutoApply: (metrics: any) => Promise<{ success: boolean; appliedCount: number; failedCount: number; recommendation: any; message: string }>;
+  oneClickBoost: () => Promise<{ success: boolean; freedRamMb: number; timerMs: number; shaderFreedMb: number; message: string }>;
   ramClean: () => Promise<{ success: boolean; freedEstimateMB: number; standbyCleared: boolean; message: string }>;
   ramSetCompression: (enable: boolean) => Promise<{ success: boolean; message: string }>;
   hotkeysGetList: () => Promise<any[]>;
@@ -117,7 +118,7 @@ export interface OptimizerApi {
   overlaySetPosition: (preset: 'top-right' | 'top-left' | 'top-center' | 'bottom-right' | 'bottom-left') => Promise<{ success: boolean }>;
   overlayClose: () => Promise<{ success: boolean }>;
   onOverlayGhostChanged: (callback: (isClickThrough: boolean) => void) => () => void;
-  fpsGetLive: () => Promise<{ fps: number; min1Fps: number; isGameActive: boolean; gameName?: string; refreshRate: number }>;
+  fpsGetLive: () => Promise<{ fps: number; min1Fps: number; frametimeMs?: number; isGameActive: boolean; gameName?: string; refreshRate: number }>;
 }
 
 const api: OptimizerApi = {
@@ -183,6 +184,7 @@ const api: OptimizerApi = {
   gameRouteRemoveCustom: (gameId: string) => ipcRenderer.invoke('game-route:remove-custom', gameId),
   aiRecommend: (metrics: any) => ipcRenderer.invoke('ai:recommend', metrics),
   aiAutoApply: (metrics: any) => ipcRenderer.invoke('ai:auto-apply', metrics),
+  oneClickBoost: () => ipcRenderer.invoke('optimizer:one-click-boost'),
   ramClean: () => ipcRenderer.invoke('ram:clean'),
   ramSetCompression: (enable: boolean) => ipcRenderer.invoke('ram:set-compression', enable),
   hotkeysGetList: () => ipcRenderer.invoke('hotkeys:get-list'),

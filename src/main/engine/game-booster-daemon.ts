@@ -1,7 +1,12 @@
+import { exec } from 'child_process';
+import { promisify } from 'util';
 import { ProcessLassoService } from './process-lasso-service';
 import { TimerResolutionService } from './timer-resolution-service';
 import { RamCleanerService } from './ram-cleaner-service';
+import { GameSensorService } from './game-sensor-service';
 import { BrowserWindow } from 'electron';
+
+const execAsync = promisify(exec);
 
 export interface BoosterState {
   daemonEnabled: boolean;
@@ -16,6 +21,9 @@ export class GameBoosterDaemon {
   private activeGame: string | null = null;
   private lastBoostMessage: string | null = null;
   private mainWindow: BrowserWindow | null = null;
+  private autoOverlayCallback: ((show: boolean) => void) | null = null;
+  private pollingInterval: NodeJS.Timeout | null = null;
+  private isPolling: boolean = false;
 
   public static getInstance(): GameBoosterDaemon {
     if (!GameBoosterDaemon.instance) {
@@ -26,6 +34,51 @@ export class GameBoosterDaemon {
 
   public setWindow(win: BrowserWindow) {
     this.mainWindow = win;
+  }
+
+  public setAutoOverlayCallback(cb: (show: boolean) => void) {
+    this.autoOverlayCallback = cb;
+  }
+
+  public startDaemon() {
+    if (this.pollingInterval) return;
+    this.pollingInterval = setInterval(async () => {
+      if (this.isPolling || !this.daemonEnabled) return;
+      this.isPolling = true;
+      try {
+        await this.checkRunningGames();
+      } catch {}
+      finally {
+        this.isPolling = false;
+      }
+    }, 2500);
+  }
+
+  public stopDaemon() {
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+      this.pollingInterval = null;
+    }
+  }
+
+  private async checkRunningGames() {
+    try {
+      const knownProcs = GameSensorService.getInstance().getAllKnownProcessNames();
+      if (knownProcs.length === 0) return;
+
+      const { stdout } = await execAsync('tasklist /fo csv /nh', { timeout: 1500, windowsHide: true });
+      const runningLower = stdout.toLowerCase();
+
+      let detectedProc: string | null = null;
+      for (const p of knownProcs) {
+        if (runningLower.includes(`"${p}"`)) {
+          detectedProc = p;
+          break;
+        }
+      }
+
+      await this.onGameDetected(detectedProc);
+    } catch {}
   }
 
   public getState(): BoosterState {
@@ -79,6 +132,13 @@ export class GameBoosterDaemon {
       // 3. Purge Standby List RAM
       await RamCleanerService.getInstance().cleanRamAndStandby();
 
+      // 4. Auto-Open In-Game HUD Overlay
+      if (this.autoOverlayCallback) {
+        try {
+          this.autoOverlayCallback(true);
+        } catch {}
+      }
+
       this.lastBoostMessage = `Auto Game-Booster: ${gameProcess} acelerado com sucesso (P-Cores + 0.5ms + RAM Limpa).`;
 
       if (this.mainWindow && !this.mainWindow.isDestroyed()) {
@@ -94,8 +154,15 @@ export class GameBoosterDaemon {
 
   private async revertBoost(gameProcess: string) {
     try {
-      // Revert timer resolution to default
+      // 1. Revert timer resolution to default
       await TimerResolutionService.getInstance().setPrecisionTimer(false);
+
+      // 2. Hide In-Game HUD Overlay
+      if (this.autoOverlayCallback) {
+        try {
+          this.autoOverlayCallback(false);
+        } catch {}
+      }
 
       this.lastBoostMessage = `Jogo ${gameProcess} finalizado. Timer e recursos do sistema repostos.`;
 

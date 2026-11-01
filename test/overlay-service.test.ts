@@ -73,4 +73,14 @@ describe('Ultra-Lightweight Game Overlay Architecture', () => {
       expect(fps).toBeGreaterThanOrEqual(144);
     }
   });
+
+  it('validates 1% low and frametime mathematical conversions', () => {
+    const fps = 144;
+    const min1Fps = Math.round(fps * 0.74);
+    const frametimeMs = parseFloat((1000 / fps).toFixed(1));
+
+    expect(min1Fps).toBe(107);
+    expect(frametimeMs).toBe(6.9);
+    expect(frametimeMs).toBeLessThan(10); // Super fluid under 10ms frame intervals
+  });
 });

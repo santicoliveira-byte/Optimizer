@@ -34,14 +34,14 @@ const KNOWN_GAME_METADATA: Record<string, {
   },
   'valorant': {
     category: 'Competitivo FPS',
-    coverImage: 'https://images.contentstack.io/v3/assets/blt370612131b6e0eb6/blt72023cb3e86c0750/665f8a0026e95d9e564d2627/VAL_Hero_Cover_Art_1920x1080.jpg',
+    coverImage: 'https://media.rawg.io/media/games/618/618c2031a07bbff6b4f611f10f6bcdbc.jpg',
     processNames: ['VALORANT-Win64-Shipping.exe', 'RiotClientServices.exe'],
     optimizations: ['input_timer_resolution', 'input_mouse_accel', 'net_tcp_autotuning', 'cpu_priority_high', 'game_mode'],
     description: 'Prioridade em timer resolution 0.5ms, raw mouse input e mitigação de bufferbloat UDP.'
   },
   'fortnite': {
     category: 'Battle Royale',
-    coverImage: 'https://cdn2.unrealengine.com/blade-2560x1440-2560x1440-d657a2cb88b5.jpg',
+    coverImage: 'https://media.rawg.io/media/games/d82/d82990b0c67bf0d2d0f76d6e1824b694.jpg',
     processNames: ['FortniteClient-Win64-Shipping.exe'],
     optimizations: ['input_windowed_optimizations', 'clean_gpu_shader_cache', 'input_gpu_preference', 'net_rss'],
     description: 'Compilação suave de shaders DX12, ativação de VRR/FSO e afinidade de threads de CPU.'
@@ -125,14 +125,14 @@ const KNOWN_GAME_METADATA: Record<string, {
   },
   'roblox': {
     category: 'Sandbox / Comunidade',
-    coverImage: 'https://images.rbxcdn.com/f9b96eb9c84cb150ba6867e3df179ebf.jpg',
+    coverImage: 'https://media.rawg.io/media/games/53f/53f65f1109dc0d4f8fbda3e0a2977b75.jpg',
     processNames: ['RobloxPlayerBeta.exe', 'RobloxPlayer.exe'],
     optimizations: ['input_timer_resolution', 'net_tcp_autotuning'],
     description: 'Desbloqueio de taxa de atualização acima de 60 FPS e mitigação de atraso de sincronização de rede.'
   },
   'minecraft': {
     category: 'Sandbox / Sobrevivência',
-    coverImage: 'https://www.minecraft.net/content/dam/games/minecraft/key-art/MC-Vanilla-KeyArt-1080x1080.jpg',
+    coverImage: 'https://media.rawg.io/media/games/cc4/cc40326388914b306b6eb8b14e0cc710.jpg',
     processNames: ['javaw.exe', 'Minecraft.exe', 'Minecraft.Gfx.Test.exe'],
     optimizations: ['cpu_priority_high', 'ram_clear_standby', 'input_mouse_accel'],
     description: 'Atribuição prioritária de RAM, JVM garbage collection suave e eliminação de stuttering ao carregar chunks.'
@@ -216,6 +216,21 @@ export class GameSensorService {
       GameSensorService.instance = new GameSensorService();
     }
     return GameSensorService.instance;
+  }
+
+  public getAllKnownProcessNames(): string[] {
+    const set = new Set<string>();
+    for (const item of Object.values(KNOWN_GAME_METADATA)) {
+      for (const p of item.processNames) {
+        set.add(p.toLowerCase());
+      }
+    }
+    for (const item of this.customGames) {
+      for (const p of item.processNames) {
+        set.add(p.toLowerCase());
+      }
+    }
+    return Array.from(set);
   }
 
   private loadCustomGames() {

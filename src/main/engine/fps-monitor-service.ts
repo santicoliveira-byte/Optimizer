@@ -5,6 +5,7 @@ import { HardwareService } from './hardware-service';
 export interface LiveFpsData {
   fps: number;
   min1Fps: number;
+  frametimeMs: number;
   isGameActive: boolean;
   gameName?: string;
   refreshRate: number;
@@ -114,12 +115,14 @@ export class FpsMonitorService {
       const loadFactor = 0.88 + (gpuLoad / 100) * 0.16; // 0.88 - 1.04
       const calculatedFps = Math.max(30, Math.round(base.avg * loadFactor * (1 + jitter)));
       const min1 = Math.round(calculatedFps * 0.74);
+      const frametimeMs = parseFloat((1000 / calculatedFps).toFixed(1));
 
       this.lastReportedFps = calculatedFps;
 
       return {
         fps: calculatedFps,
         min1Fps: min1,
+        frametimeMs,
         isGameActive: true,
         gameName: activeGame.replace(/\.exe$/i, ''),
         refreshRate: this.primaryRefreshRate
@@ -134,6 +137,7 @@ export class FpsMonitorService {
     return {
       fps: desktopFps,
       min1Fps: Math.max(1, desktopFps - 1),
+      frametimeMs: parseFloat((1000 / desktopFps).toFixed(1)),
       isGameActive: false,
       refreshRate: desktopFps
     };

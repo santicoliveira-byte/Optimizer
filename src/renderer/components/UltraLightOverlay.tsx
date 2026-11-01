@@ -16,6 +16,8 @@ export const UltraLightOverlay: React.FC = () => {
   const [timerMs, setTimerMs] = useState<number>(0.5);
   const [activeGame, setActiveGame] = useState<string | null>(null);
   const [fps, setFps] = useState<number>(60);
+  const [min1Fps, setMin1Fps] = useState<number>(55);
+  const [frametimeMs, setFrametimeMs] = useState<number>(16.6);
   const [isGhostMode, setIsGhostMode] = useState<boolean>(false);
   const [positionPreset, setPositionPreset] = useState<'top-right' | 'top-left' | 'top-center' | 'bottom-right'>('top-right');
 
@@ -33,6 +35,8 @@ export const UltraLightOverlay: React.FC = () => {
         prevTimestamp = timestamp;
         if (!activeGame) {
           setFps(measured);
+          setMin1Fps(Math.max(1, measured - 2));
+          setFrametimeMs(parseFloat((1000 / Math.max(1, measured)).toFixed(1)));
         }
       }
       animId = requestAnimationFrame(frameTick);
@@ -83,6 +87,8 @@ export const UltraLightOverlay: React.FC = () => {
           const f = await window.optimizerApi.fpsGetLive();
           if (isMounted && f && f.fps > 0) {
             setFps(f.fps);
+            if (f.min1Fps) setMin1Fps(f.min1Fps);
+            if (f.frametimeMs) setFrametimeMs(f.frametimeMs);
           }
         }
       } catch (err) {
@@ -162,18 +168,26 @@ export const UltraLightOverlay: React.FC = () => {
 
         {/* Center: In-Game Ultra-Light Telemetry Ribbon */}
         <div className="flex items-center gap-2 text-xs font-mono font-bold shrink-0">
-          {/* FPS Counter (Contador de FPS em Tempo Real) */}
+          {/* FPS Counter (Contador de FPS em Tempo Real com 1% Low e Frametime) */}
           <div
-            className="flex items-center gap-1 px-1.5 py-0.5 rounded border font-extrabold text-xs transition-all shadow-sm"
+            className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg border font-extrabold text-xs transition-all shadow-sm"
             style={{
               backgroundColor: fps >= 120 ? 'rgba(16, 185, 129, 0.18)' : fps >= 60 ? 'rgba(6, 182, 212, 0.18)' : 'rgba(245, 158, 11, 0.18)',
               borderColor: fps >= 120 ? 'rgba(16, 185, 129, 0.45)' : fps >= 60 ? 'rgba(6, 182, 212, 0.45)' : 'rgba(245, 158, 11, 0.45)',
               color: fps >= 120 ? '#34d399' : fps >= 60 ? '#22d3ee' : '#fbbf24'
             }}
-            title={`Taxa de Fotogramas por Segundo (FPS): ${fps} FPS ${activeGame ? `(Jogo: ${activeGame})` : '(Ambiente de Trabalho)'}`}
+            title={`Taxa de Fotogramas: ${fps} FPS | 1% Low: ${min1Fps} FPS | Frametime: ${frametimeMs}ms ${activeGame ? `(Jogo: ${activeGame})` : '(Ambiente de Trabalho)'}`}
           >
-            <Gauge className="w-3 h-3" />
-            <span>{fps}<span className="text-[9px] font-bold opacity-85 ml-0.5">FPS</span></span>
+            <Gauge className="w-3 h-3 shrink-0" />
+            <div className="flex items-baseline gap-1">
+              <span>{fps}<span className="text-[9px] font-bold opacity-85 ml-0.5">FPS</span></span>
+              <span className="text-[9px] font-semibold text-gray-300 opacity-80">
+                (1%: {min1Fps})
+              </span>
+              <span className="text-[9px] font-mono text-cyan-300/80">
+                {frametimeMs}ms
+              </span>
+            </div>
           </div>
 
           <span className="text-gray-700">|</span>

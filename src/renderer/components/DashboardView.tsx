@@ -21,7 +21,8 @@ import {
   Eye,
   AlertTriangle,
   Bot,
-  Wand2
+  Wand2,
+  Rocket
 } from 'lucide-react';
 import { SystemMetrics, CategoryId, OptimizationState } from '../../shared/types';
 
@@ -99,6 +100,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const [isOptimizingNetwork, setIsOptimizingNetwork] = useState<boolean>(false);
   const [networkResult, setNetworkResult] = useState<any>(null);
+  const [isOneClickBoosting, setIsOneClickBoosting] = useState<boolean>(false);
+  const [oneClickResult, setOneClickResult] = useState<any>(null);
+
+  const handleOneClickBoost = async () => {
+    if (isOneClickBoosting) return;
+    setIsOneClickBoosting(true);
+    setOneClickResult(null);
+    try {
+      if ((window as any).optimizerApi?.oneClickBoost) {
+        const res = await (window as any).optimizerApi.oneClickBoost();
+        setOneClickResult(res);
+        if (onShowNotification) {
+          onShowNotification(res.message, res.success ? 'success' : 'error');
+        }
+        onRescanSystem();
+      }
+    } catch (e: any) {
+      console.error('Erro no 1-Click Boost:', e);
+    } finally {
+      setIsOneClickBoosting(false);
+    }
+  };
 
   const handleAiAutoOptimize = async () => {
     if (!metrics || isAiOptimizing) return;
@@ -448,10 +471,35 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               Reduz a latência de entrada do rato e teclado, otimiza o bufferbloat da rede e liberta ciclos de CPU.
             </p>
 
-            {/* Main Action Buttons: Modo IA, Modo Ultra & Turbo Ping */}
+            {/* Main Action Buttons: 1-Click Boost, Modo IA, Modo Ultra & Turbo Ping */}
             <div className="flex flex-wrap items-stretch gap-3 pt-2">
+              {/* 1-Click Boost & Clean */}
               <button
-                disabled={isOperating || isScanning || isAiOptimizing || isOptimizingNetwork}
+                disabled={isOperating || isScanning || isAiOptimizing || isOptimizingNetwork || isOneClickBoosting}
+                onClick={handleOneClickBoost}
+                className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 text-white transition-all shadow-lg shadow-emerald-600/30 ring-1 ring-emerald-400/40 hover:scale-[1.02] disabled:opacity-50 text-left min-w-[230px]"
+                title="Liberta instantaneamente RAM e Standby List, trava o temporizador a 0.500ms, limpa caches e otimiza rotas de rede"
+              >
+                <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center shrink-0">
+                  {isOneClickBoosting ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-white" />
+                  ) : (
+                    <Rocket className="w-4 h-4 text-emerald-200" />
+                  )}
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5 font-extrabold text-xs text-white leading-tight">
+                    <span>{isOneClickBoosting ? 'A Acelerar...' : '1-Click Boost'}</span>
+                    <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-emerald-400/30 text-emerald-200 font-bold">Turbo</span>
+                  </div>
+                  <div className="text-[10px] text-emerald-100/80 font-normal leading-tight mt-0.5">
+                    RAM limpa, 0.5ms e caches a 100%
+                  </div>
+                </div>
+              </button>
+
+              <button
+                disabled={isOperating || isScanning || isAiOptimizing || isOptimizingNetwork || isOneClickBoosting}
                 onClick={handleAiAutoOptimize}
                 className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 via-fuchsia-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white transition-all shadow-lg shadow-fuchsia-600/30 ring-1 ring-white/20 hover:scale-[1.02] disabled:opacity-50 text-left min-w-[230px]"
                 title="A IA analisa o modelo do CPU, placa gráfica, RAM e tipo de rede para aplicar automaticamente os ajustes perfeitos"
@@ -584,6 +632,40 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
                 <button
                   onClick={() => setNetworkResult(null)}
+                  className="text-gray-400 hover:text-white text-xs font-bold p-1"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            {/* 1-Click Boost Result Banner */}
+            {oneClickResult && (
+              <div className="mt-3 p-3.5 rounded-xl bg-gradient-to-r from-emerald-950/80 to-teal-950/80 border border-emerald-500/40 text-emerald-200 text-xs flex items-start justify-between gap-3 animate-fadeIn">
+                <div className="flex items-start gap-2.5">
+                  <Rocket className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold text-white block">
+                      ⚡ 1-Click Game Boost Aplicado com Sucesso!
+                    </span>
+                    <p className="text-[11px] text-emerald-100/90 mt-0.5">
+                      {oneClickResult.message}
+                    </p>
+                    <div className="flex items-center gap-3 mt-1.5 text-[10px] font-mono">
+                      <span className="text-emerald-300 font-bold">
+                        🧹 RAM Libertada: ~{oneClickResult.freedRamMb}MB
+                      </span>
+                      <span className="text-cyan-300 font-bold">
+                        ⏱️ Resolução de Timer: 0.500ms
+                      </span>
+                      <span className="text-amber-300 font-bold">
+                        🎮 Shaders & DNS: Otimizados
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setOneClickResult(null)}
                   className="text-gray-400 hover:text-white text-xs font-bold p-1"
                 >
                   ✕

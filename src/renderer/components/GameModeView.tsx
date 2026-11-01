@@ -35,6 +35,7 @@ export const GameModeView: React.FC<GameModeViewProps> = ({
   const [newGameProcess, setNewGameProcess] = useState('');
   const [newGameCategory, setNewGameCategory] = useState('FPS Competitivo');
   const [lastScanCount, setLastScanCount] = useState<number>(0);
+  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
 
   // Scan games on mount using the native backend GameSensorService
   const scanGames = async () => {
@@ -302,15 +303,26 @@ export const GameModeView: React.FC<GameModeViewProps> = ({
 
                 {/* Cover Image Container */}
                 <div className="w-full h-44 rounded-xl overflow-hidden relative shadow-md bg-[#0D1424]">
-                  <img
-                    src={game.coverImage}
-                    alt={game.name}
-                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = 'none';
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F19] via-transparent to-transparent opacity-70" />
+                  {!failedImages[game.id] && game.coverImage ? (
+                    <img
+                      src={game.coverImage}
+                      alt={game.name}
+                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                      onError={() => {
+                        setFailedImages((prev) => ({ ...prev, [game.id]: true }));
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center p-3 text-center bg-gradient-to-br from-[#1C2640] via-[#10172A] to-[#0A0E1A] relative group-hover:scale-105 transition-transform duration-300 select-none">
+                      <div className="w-12 h-12 rounded-2xl bg-indigo-600/25 border border-indigo-500/40 flex items-center justify-center text-indigo-300 font-black text-sm mb-2 shadow-lg shadow-indigo-600/20">
+                        {game.name.substring(0, 3).toUpperCase()}
+                      </div>
+                      <span className="text-[11px] font-bold text-gray-200 line-clamp-2 leading-tight px-1 drop-shadow">
+                        {game.name}
+                      </span>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F19] via-transparent to-transparent opacity-70 pointer-events-none" />
                   <span className="absolute bottom-2 left-2 text-[9px] font-semibold bg-black/75 backdrop-blur-md px-2 py-0.5 rounded text-white/90 border border-white/10 max-w-[85%] truncate">
                     {game.category}
                   </span>
