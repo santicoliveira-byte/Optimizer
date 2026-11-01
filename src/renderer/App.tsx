@@ -130,6 +130,8 @@ export const App: React.FC = () => {
       });
     }
 
+    const cleanups: (() => void)[] = [];
+
     if (window.optimizerApi?.onBoosterGameStarted) {
       const unsubStart = window.optimizerApi.onBoosterGameStarted((data) => {
         showNotification(`⚡ ${data.message}`, 'success');
@@ -141,11 +143,21 @@ export const App: React.FC = () => {
         setTimerResolutionMs(1.0);
         setIsTournamentMode(false);
       });
-      return () => {
-        unsubStart();
-        unsubEnd();
-      };
+      cleanups.push(unsubStart, unsubEnd);
     }
+
+    if (window.optimizerApi?.onProRequired) {
+      const unsubPro = window.optimizerApi.onProRequired((data) => {
+        showNotification(`👑 ${data.message}`, 'error');
+        setSettingsInitialTab('pro');
+        setIsSettingsOpen(true);
+      });
+      cleanups.push(unsubPro);
+    }
+
+    return () => {
+      cleanups.forEach((c) => c());
+    };
   }, []);
 
   const checkUpdates = async () => {

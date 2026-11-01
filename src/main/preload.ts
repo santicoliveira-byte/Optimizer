@@ -138,6 +138,7 @@ export interface OptimizerApi {
   licenseGetStatus: () => Promise<LicenseStatus>;
   licenseActivate: (key: string, name?: string) => Promise<{ success: boolean; message: string; isPro: boolean }>;
   licenseDeactivate: () => Promise<{ success: boolean; message: string }>;
+  onProRequired: (callback: (data: { feature: string; message: string }) => void) => () => void;
 }
 
 const api: OptimizerApi = {
@@ -326,7 +327,14 @@ const api: OptimizerApi = {
   startupSetStatus: (enabled: boolean, silent?: boolean) => ipcRenderer.invoke('startup:set-status', enabled, silent),
   licenseGetStatus: () => ipcRenderer.invoke('license:get-status'),
   licenseActivate: (key: string, name?: string) => ipcRenderer.invoke('license:activate', key, name),
-  licenseDeactivate: () => ipcRenderer.invoke('license:deactivate')
+  licenseDeactivate: () => ipcRenderer.invoke('license:deactivate'),
+  onProRequired: (callback: (data: { feature: string; message: string }) => void) => {
+    const handler = (_: any, data: any) => callback(data);
+    ipcRenderer.on('pro:required', handler);
+    return () => {
+      ipcRenderer.removeListener('pro:required', handler);
+    };
+  }
 };
 
 contextBridge.exposeInMainWorld('optimizerApi', api);

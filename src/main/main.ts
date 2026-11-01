@@ -149,6 +149,17 @@ function createWindow() {
 }
 
 function toggleBenchmarkHotkeyPressed() {
+  if (!LicenseService.getInstance().getStatus().isPro) {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.show();
+      mainWindow.focus();
+      mainWindow.webContents.send('pro:required', {
+        feature: 'benchmark',
+        message: 'A gravação de Benchmark e análise de 1% Lows requer o Optimizer PRO 👑'
+      });
+    }
+    return;
+  }
   const booster = GameBoosterDaemon.getInstance().getState();
   const res = FpsMonitorService.getInstance().toggleBenchmark(booster.activeGame || 'Jogo');
   const status = FpsMonitorService.getInstance().getBenchmarkStatus();
@@ -286,6 +297,18 @@ function getOverlayDimensions(format: 'horizontal' | 'vertical' | 'minimal') {
 }
 
 function toggleOverlayWindow(isManual: boolean = true) {
+  if (!LicenseService.getInstance().getStatus().isPro) {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.show();
+      mainWindow.focus();
+      mainWindow.webContents.send('pro:required', {
+        feature: 'overlay',
+        message: 'O HUD Overlay em jogo é exclusivo da versão Optimizer PRO 👑'
+      });
+    }
+    return { isOpen: false, isClickThrough: false };
+  }
+
   if (isManual) {
     isOverlayManuallyOpened = !isOverlayManuallyOpened;
   }
@@ -709,6 +732,13 @@ function registerIpc() {
   });
 
   ipcMain.handle('game-route:prioritize-all', async (_, enable: boolean) => {
+    if (!LicenseService.getInstance().getStatus().isPro) {
+      return {
+        success: false,
+        count: 0,
+        message: 'A priorização simultânea QoS DSCP 46 para todos os jogos requer a versão PRO 👑'
+      };
+    }
     return GameTrafficRoutingService.getInstance().prioritizeAll(enable);
   });
 
@@ -818,6 +848,12 @@ function registerIpc() {
   });
 
   ipcMain.handle('msi:set-device', async (_, deviceId: string, enable: boolean, priority: any) => {
+    if (!LicenseService.getInstance().getStatus().isPro) {
+      return {
+        success: false,
+        message: 'A alteração de interrupções MSI em hardware é exclusiva da versão PRO 👑'
+      };
+    }
     return MsiUtilityService.getInstance().setDeviceMsi(deviceId, enable, priority);
   });
 
@@ -835,6 +871,12 @@ function registerIpc() {
   });
 
   ipcMain.handle('lasso:apply-boost', async (_, processName: string) => {
+    if (!LicenseService.getInstance().getStatus().isPro) {
+      return {
+        success: false,
+        message: 'A otimização de núcleos P-Cores via Process Lasso requer a versão Optimizer PRO 👑'
+      };
+    }
     return ProcessLassoService.getInstance().applyLassoOptimization(processName);
   });
 
@@ -887,6 +929,12 @@ function registerIpc() {
 
   // 1-Click Tournament eSports Mode
   ipcMain.handle('tournament:activate', async () => {
+    if (!LicenseService.getInstance().getStatus().isPro) {
+      return {
+        success: false,
+        message: 'O Modo Torneio com Resolução de Timer 0.500ms é exclusivo da versão Optimizer PRO 👑'
+      };
+    }
     // 1. Lock 0.500ms Timer
     await TimerResolutionService.getInstance().setPrecisionTimer(true);
     // 2. Clean Standby RAM
@@ -1100,11 +1148,27 @@ function registerIpc() {
   });
 
   ipcMain.handle('gsync:apply-cap', async (_, cap: number, hz?: number) => {
+    if (!LicenseService.getInstance().getStatus().isPro) {
+      return {
+        currentRefreshRate: hz || 60,
+        recommendedCap: cap,
+        appliedGames: [],
+        success: false,
+        message: 'A aplicação automática do teto G-Sync/FreeSync a todos os jogos requer a versão PRO 👑'
+      };
+    }
     const refreshRate = hz || FpsMonitorService.getInstance().getRefreshRate();
     return GameConfigTunerService.getInstance().applyGsyncCap(cap, refreshRate);
   });
 
   ipcMain.handle('benchmark:toggle', async () => {
+    if (!LicenseService.getInstance().getStatus().isPro) {
+      return {
+        isRecording: false,
+        session: null,
+        message: 'A gravação de Benchmark e análise de 1% Lows requer o Optimizer PRO 👑'
+      };
+    }
     toggleBenchmarkHotkeyPressed();
     return FpsMonitorService.getInstance().getBenchmarkStatus();
   });

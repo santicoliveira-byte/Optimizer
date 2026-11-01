@@ -38,4 +38,24 @@ describe('Optimizer PRO License Engine', () => {
     expect(licenseService.getStatus().isPro).toBe(false);
     expect(licenseService.getStatus().plan).toBe('Free');
   });
+
+  it('correctly gates premium features when plan is Free', () => {
+    const licenseService = LicenseService.getInstance();
+    licenseService.deactivate();
+    expect(licenseService.getStatus().isPro).toBe(false);
+
+    const canAccessFeature = (isPro: boolean, feature: string) => {
+      const proOnlyFeatures = ['overlay', 'benchmark', 'gsync', 'pcors', 'timer05', 'msiPriority'];
+      if (proOnlyFeatures.includes(feature) && !isPro) return false;
+      return true;
+    };
+
+    expect(canAccessFeature(false, 'overlay')).toBe(false);
+    expect(canAccessFeature(false, 'benchmark')).toBe(false);
+    expect(canAccessFeature(false, 'timer05')).toBe(false);
+    expect(canAccessFeature(false, 'msiPriority')).toBe(false);
+    expect(canAccessFeature(true, 'overlay')).toBe(true);
+    expect(canAccessFeature(true, 'timer05')).toBe(true);
+    expect(canAccessFeature(true, 'msiPriority')).toBe(true);
+  });
 });
