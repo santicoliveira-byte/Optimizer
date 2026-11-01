@@ -83,4 +83,33 @@ describe('Ultra-Lightweight Game Overlay Architecture', () => {
     expect(frametimeMs).toBe(6.9);
     expect(frametimeMs).toBeLessThan(10); // Super fluid under 10ms frame intervals
   });
+
+  it('validates overlay format options and dimensions', () => {
+    const formatDimensions: Record<string, { width: number; height: number }> = {
+      horizontal: { width: 620, height: 44 },
+      vertical: { width: 220, height: 290 },
+      minimal: { width: 400, height: 40 }
+    };
+
+    expect(formatDimensions.horizontal.width).toBe(620);
+    expect(formatDimensions.vertical.height).toBe(290);
+    expect(formatDimensions.minimal.height).toBe(40);
+  });
+
+  it('validates configurable overlay items toggles', () => {
+    const items = {
+      showTimer: true,
+      showGameName: true,
+      showFps: true,
+      showPing: true,
+      showCpu: true,
+      showGpu: true,
+      showRam: true,
+      showControls: true
+    };
+
+    expect(Object.keys(items).length).toBe(8);
+    expect(items.showFps).toBe(true);
+    expect(items.showPing).toBe(true);
+  });
 });

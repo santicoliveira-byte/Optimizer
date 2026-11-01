@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { DryRunPreview, OptimizationProfile, OptimizationState, SystemMetrics } from '../shared/types';
+import { DryRunPreview, OptimizationProfile, OptimizationState, SystemMetrics, OverlayConfig } from '../shared/types';
 
 export interface OptimizerApi {
   getCatalog: () => Promise<any[]>;
@@ -119,6 +119,10 @@ export interface OptimizerApi {
   overlayClose: () => Promise<{ success: boolean }>;
   onOverlayGhostChanged: (callback: (isClickThrough: boolean) => void) => () => void;
   fpsGetLive: () => Promise<{ fps: number; min1Fps: number; frametimeMs?: number; isGameActive: boolean; gameName?: string; refreshRate: number }>;
+  overlayGetConfig: () => Promise<OverlayConfig>;
+  overlayUpdateConfig: (config: Partial<OverlayConfig>) => Promise<OverlayConfig>;
+  overlayResetConfig: () => Promise<OverlayConfig>;
+  onOverlayConfigChanged: (callback: (config: OverlayConfig) => void) => () => void;
 }
 
 const api: OptimizerApi = {
@@ -276,7 +280,17 @@ const api: OptimizerApi = {
       ipcRenderer.removeListener('overlay:ghost-changed', handler);
     };
   },
-  fpsGetLive: () => ipcRenderer.invoke('fps:get-live')
+  fpsGetLive: () => ipcRenderer.invoke('fps:get-live'),
+  overlayGetConfig: () => ipcRenderer.invoke('overlay:get-config'),
+  overlayUpdateConfig: (config: Partial<OverlayConfig>) => ipcRenderer.invoke('overlay:update-config', config),
+  overlayResetConfig: () => ipcRenderer.invoke('overlay:reset-config'),
+  onOverlayConfigChanged: (callback: (config: OverlayConfig) => void) => {
+    const handler = (_: any, val: OverlayConfig) => callback(val);
+    ipcRenderer.on('overlay:config-changed', handler);
+    return () => {
+      ipcRenderer.removeListener('overlay:config-changed', handler);
+    };
+  }
 };
 
 contextBridge.exposeInMainWorld('optimizerApi', api);

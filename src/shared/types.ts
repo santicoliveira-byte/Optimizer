@@ -257,4 +257,28 @@ export interface DetectedGame {
   isCustom?: boolean;
 }
 
+export interface OverlayItemsConfig {
+  showTimer: boolean;
+  showGameName: boolean;
+  showFps: boolean;
+  showPing: boolean;
+  showCpu: boolean;
+  showGpu: boolean;
+  showRam: boolean;
+  showControls: boolean;
+}
+
+export type OverlayFormat = 'horizontal' | 'vertical' | 'minimal';
+export type OverlayTheme = 'dark-gamer' | 'glass' | 'pure-black';
+export type OverlayFontSize = 'compact' | 'medium' | 'large';
+
+export interface OverlayConfig {
+  items: OverlayItemsConfig;
+  format: OverlayFormat;
+  theme: OverlayTheme;
+  fontSize: OverlayFontSize;
+  opacity: number;
+}
+
+
 

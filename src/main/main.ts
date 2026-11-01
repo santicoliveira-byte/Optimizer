@@ -29,6 +29,7 @@ import { CpuZInspectorService } from './engine/cpuz-inspector-service';
 import { AutoUpdaterService } from './engine/auto-updater-service';
 import { GameSensorService } from './engine/game-sensor-service';
 import { FpsMonitorService } from './engine/fps-monitor-service';
+import { OverlayConfigService } from './engine/overlay-config-service';
 
 // Hardware & low-end PC performance switches
 app.commandLine.appendSwitch('disable-renderer-backgrounding');
@@ -152,6 +153,16 @@ function createTray() {
 let overlayWindow: BrowserWindow | null = null;
 let isOverlayClickThrough = false;
 
+function getOverlayDimensions(format: 'horizontal' | 'vertical' | 'minimal') {
+  if (format === 'vertical') {
+    return { width: 220, height: 290 };
+  }
+  if (format === 'minimal') {
+    return { width: 400, height: 40 };
+  }
+  return { width: 620, height: 44 };
+}
+
 function toggleOverlayWindow() {
   if (overlayWindow && !overlayWindow.isDestroyed()) {
     if (overlayWindow.isVisible()) {
@@ -167,11 +178,13 @@ function toggleOverlayWindow() {
   const { screen } = require('electron');
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width } = primaryDisplay.workAreaSize;
+  const cfg = OverlayConfigService.getInstance().getConfig();
+  const { width: overlayWidth, height: overlayHeight } = getOverlayDimensions(cfg.format);
 
   overlayWindow = new BrowserWindow({
-    width: 620,
-    height: 44,
-    x: Math.max(0, width - 640),
+    width: overlayWidth,
+    height: overlayHeight,
+    x: Math.max(0, width - overlayWidth - 20),
     y: 16,
     frame: false,
     transparent: true,
@@ -213,8 +226,8 @@ function setOverlayPositionPreset(preset: 'top-right' | 'top-left' | 'top-center
   const { screen } = require('electron');
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width, height } = primaryDisplay.workAreaSize;
-  const overlayWidth = 620;
-  const overlayHeight = 44;
+  const cfg = OverlayConfigService.getInstance().getConfig();
+  const { width: overlayWidth, height: overlayHeight } = getOverlayDimensions(cfg.format);
 
   let x = width - overlayWidth - 20;
   let y = 16;
@@ -865,6 +878,18 @@ function registerIpc() {
   ipcMain.handle('fps:get-live', async () => {
     return FpsMonitorService.getInstance().getLiveFps();
   });
+
+  ipcMain.handle('overlay:get-config', async () => {
+    return OverlayConfigService.getInstance().getConfig();
+  });
+
+  ipcMain.handle('overlay:update-config', async (_, partial) => {
+    return OverlayConfigService.getInstance().updateConfig(partial);
+  });
+
+  ipcMain.handle('overlay:reset-config', async () => {
+    return OverlayConfigService.getInstance().resetDefaults();
+  });
 }
 
 app.whenReady().then(() => {
@@ -888,6 +913,24 @@ app.whenReady().then(() => {
         }
       });
       GameBoosterDaemon.getInstance().startDaemon();
+
+      OverlayConfigService.getInstance().onConfigChanged((cfg) => {
+        if (overlayWindow && !overlayWindow.isDestroyed()) {
+          const { width: newW, height: newH } = getOverlayDimensions(cfg.format);
+          const [currentW, currentH] = overlayWindow.getSize();
+          if (newW !== currentW || newH !== currentH) {
+            overlayWindow.setSize(newW, newH);
+          }
+          try {
+            overlayWindow.webContents.send('overlay:config-changed', cfg);
+          } catch {}
+        }
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          try {
+            mainWindow.webContents.send('overlay:config-changed', cfg);
+          } catch {}
+        }
+      });
     } catch {}
   }
   try {
