@@ -152,6 +152,27 @@ function createTray() {
 
 let overlayWindow: BrowserWindow | null = null;
 let isOverlayClickThrough = false;
+let isOverlayManuallyOpened = false;
+let overlayTopGuard: NodeJS.Timeout | null = null;
+
+function startOverlayTopGuard() {
+  if (overlayTopGuard) return;
+  overlayTopGuard = setInterval(() => {
+    if (overlayWindow && !overlayWindow.isDestroyed() && overlayWindow.isVisible()) {
+      try {
+        overlayWindow.setAlwaysOnTop(true, 'screen-saver', 1);
+        overlayWindow.moveTop();
+      } catch {}
+    }
+  }, 1500);
+}
+
+function stopOverlayTopGuard() {
+  if (overlayTopGuard) {
+    clearInterval(overlayTopGuard);
+    overlayTopGuard = null;
+  }
+}
 
 function getOverlayDimensions(format: 'horizontal' | 'vertical' | 'minimal') {
   if (format === 'vertical') {
@@ -163,14 +184,21 @@ function getOverlayDimensions(format: 'horizontal' | 'vertical' | 'minimal') {
   return { width: 620, height: 44 };
 }
 
-function toggleOverlayWindow() {
+function toggleOverlayWindow(isManual: boolean = true) {
+  if (isManual) {
+    isOverlayManuallyOpened = !isOverlayManuallyOpened;
+  }
+
   if (overlayWindow && !overlayWindow.isDestroyed()) {
     if (overlayWindow.isVisible()) {
       overlayWindow.hide();
+      stopOverlayTopGuard();
       return { isOpen: false, isClickThrough: isOverlayClickThrough };
     } else {
       overlayWindow.showInactive();
-      overlayWindow.setAlwaysOnTop(true, 'screen-saver');
+      overlayWindow.setAlwaysOnTop(true, 'screen-saver', 1);
+      overlayWindow.moveTop();
+      startOverlayTopGuard();
       return { isOpen: true, isClickThrough: isOverlayClickThrough };
     }
   }
@@ -186,6 +214,7 @@ function toggleOverlayWindow() {
     height: overlayHeight,
     x: Math.max(0, width - overlayWidth - 20),
     y: 16,
+    type: 'toolbar', // Critical on Windows: WS_EX_TOOLWINDOW prevents full-screen games from burying or minimizing the overlay!
     frame: false,
     transparent: true,
     alwaysOnTop: true,
@@ -204,8 +233,10 @@ function toggleOverlayWindow() {
     }
   });
 
-  overlayWindow.setAlwaysOnTop(true, 'screen-saver');
+  overlayWindow.setAlwaysOnTop(true, 'screen-saver', 1);
   overlayWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  overlayWindow.moveTop();
+  startOverlayTopGuard();
 
   if (isDev) {
     overlayWindow.loadURL('http://localhost:5173/#overlay');
@@ -216,6 +247,7 @@ function toggleOverlayWindow() {
 
   overlayWindow.on('closed', () => {
     overlayWindow = null;
+    stopOverlayTopGuard();
   });
 
   return { isOpen: true, isClickThrough: isOverlayClickThrough };
@@ -869,8 +901,10 @@ function registerIpc() {
   });
 
   ipcMain.handle('overlay:close', async () => {
+    isOverlayManuallyOpened = false;
     if (overlayWindow && !overlayWindow.isDestroyed()) {
       overlayWindow.hide();
+      stopOverlayTopGuard();
     }
     return { success: true };
   });
@@ -903,12 +937,24 @@ app.whenReady().then(() => {
       GameBoosterDaemon.getInstance().setWindow(mainWindow);
       GameBoosterDaemon.getInstance().setAutoOverlayCallback((show) => {
         if (show) {
-          if (!overlayWindow || !overlayWindow.isVisible()) {
-            toggleOverlayWindow();
+          if (!overlayWindow || overlayWindow.isDestroyed()) {
+            toggleOverlayWindow(false);
+          } else if (!overlayWindow.isVisible()) {
+            overlayWindow.showInactive();
+            overlayWindow.setAlwaysOnTop(true, 'screen-saver', 1);
+            overlayWindow.moveTop();
+            startOverlayTopGuard();
+          } else {
+            // Already visible: reinforce topmost position above the newly focused game
+            overlayWindow.setAlwaysOnTop(true, 'screen-saver', 1);
+            overlayWindow.moveTop();
           }
         } else {
-          if (overlayWindow && overlayWindow.isVisible()) {
+          // If the user manually opened the overlay via Alt+O, keep it open!
+          // Only auto-hide if it was opened solely by the auto game booster daemon
+          if (!isOverlayManuallyOpened && overlayWindow && !overlayWindow.isDestroyed() && overlayWindow.isVisible()) {
             overlayWindow.hide();
+            stopOverlayTopGuard();
           }
         }
       });

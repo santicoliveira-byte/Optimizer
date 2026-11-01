@@ -24,6 +24,7 @@ export class GameBoosterDaemon {
   private autoOverlayCallback: ((show: boolean) => void) | null = null;
   private pollingInterval: NodeJS.Timeout | null = null;
   private isPolling: boolean = false;
+  private missedCheckCount: number = 0;
 
   public static getInstance(): GameBoosterDaemon {
     if (!GameBoosterDaemon.instance) {
@@ -66,7 +67,7 @@ export class GameBoosterDaemon {
       const knownProcs = GameSensorService.getInstance().getAllKnownProcessNames();
       if (knownProcs.length === 0) return;
 
-      const { stdout } = await execAsync('tasklist /fo csv /nh', { timeout: 1500, windowsHide: true });
+      const { stdout } = await execAsync('tasklist /fo csv /nh', { timeout: 4000, windowsHide: true });
       const runningLower = stdout.toLowerCase();
 
       let detectedProc: string | null = null;
@@ -108,14 +109,23 @@ export class GameBoosterDaemon {
 
     // New game started
     if (gameProcess && gameProcess !== this.activeGame) {
+      this.missedCheckCount = 0;
       this.activeGame = gameProcess;
       await this.applyAutoBoost(gameProcess);
     }
-    // Game closed
+    // Existing game still running
+    else if (gameProcess && gameProcess === this.activeGame) {
+      this.missedCheckCount = 0;
+    }
+    // Game not seen in this poll: debounce 3 cycles (~7.5s) to avoid closing overlay during map loads/transitions
     else if (!gameProcess && this.activeGame) {
-      const finishedGame = this.activeGame;
-      this.activeGame = null;
-      await this.revertBoost(finishedGame);
+      this.missedCheckCount++;
+      if (this.missedCheckCount >= 3) {
+        this.missedCheckCount = 0;
+        const finishedGame = this.activeGame;
+        this.activeGame = null;
+        await this.revertBoost(finishedGame);
+      }
     }
 
     return this.getState();

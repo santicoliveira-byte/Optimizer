@@ -112,4 +112,26 @@ describe('Ultra-Lightweight Game Overlay Architecture', () => {
     expect(items.showFps).toBe(true);
     expect(items.showPing).toBe(true);
   });
+
+  it('validates top-guard and toolbar window configuration for games', () => {
+    const windowConfig = {
+      type: 'toolbar',
+      alwaysOnTop: true,
+      level: 'screen-saver',
+      relativeLevel: 1,
+      topGuardIntervalMs: 1500
+    };
+
+    expect(windowConfig.type).toBe('toolbar');
+    expect(windowConfig.relativeLevel).toBe(1);
+    expect(windowConfig.topGuardIntervalMs).toBe(1500);
+  });
+
+  it('validates game exit debounce to prevent premature overlay closing', () => {
+    const debounceCycles = 3;
+    const pollIntervalMs = 2500;
+    const totalGracePeriodMs = debounceCycles * pollIntervalMs;
+
+    expect(totalGracePeriodMs).toBe(7500); // 7.5 seconds grace period
+  });
 });

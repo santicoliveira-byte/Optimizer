@@ -438,6 +438,24 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 </button>
               </div>
 
+              {/* Gaming Mode Tip Alert: Borderless Windowed */}
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3.5 flex items-start gap-3 text-xs shadow-inner">
+                <div className="p-1.5 rounded-xl bg-amber-500/20 text-amber-400 shrink-0 mt-0.5">
+                  <AlertTriangle className="w-4 h-4" />
+                </div>
+                <div className="space-y-1">
+                  <strong className="text-amber-300 font-bold block text-xs">
+                    Como manter o HUD visível por cima dos teus jogos:
+                  </strong>
+                  <p className="text-gray-300 text-[11px] leading-relaxed">
+                    Nas opções gráficas de jogos como <strong className="text-white">VALORANT, CS2, Fortnite, Roblox ou GTA</strong>, coloca o Modo de Ecrã em <span className="text-amber-300 font-bold font-mono">"Tela Cheia em Janela" / "Sem Moldura" (Borderless Windowed)</span>.
+                  </p>
+                  <p className="text-gray-400 text-[10px] leading-tight">
+                    Em <em>"Tela Cheia Exclusiva"</em>, o Windows entrega a placa de vídeo ao jogo e esconde todas as janelas do desktop. O modo Janela sem Bordas tem 0 latência extra e permite ao HUD ficar 100% visível por cima do jogo.
+                  </p>
+                </div>
+              </div>
+
               {/* Real-time Mini Preview */}
               <div className="bg-[#080D1A] border border-[#1E293B] rounded-2xl p-3.5 space-y-2">
                 <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-gray-400">
