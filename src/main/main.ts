@@ -548,7 +548,8 @@ function registerIpc() {
   });
 
   ipcMain.handle('optimizer:apply-recommended', async (_, isDryRun: boolean) => {
-    return engine.applyRecommended(isDryRun);
+    const isPro = LicenseService.getInstance().getStatus().isPro;
+    return engine.applyRecommended(isDryRun, isPro);
   });
 
   ipcMain.handle('optimizer:get-health-score', async () => {
@@ -719,6 +720,19 @@ function registerIpc() {
   });
 
   ipcMain.handle('latency:set-precision-timer', async (_, enable: boolean) => {
+    if (enable && !LicenseService.getInstance().getStatus().isPro) {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('pro:required', {
+          feature: 'timer',
+          message: 'O temporizador de ultra precisão a 0.500ms requer o Optimizer PRO 👑'
+        });
+      }
+      return {
+        success: false,
+        currentMs: 1.0,
+        message: 'A resolução de 0.500ms requer o Optimizer PRO 👑'
+      };
+    }
     return LatencyBenchmarkService.getInstance().setPrecisionTimer(enable);
   });
 
@@ -782,8 +796,15 @@ function registerIpc() {
   // 1-Click Game Boost & Clean
   ipcMain.handle('optimizer:one-click-boost', async () => {
     try {
+      const isPro = LicenseService.getInstance().getStatus().isPro;
       const ramRes = await RamCleanerService.getInstance().cleanRamAndStandby();
-      await LatencyBenchmarkService.getInstance().setPrecisionTimer(true);
+
+      let timerMs = 1.0;
+      if (isPro) {
+        await LatencyBenchmarkService.getInstance().setPrecisionTimer(true);
+        timerMs = 0.500;
+      }
+
       try {
         const { exec } = require('child_process');
         exec('ipconfig /flushdns');
@@ -799,9 +820,11 @@ function registerIpc() {
       return {
         success: true,
         freedRamMb: freedMb,
-        timerMs: 0.500,
+        timerMs,
         shaderFreedMb,
-        message: `⚡ 1-Click Boost Ativo: ~${freedMb}MB de RAM libertados, temporizador travado a 0.500ms e caches otimizados!`
+        message: isPro
+          ? `👑 1-Click Boost PRO Ativo: ~${freedMb}MB de RAM libertados, temporizador travado a 0.500ms e caches otimizados!`
+          : `⚡ 1-Click Boost Básico Ativo: ~${freedMb}MB de RAM libertados e DNS limpo. (O bloqueio de timer 0.500ms e aceleração gráfica são exclusivos da versão PRO 👑)`
       };
     } catch (e: any) {
       return {
@@ -915,6 +938,19 @@ function registerIpc() {
   });
 
   ipcMain.handle('gpu-tweak:apply-competitive', async () => {
+    if (!LicenseService.getInstance().getStatus().isPro) {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('pro:required', {
+          feature: 'gpu_competitive',
+          message: 'A aplicação do perfil competitivo de drivers GPU (NVIDIA/AMD) é exclusiva do Optimizer PRO 👑'
+        });
+      }
+      return {
+        success: false,
+        appliedCount: 0,
+        message: 'A aplicação do perfil competitivo de drivers GPU (NVIDIA/AMD) é exclusiva da versão PRO 👑'
+      };
+    }
     return GpuDriverTweakService.getInstance().applyCompetitivePreset();
   });
 
@@ -924,6 +960,20 @@ function registerIpc() {
   });
 
   ipcMain.handle('timer:set-precision', async (_, enable: boolean) => {
+    if (enable && !LicenseService.getInstance().getStatus().isPro) {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('pro:required', {
+          feature: 'timer',
+          message: 'O temporizador de alta precisão a 0.500ms é exclusivo do Optimizer PRO 👑'
+        });
+      }
+      return {
+        success: false,
+        currentMs: 1.0,
+        isLockedHalfMs: false,
+        message: 'O temporizador de 0.500ms requer a versão Optimizer PRO 👑'
+      };
+    }
     return TimerResolutionService.getInstance().setPrecisionTimer(enable);
   });
 
@@ -973,6 +1023,18 @@ function registerIpc() {
   });
 
   ipcMain.handle('game-config:optimize', async (_, gameId: string) => {
+    if (!LicenseService.getInstance().getStatus().isPro) {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('pro:required', {
+          feature: 'game_config',
+          message: 'A otimização de ficheiros de jogos eSports (CS2, Fortnite, etc.) é exclusiva do Optimizer PRO 👑'
+        });
+      }
+      return {
+        success: false,
+        message: 'A otimização de configurações de jogos é exclusiva da versão PRO 👑'
+      };
+    }
     return GameConfigTunerService.getInstance().optimizeConfig(gameId);
   });
 
@@ -981,6 +1043,19 @@ function registerIpc() {
   });
 
   ipcMain.handle('game-config:optimize-all', async () => {
+    if (!LicenseService.getInstance().getStatus().isPro) {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('pro:required', {
+          feature: 'game_config',
+          message: 'A otimização em lote de jogos eSports (CS2, Fortnite, Valorant, Apex, Roblox) é exclusiva do Optimizer PRO 👑'
+        });
+      }
+      return {
+        success: false,
+        appliedCount: 0,
+        message: 'A otimização em lote de jogos eSports é exclusiva da versão PRO 👑'
+      };
+    }
     return GameConfigTunerService.getInstance().optimizeAllDetected();
   });
 
@@ -990,6 +1065,19 @@ function registerIpc() {
   });
 
   ipcMain.handle('hone-suite:apply-all', async () => {
+    if (!LicenseService.getInstance().getStatus().isPro) {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('pro:required', {
+          feature: 'hone_suite',
+          message: 'A suite avançada Hone eSports Tweaks ($9.99/mês) é exclusiva do Optimizer PRO 👑'
+        });
+      }
+      return {
+        success: false,
+        appliedCount: 0,
+        message: 'A suite avançada Hone eSports Tweaks ($9.99/mês) é exclusiva da versão PRO 👑'
+      };
+    }
     return HoneSuiteService.getInstance().applyFullHoneSuite();
   });
 

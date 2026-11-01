@@ -45,7 +45,18 @@ describe('Optimizer PRO License Engine', () => {
     expect(licenseService.getStatus().isPro).toBe(false);
 
     const canAccessFeature = (isPro: boolean, feature: string) => {
-      const proOnlyFeatures = ['overlay', 'benchmark', 'gsync', 'pcors', 'timer05', 'msiPriority'];
+      const proOnlyFeatures = [
+        'overlay',
+        'benchmark',
+        'gsync',
+        'pcors',
+        'timer05',
+        'msiPriority',
+        'gpuCompetitive',
+        'gameConfigs',
+        'honeSuite',
+        'applyRecommendedFPS'
+      ];
       if (proOnlyFeatures.includes(feature) && !isPro) return false;
       return true;
     };
@@ -54,8 +65,17 @@ describe('Optimizer PRO License Engine', () => {
     expect(canAccessFeature(false, 'benchmark')).toBe(false);
     expect(canAccessFeature(false, 'timer05')).toBe(false);
     expect(canAccessFeature(false, 'msiPriority')).toBe(false);
+    expect(canAccessFeature(false, 'gpuCompetitive')).toBe(false);
+    expect(canAccessFeature(false, 'gameConfigs')).toBe(false);
+    expect(canAccessFeature(false, 'honeSuite')).toBe(false);
+    expect(canAccessFeature(false, 'applyRecommendedFPS')).toBe(false);
+
     expect(canAccessFeature(true, 'overlay')).toBe(true);
     expect(canAccessFeature(true, 'timer05')).toBe(true);
     expect(canAccessFeature(true, 'msiPriority')).toBe(true);
+    expect(canAccessFeature(true, 'gpuCompetitive')).toBe(true);
+    expect(canAccessFeature(true, 'gameConfigs')).toBe(true);
+    expect(canAccessFeature(true, 'honeSuite')).toBe(true);
+    expect(canAccessFeature(true, 'applyRecommendedFPS')).toBe(true);
   });
 });

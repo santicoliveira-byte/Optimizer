@@ -527,7 +527,9 @@ export const App: React.FC = () => {
       showNotification(
         isDryRun
           ? `[Simulação] ${res.appliedCount} otimizações recomendadas simuladas.`
-          : `Sucesso: ${res.appliedCount} otimizações recomendadas aplicadas com ponto de restauro criado!`,
+          : isPro
+            ? `Sucesso: ${res.appliedCount} otimizações recomendadas aplicadas com ponto de restauro criado!`
+            : `Sucesso: ${res.appliedCount} otimizações de sistema e limpeza aplicadas. As 161 otimizações de FPS requerem o plano PRO 👑`,
         'success'
       );
       await loadAllData();
@@ -555,6 +557,13 @@ export const App: React.FC = () => {
   };
 
   const handleApplyGamingMode = async () => {
+    if (!isPro) {
+      showNotification('👑 O Modo de Jogo Ultra (40 otimizações agressivas de FPS) é exclusivo da edição PRO!', 'error');
+      setSettingsInitialTab('pro');
+      setIsSettingsOpen(true);
+      return;
+    }
+
     let gamingProf = profiles.find((p) => p.id === 'gaming');
     let itemIds = gamingProf && gamingProf.itemIds.length > 0 ? [...gamingProf.itemIds] : [
       'input_power_plan',
@@ -911,6 +920,7 @@ export const App: React.FC = () => {
                   isApplyingGaming={isApplyingGaming}
                   gamingProgress={gamingProgress}
                   onShowNotification={showNotification}
+                  isPro={isPro}
                 />
               )}
 

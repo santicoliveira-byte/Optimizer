@@ -433,8 +433,15 @@ export class OptimizerEngine {
     return { revertedCount: count, errors };
   }
 
-  public async applyRecommended(isDryRun = false): Promise<{ appliedCount: number; messages: string[] }> {
-    const recommended = this.catalogItems.filter((i) => i.recommended && i.risk === 'safe' && i.type === 'alter');
+  public async applyRecommended(isDryRun = false, isPro = false): Promise<{ appliedCount: number; messages: string[] }> {
+    let recommended = this.catalogItems.filter((i) => i.recommended && i.risk === 'safe' && i.type === 'alter');
+
+    // Se o plano for gratuito, reserva as otimizações agressivas de FPS para a edição PRO
+    if (!isPro) {
+      const fpsCategories: CategoryId[] = ['gaming', 'cpu_gpu_power', 'input_latency'];
+      recommended = recommended.filter((i) => !fpsCategories.includes(i.category));
+    }
+
     let count = 0;
     const messages: string[] = [];
 
@@ -449,6 +456,10 @@ export class OptimizerEngine {
       } else {
         messages.push(`${item.name}: ${res.message}`);
       }
+    }
+
+    if (!isPro) {
+      messages.unshift('👑 As otimizações agressivas de FPS (Gaming, GPU e Latência) são exclusivas da edição PRO.');
     }
 
     return { appliedCount: count, messages };

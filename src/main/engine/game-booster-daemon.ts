@@ -4,6 +4,7 @@ import { ProcessLassoService } from './process-lasso-service';
 import { TimerResolutionService } from './timer-resolution-service';
 import { RamCleanerService } from './ram-cleaner-service';
 import { GameSensorService } from './game-sensor-service';
+import { LicenseService } from './license-service';
 import { BrowserWindow } from 'electron';
 
 const execAsync = promisify(exec);
@@ -133,23 +134,32 @@ export class GameBoosterDaemon {
 
   private async applyAutoBoost(gameProcess: string) {
     try {
-      // 1. Process Lasso High Priority & P-Cores
-      await ProcessLassoService.getInstance().applyLassoOptimization(gameProcess);
+      const isPro = LicenseService.getInstance().getStatus().isPro;
 
-      // 2. Lock 0.500ms Timer Resolution
-      await TimerResolutionService.getInstance().setPrecisionTimer(true);
+      if (isPro) {
+        // 1. Process Lasso High Priority & P-Cores
+        await ProcessLassoService.getInstance().applyLassoOptimization(gameProcess);
 
-      // 3. Purge Standby List RAM
-      await RamCleanerService.getInstance().cleanRamAndStandby();
+        // 2. Lock 0.500ms Timer Resolution
+        await TimerResolutionService.getInstance().setPrecisionTimer(true);
 
-      // 4. Auto-Open In-Game HUD Overlay
-      if (this.autoOverlayCallback) {
-        try {
-          this.autoOverlayCallback(true);
-        } catch {}
+        // 3. Purge Standby List RAM
+        await RamCleanerService.getInstance().cleanRamAndStandby();
+
+        // 4. Auto-Open In-Game HUD Overlay
+        if (this.autoOverlayCallback) {
+          try {
+            this.autoOverlayCallback(true);
+          } catch {}
+        }
+
+        this.lastBoostMessage = `👑 Auto Game-Booster PRO: ${gameProcess} acelerado ao máximo (P-Cores + 0.5ms Timer + RAM Limpa).`;
+      } else {
+        // Plano Gratuito: Apenas limpeza básica de RAM em segundo plano (sem mexer em temporizador de hardware ou P-Cores)
+        const ramClean = await RamCleanerService.getInstance().cleanRamAndStandby();
+        const freed = ramClean.freedEstimateMB || 320;
+        this.lastBoostMessage = `Modo Gaming Básico: ~${freed}MB RAM libertados. (Desbloqueie o PRO para ativar 0.500ms Timer e afinidade P-Cores!)`;
       }
-
-      this.lastBoostMessage = `Auto Game-Booster: ${gameProcess} acelerado com sucesso (P-Cores + 0.5ms + RAM Limpa).`;
 
       if (this.mainWindow && !this.mainWindow.isDestroyed()) {
         this.mainWindow.webContents.send('booster:game-started', {
@@ -164,17 +174,21 @@ export class GameBoosterDaemon {
 
   private async revertBoost(gameProcess: string) {
     try {
-      // 1. Revert timer resolution to default
-      await TimerResolutionService.getInstance().setPrecisionTimer(false);
+      const isPro = LicenseService.getInstance().getStatus().isPro;
 
-      // 2. Hide In-Game HUD Overlay
-      if (this.autoOverlayCallback) {
-        try {
-          this.autoOverlayCallback(false);
-        } catch {}
+      if (isPro) {
+        // 1. Revert timer resolution to default
+        await TimerResolutionService.getInstance().setPrecisionTimer(false);
+
+        // 2. Hide In-Game HUD Overlay
+        if (this.autoOverlayCallback) {
+          try {
+            this.autoOverlayCallback(false);
+          } catch {}
+        }
       }
 
-      this.lastBoostMessage = `Jogo ${gameProcess} finalizado. Timer e recursos do sistema repostos.`;
+      this.lastBoostMessage = `Jogo ${gameProcess} finalizado. Recursos do sistema repostos.`;
 
       if (this.mainWindow && !this.mainWindow.isDestroyed()) {
         this.mainWindow.webContents.send('booster:game-finished', {

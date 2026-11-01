@@ -69,6 +69,7 @@ interface DashboardViewProps {
   isScanning?: boolean;
   isApplyingGaming?: boolean;
   gamingProgress?: { current: number; total: number; currentItemName: string } | null;
+  isPro?: boolean;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -87,7 +88,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   isOperating,
   isScanning,
   isApplyingGaming,
-  gamingProgress
+  gamingProgress,
+  isPro = false
 }) => {
   const [selectedTelemetry, setSelectedTelemetry] = useState<TelemetryType | null>('cpu');
   const [telemetryHistory, setTelemetryHistory] = useState<TelemetryPoint[]>([]);
@@ -545,12 +547,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       <span>
                         {isApplyingGaming && gamingProgress
                           ? `A Ativar (${gamingProgress.current}/${gamingProgress.total})`
-                          : 'Modo Ultra'}
+                          : isPro
+                            ? 'Modo Ultra'
+                            : '👑 Modo Ultra PRO'}
                       </span>
                       <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-white/20 text-white">eSports</span>
                     </div>
                     <div className="text-[10px] text-amber-100/80 font-normal leading-tight mt-0.5">
-                      Latência 0.5ms e FPS máximo eSports
+                      {isPro ? 'Latência 0.5ms e FPS máximo eSports' : 'Desbloquear latência 0.5ms e FPS máximo'}
                     </div>
                   </div>
                 </button>
