@@ -28,6 +28,20 @@ describe('i18n and Theme Colors', () => {
     });
   });
 
+  it('ensures all translation keys present in PT are also translated in EN and ES', () => {
+    const ptKeys = Object.keys(TRANSLATIONS.pt);
+    const missingInEn: string[] = [];
+    const missingInEs: string[] = [];
+
+    ptKeys.forEach((key) => {
+      if (!TRANSLATIONS.en[key]) missingInEn.push(key);
+      if (!TRANSLATIONS.es[key]) missingInEs.push(key);
+    });
+
+    expect(missingInEn, `Missing EN keys: ${missingInEn.join(', ')}`).toEqual([]);
+    expect(missingInEs, `Missing ES keys: ${missingInEs.join(', ')}`).toEqual([]);
+  });
+
   it('provides 7 distinctive theme accent color palettes', () => {
     expect(ACCENT_COLORS.length).toBe(7);
     const ids = ACCENT_COLORS.map((c) => c.id);

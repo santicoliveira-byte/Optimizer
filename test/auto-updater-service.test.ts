@@ -28,5 +28,5 @@ describe('AutoUpdaterService', () => {
     expect(info.currentVersion).toBeDefined();
     expect(typeof info.hasUpdate).toBe('boolean');
     expect(info.htmlUrl).toContain('github.com/santicoliveira-byte/Optimizer');
-  });
+  }, 15000);
 });

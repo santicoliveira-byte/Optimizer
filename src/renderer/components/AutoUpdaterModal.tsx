@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Download,
   Sparkles,
@@ -7,7 +7,6 @@ import {
   RefreshCw,
   ExternalLink,
   X,
-  Zap,
   ArrowUpCircle
 } from 'lucide-react';
 

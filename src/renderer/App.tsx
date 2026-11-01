@@ -2,24 +2,16 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
 import { CategoryView } from './components/CategoryView';
-import { ProfilesView } from './components/ProfilesView';
 import { HistoryBackupView } from './components/HistoryBackupView';
 import { ConfirmationModal } from './components/ConfirmationModal';
 import { GameModeView } from './components/GameModeView';
-import { AppTunerView } from './components/AppTunerView';
 import { LatencyPipelineView } from './components/LatencyPipelineView';
 import { DnsBenchmarkView } from './components/DnsBenchmarkView';
-import { StartupManagerView } from './components/StartupManagerView';
 import { GameRouterView } from './components/GameRouterView';
 import { ShaderCacheCleanerModal } from './components/ShaderCacheCleanerModal';
 import { Sidebar, MainSection, SectionStats } from './components/Sidebar';
 import { TopTabBar } from './components/TopTabBar';
-import { PowerToolkitView } from './components/PowerToolkitView';
-import { NetworkPriorityWidget } from './components/NetworkPriorityWidget';
-import { ProcessLassoView } from './components/ProcessLassoView';
 import { UwpDebloaterView } from './components/UwpDebloaterView';
-import { GpuTuningView } from './components/GpuTuningView';
-import { HoneSuiteView } from './components/HoneSuiteView';
 import { WindowsMaintenanceView } from './components/WindowsMaintenanceView';
 import { BottleneckCanIRunItView } from './components/BottleneckCanIRunItView';
 import { CpuZHardwareView } from './components/CpuZHardwareView';
@@ -359,35 +351,6 @@ export const App: React.FC = () => {
     });
   }, [hardwareFilteredStates, searchQuery]);
 
-  // Helper function to get filtered states by category
-  const getStatesByCategory = (category: CategoryId) => {
-    return hardwareFilteredStates.filter((st) => {
-      const item = st.item;
-      if (item.category !== category) return false;
-
-      // Search query
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchesName = item.name.toLowerCase().includes(q);
-        const matchesDesc = item.description.toLowerCase().includes(q);
-        const matchesChange = item.exactChange.toLowerCase().includes(q);
-        const matchesId = item.id.toLowerCase().includes(q);
-        if (!matchesName && !matchesDesc && !matchesChange && !matchesId) return false;
-      }
-
-      // Risk filter
-      if (selectedRisk !== 'all' && item.risk !== selectedRisk) return false;
-
-      // Type filter
-      if (selectedType !== 'all' && item.type !== selectedType) return false;
-
-      // Recommended filter
-      if (filterRecommended && !item.recommended) return false;
-
-      return true;
-    });
-  };
-
   // Section stats for the 5 consolidated hubs in the sidebar
   const sectionStats = useMemo<Record<MainSection, SectionStats>>(() => {
     const stats: Record<MainSection, SectionStats> = {
@@ -646,66 +609,6 @@ export const App: React.FC = () => {
       setIsOperating(false);
       setIsApplyingGaming(false);
       setGamingProgress(null);
-    }
-  };
-
-  const handleApplyProfile = async (profile: OptimizationProfile) => {
-    setIsOperating(true);
-    setGamingProgress({
-      current: 0,
-      total: profile.itemIds.length,
-      currentItemName: `A carregar perfil ${profile.name}...`
-    });
-    showNotification(`A aplicar perfil ${profile.name}...`, 'info');
-    try {
-      let count = 0;
-      for (let i = 0; i < profile.itemIds.length; i++) {
-        const id = profile.itemIds[i];
-        const stateObj = states.find((s) => s.item.id === id);
-        const itemName = stateObj ? stateObj.item.name : id;
-
-        setGamingProgress({
-          current: i + 1,
-          total: profile.itemIds.length,
-          currentItemName: itemName
-        });
-
-        try {
-          const res = await window.optimizerApi.apply(id, isDryRun);
-          if (res.success) count++;
-        } catch (err) {
-          console.error(`Erro ao aplicar ${id}:`, err);
-        }
-      }
-      showNotification(
-        isDryRun
-          ? `[Simulação] Perfil ${profile.name}: ${count} itens simulados.`
-          : `Perfil ${profile.name} ativado com sucesso (${count} itens aplicados).`,
-        'success'
-      );
-      await loadAllData();
-    } catch (e: any) {
-      showNotification(`Erro ao aplicar perfil: ${e.message}`, 'error');
-    } finally {
-      setIsOperating(false);
-      setGamingProgress(null);
-    }
-  };
-
-  const handleRevertProfile = async (profile: OptimizationProfile) => {
-    setIsOperating(true);
-    try {
-      let count = 0;
-      for (const id of profile.itemIds) {
-        const res = await window.optimizerApi.revert(id);
-        if (res.success) count++;
-      }
-      showNotification(`Perfil ${profile.name} revertido com sucesso (${count} itens repostos).`, 'success');
-      await loadAllData();
-    } catch (e: any) {
-      showNotification(`Erro ao reverter perfil: ${e.message}`, 'error');
-    } finally {
-      setIsOperating(false);
     }
   };
 

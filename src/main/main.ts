@@ -1078,13 +1078,13 @@ function registerIpc() {
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send('pro:required', {
           feature: 'hone_suite',
-          message: 'A suite avançada Hone eSports Tweaks ($9.99/mês) é exclusiva do Optimizer PRO 👑'
+          message: 'A suite avançada Hone eSports Tweaks (avaliada em 9.99€/mês) está incluída no Optimizer PRO (2,00€ vitalício) 👑'
         });
       }
       return {
         success: false,
         appliedCount: 0,
-        message: 'A suite avançada Hone eSports Tweaks ($9.99/mês) é exclusiva da versão PRO 👑'
+        message: 'A suite avançada Hone eSports Tweaks (avaliada em 9.99€/mês) está incluída no Optimizer PRO (2,00€ vitalício) 👑'
       };
     }
     return HoneSuiteService.getInstance().applyFullHoneSuite();

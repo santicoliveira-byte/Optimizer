@@ -7,10 +7,8 @@ import {
   Trash2,
   Search,
   CheckCircle2,
-  AlertCircle,
   Radio,
-  Layers,
-  Sparkles
+  Layers
 } from 'lucide-react';
 import { OptimizationState, DetectedGame } from '../../shared/types';
 
@@ -34,7 +32,6 @@ export const GameModeView: React.FC<GameModeViewProps> = ({
   const [newGameName, setNewGameName] = useState('');
   const [newGameProcess, setNewGameProcess] = useState('');
   const [newGameCategory, setNewGameCategory] = useState('FPS Competitivo');
-  const [lastScanCount, setLastScanCount] = useState<number>(0);
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
 
   // Scan games on mount using the native backend GameSensorService
@@ -44,7 +41,6 @@ export const GameModeView: React.FC<GameModeViewProps> = ({
       if (window.optimizerApi?.gameSensorScan) {
         const detected = await window.optimizerApi.gameSensorScan();
         setGames(detected);
-        setLastScanCount(detected.length);
         if (detected.length > 0 && !selectedGame) {
           setSelectedGame(detected[0]);
         }

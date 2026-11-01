@@ -4,7 +4,6 @@ import {
   X,
   Palette,
   Globe,
-  Info,
   Check,
   RotateCcw,
   ExternalLink,
@@ -20,8 +19,6 @@ import {
   Cpu,
   Activity,
   Move,
-  Layers,
-  Sliders,
   BarChart2,
   Crosshair,
   Monitor,
@@ -37,8 +34,8 @@ import {
   Key,
   Gamepad2
 } from 'lucide-react';
-import { useI18n, ACCENT_COLORS, ThemeAccent, Language } from '../i18n';
-import { OverlayConfig, OverlayItemsConfig, OverlayFormat, OverlayTheme, BenchmarkSession, GsyncCapResult, StartupConfig, LicenseStatus } from '../../shared/types';
+import { useI18n, ACCENT_COLORS, Language } from '../i18n';
+import { OverlayConfig, OverlayItemsConfig, OverlayFormat, OverlayTheme, BenchmarkSession, StartupConfig, LicenseStatus } from '../../shared/types';
 
 interface SettingsModalProps {
   isOpen: boolean;
