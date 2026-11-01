@@ -1,6 +1,6 @@
 {
   "name": "optimizer-desktop",
-  "version": "2.2.7",
+  "version": "2.2.8",
   "description": "Windows 10/11 Performance, Input Delay & Network Optimizer",
   "main": "dist-electron/main/main.js",
   "scripts": {
