@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
+import { GsyncCapResult } from '../../shared/types';
 
 export interface GameConfigItem {
   id: string;
@@ -285,5 +286,80 @@ echo ">>> [Optimizer] CS2 eSports Autoexec Carregado com Sucesso! <<<"
     }
 
     return { success: true, count, messages };
+  }
+
+  /**
+   * Calculates the exact low-latency frame cap for G-Sync / FreeSync (Blur Busters / Nvidia Reflex standard)
+   */
+  public calculateGsyncCap(refreshRate: number): number {
+    const hz = Math.round(refreshRate);
+    if (hz >= 360) return hz - 5; // e.g. 355 FPS
+    if (hz >= 240) return hz - 3; // e.g. 237 FPS
+    if (hz >= 144) return hz - 3; // e.g. 141 FPS (or 162 for 165Hz)
+    if (hz >= 120) return hz - 2; // e.g. 118 FPS
+    if (hz >= 75) return hz - 2;  // e.g. 73 FPS
+    return Math.max(30, hz - 2);  // e.g. 58 FPS on 60Hz
+  }
+
+  /**
+   * Applies the G-Sync / FreeSync frame cap across detectable game configs
+   */
+  public async applyGsyncCap(cap: number, refreshRate: number): Promise<GsyncCapResult> {
+    const paths = this.resolveGamePaths();
+    const appliedGames: string[] = [];
+
+    // 1. CS2 autoexec
+    if (paths.cs2 && fs.existsSync(paths.cs2)) {
+      try {
+        let content = fs.readFileSync(paths.cs2, 'utf-8');
+        if (content.includes('fps_max')) {
+          content = content.replace(/fps_max\s+\d+/g, `fps_max ${cap}`);
+        } else {
+          content += `\nfps_max ${cap}\n`;
+        }
+        fs.writeFileSync(paths.cs2, content, 'utf-8');
+        appliedGames.push('Counter-Strike 2');
+      } catch {}
+    }
+
+    // 2. Fortnite GameUserSettings.ini
+    if (paths.fortnite && fs.existsSync(paths.fortnite)) {
+      try {
+        let content = fs.readFileSync(paths.fortnite, 'utf-8');
+        content = content.replace(/FrameRateLimit=[\d.]+/g, `FrameRateLimit=${cap}.000000`);
+        fs.writeFileSync(paths.fortnite, content, 'utf-8');
+        appliedGames.push('Fortnite');
+      } catch {}
+    }
+
+    // 3. Apex Legends videoconfig / autoexec
+    if (paths.apex && fs.existsSync(paths.apex)) {
+      try {
+        const apexAutoexec = path.join(path.dirname(paths.apex), 'autoexec.cfg');
+        fs.writeFileSync(apexAutoexec, `fps_max ${cap}\n`, 'utf-8');
+        appliedGames.push('Apex Legends');
+      } catch {}
+    }
+
+    // 4. Roblox ClientAppSettings.json
+    if (paths.roblox && fs.existsSync(paths.roblox)) {
+      try {
+        const raw = fs.readFileSync(paths.roblox, 'utf-8');
+        const json = JSON.parse(raw);
+        json.DFIntTaskSchedulerTargetFps = cap;
+        fs.writeFileSync(paths.roblox, JSON.stringify(json, null, 2), 'utf-8');
+        appliedGames.push('Roblox');
+      } catch {}
+    }
+
+    return {
+      currentRefreshRate: refreshRate,
+      recommendedCap: cap,
+      appliedGames,
+      success: true,
+      message: appliedGames.length > 0
+        ? `Teto G-Sync/FreeSync de ${cap} FPS aplicado com sucesso a: ${appliedGames.join(', ')}!`
+        : `Teto calculado (${cap} FPS) pronto. Inicia qualquer jogo com o Optimizer para sincronizar.`
+    };
   }
 }

@@ -21,10 +21,16 @@ import {
   Activity,
   Move,
   Layers,
-  Sliders
+  Sliders,
+  BarChart2,
+  Crosshair,
+  Monitor,
+  Play,
+  Square,
+  Power
 } from 'lucide-react';
 import { useI18n, ACCENT_COLORS, ThemeAccent, Language } from '../i18n';
-import { OverlayConfig, OverlayItemsConfig, OverlayFormat, OverlayTheme } from '../../shared/types';
+import { OverlayConfig, OverlayItemsConfig, OverlayFormat, OverlayTheme, BenchmarkSession, GsyncCapResult, StartupConfig } from '../../shared/types';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -33,13 +39,30 @@ interface SettingsModalProps {
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   const { language, setLanguage, accent, setAccent, t } = useI18n();
-  const [activeTab, setActiveTab] = useState<'appearance' | 'overlay' | 'language' | 'hotkeys' | 'about'>('appearance');
+  const [activeTab, setActiveTab] = useState<'appearance' | 'overlay' | 'gsync' | 'benchmark' | 'hotkeys' | 'language' | 'about'>('appearance');
 
   const [hotkeys, setHotkeys] = useState<any[]>([]);
   const [isGhostActive, setIsGhostActive] = useState<boolean>(false);
   const [feedbackMsg, setFeedbackMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [isFullscreenOptimized, setIsFullscreenOptimized] = useState<boolean>(true);
   const [isOptimizingFullscreen, setIsOptimizingFullscreen] = useState<boolean>(false);
+
+  // G-Sync & FreeSync State
+  const [monitorHz, setMonitorHz] = useState<number>(144);
+  const [recommendedCap, setRecommendedCap] = useState<number>(141);
+  const [isApplyingGsync, setIsApplyingGsync] = useState<boolean>(false);
+
+  // Benchmark State
+  const [benchStatus, setBenchStatus] = useState<{ isRecording: boolean; elapsedSeconds: number; sampleCount: number; lastSession: BenchmarkSession | null }>({
+    isRecording: false,
+    elapsedSeconds: 0,
+    sampleCount: 0,
+    lastSession: null
+  });
+
+  // Windows Startup & Silent Mode State
+  const [startupConfig, setStartupConfig] = useState<StartupConfig>({ enabled: false, isSilent: true });
+  const [isSavingStartup, setIsSavingStartup] = useState<boolean>(false);
 
   const [overlayConfig, setOverlayConfig] = useState<OverlayConfig>({
     items: {
@@ -81,6 +104,24 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
           const fsRes = await window.optimizerApi.overlayGetFullscreenSupport();
           if (fsRes) setIsFullscreenOptimized(fsRes.enabled);
         }
+        if (window.optimizerApi?.fpsGetLive) {
+          const fpsData = await window.optimizerApi.fpsGetLive();
+          if (fpsData && fpsData.refreshRate) {
+            setMonitorHz(fpsData.refreshRate);
+            if (window.optimizerApi?.gsyncCalculateCap) {
+              const cap = await window.optimizerApi.gsyncCalculateCap(fpsData.refreshRate);
+              setRecommendedCap(cap);
+            }
+          }
+        }
+        if (window.optimizerApi?.benchmarkGetStatus) {
+          const bStatus = await window.optimizerApi.benchmarkGetStatus();
+          if (bStatus) setBenchStatus(bStatus as any);
+        }
+        if (window.optimizerApi?.startupGetStatus) {
+          const st = await window.optimizerApi.startupGetStatus();
+          if (st) setStartupConfig(st);
+        }
       } catch {}
     };
 
@@ -100,9 +141,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
       });
     }
 
+    let unsubBench: (() => void) | undefined;
+    if (window.optimizerApi?.onBenchmarkStatusChanged) {
+      unsubBench = window.optimizerApi.onBenchmarkStatusChanged((st) => {
+        setBenchStatus((prev) => ({
+          ...prev,
+          isRecording: st.isRecording,
+          elapsedSeconds: st.elapsedSeconds
+        }));
+      });
+    }
+
     return () => {
       unsubGhost?.();
       unsubOverlayConfig?.();
+      unsubBench?.();
     };
   }, [isOpen]);
 
@@ -210,6 +263,60 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     }
   };
 
+  const handleApplyGsync = async () => {
+    setIsApplyingGsync(true);
+    try {
+      if (window.optimizerApi?.gsyncApplyCap) {
+        const res = await window.optimizerApi.gsyncApplyCap(recommendedCap, monitorHz);
+        if (res.success) {
+          setFeedbackMsg({ text: res.message, type: 'success' });
+        } else {
+          setFeedbackMsg({ text: res.message, type: 'error' });
+        }
+      }
+    } catch {
+      setFeedbackMsg({ text: 'Erro ao aplicar teto G-Sync.', type: 'error' });
+    } finally {
+      setIsApplyingGsync(false);
+    }
+  };
+
+  const handleToggleBenchmarkSession = async () => {
+    try {
+      if (window.optimizerApi?.benchmarkToggle) {
+        const res = await window.optimizerApi.benchmarkToggle();
+        if (res) {
+          setFeedbackMsg({ text: res.message, type: 'success' });
+          if (window.optimizerApi?.benchmarkGetStatus) {
+            const updated = await window.optimizerApi.benchmarkGetStatus();
+            if (updated) setBenchStatus(updated as any);
+          }
+        }
+      }
+    } catch {
+      setFeedbackMsg({ text: 'Erro ao alternar benchmark.', type: 'error' });
+    }
+  };
+
+  const handleToggleStartup = async (nextEnabled: boolean) => {
+    setIsSavingStartup(true);
+    try {
+      if (window.optimizerApi?.startupSetStatus) {
+        const res = await window.optimizerApi.startupSetStatus(nextEnabled, true);
+        if (res.success) {
+          setStartupConfig({ enabled: nextEnabled, isSilent: true });
+          setFeedbackMsg({ text: res.message, type: 'success' });
+        } else {
+          setFeedbackMsg({ text: res.message, type: 'error' });
+        }
+      }
+    } catch {
+      setFeedbackMsg({ text: 'Erro ao configurar arranque.', type: 'error' });
+    } finally {
+      setIsSavingStartup(false);
+    }
+  };
+
   const handleSetOverlayFormat = async (format: OverlayFormat) => {
     const nextConfig = { ...overlayConfig, format };
     setOverlayConfig(nextConfig);
@@ -290,10 +397,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
         )}
 
         {/* Sub-tabs Navigation */}
-        <div className="flex items-center gap-1 px-6 pt-3 border-b border-[#1E293B] bg-[#0E1526]/60">
+        <div className="flex items-center gap-1 px-6 pt-3 border-b border-[#1E293B] bg-[#0E1526]/60 overflow-x-auto no-scrollbar">
           <button
             onClick={() => setActiveTab('appearance')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all ${
+            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
               activeTab === 'appearance'
                 ? 'border-indigo-500 text-white'
                 : 'border-transparent text-gray-400 hover:text-gray-200'
@@ -304,7 +411,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
           </button>
           <button
             onClick={() => setActiveTab('overlay')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all ${
+            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
               activeTab === 'overlay'
                 ? 'border-indigo-500 text-white'
                 : 'border-transparent text-gray-400 hover:text-gray-200'
@@ -314,19 +421,30 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             <span>{t('settings.tab_overlay')}</span>
           </button>
           <button
-            onClick={() => setActiveTab('language')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all ${
-              activeTab === 'language'
-                ? 'border-indigo-500 text-white'
+            onClick={() => setActiveTab('gsync')}
+            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
+              activeTab === 'gsync'
+                ? 'border-cyan-400 text-white'
                 : 'border-transparent text-gray-400 hover:text-gray-200'
             }`}
           >
-            <Globe className="w-3.5 h-3.5" />
-            <span>{t('settings.tab_language')}</span>
+            <Crosshair className="w-3.5 h-3.5 text-cyan-400" />
+            <span>G-Sync / Anti-Lag</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('benchmark')}
+            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
+              activeTab === 'benchmark'
+                ? 'border-rose-500 text-white'
+                : 'border-transparent text-gray-400 hover:text-gray-200'
+            }`}
+          >
+            <BarChart2 className="w-3.5 h-3.5 text-rose-400" />
+            <span>Benchmark FPS</span>
           </button>
           <button
             onClick={() => setActiveTab('hotkeys')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all ${
+            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
               activeTab === 'hotkeys'
                 ? 'border-indigo-500 text-white'
                 : 'border-transparent text-gray-400 hover:text-gray-200'
@@ -336,15 +454,26 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             <span>{t('settings.tab_hotkeys')}</span>
           </button>
           <button
+            onClick={() => setActiveTab('language')}
+            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
+              activeTab === 'language'
+                ? 'border-indigo-500 text-white'
+                : 'border-transparent text-gray-400 hover:text-gray-200'
+            }`}
+          >
+            <Globe className="w-3.5 h-3.5" />
+            <span>{t('settings.tab_language')}</span>
+          </button>
+          <button
             onClick={() => setActiveTab('about')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all ${
+            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
               activeTab === 'about'
                 ? 'border-indigo-500 text-white'
                 : 'border-transparent text-gray-400 hover:text-gray-200'
             }`}
           >
-            <Info className="w-3.5 h-3.5" />
-            <span>{t('settings.tab_about')}</span>
+            <Power className="w-3.5 h-3.5" />
+            <span>Arranque & Sobre</span>
           </button>
         </div>
 
@@ -526,6 +655,24 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                     Atalho Overlay: Alt+O
                   </span>
                 </div>
+              </div>
+
+              {/* Drag and Drop Memo Card */}
+              <div className="bg-[#0E1526] border border-[#1E293B] rounded-2xl p-3.5 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400 shrink-0">
+                    <Move className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <strong className="text-white text-xs block">Posicionamento Livre & Drag & Drop</strong>
+                    <span className="text-gray-400 text-[11px] leading-tight block">
+                      Arrasta o HUD diretamente com o rato para qualquer ponto do ecrã. As coordenadas (X, Y) são memorizadas automaticamente.
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono px-2 py-1 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold shrink-0">
+                  Memória Ativa ✓
+                </span>
               </div>
 
               {/* Real-time Mini Preview */}
@@ -847,7 +994,220 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             </div>
           )}
 
-          {/* TAB 2: LANGUAGE SELECTION */}
+          {/* TAB: G-SYNC & FREESYNC ANTI-LAG OPTIMIZER */}
+          {activeTab === 'gsync' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                    <Crosshair className="w-4 h-4 text-cyan-400" />
+                    Otimizador G-Sync / FreeSync (Anti-Input Lag)
+                  </h4>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Calcula e sincroniza o teto ideal de FPS para eliminar atraso de frames e tearing.
+                  </p>
+                </div>
+              </div>
+
+              {/* Status & Calculation Hero Card */}
+              <div className="bg-gradient-to-r from-cyan-950/40 via-[#0E1526] to-[#0A0F1D] border border-cyan-500/30 rounded-2xl p-5 space-y-4 shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-cyan-500/20 text-cyan-400">
+                      <Monitor className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Monitor Principal Detetado</span>
+                      <h3 className="text-lg font-black text-white font-mono">{monitorHz} Hz <span className="text-xs font-normal text-cyan-400 font-sans">(Frequência do Ecrã)</span></h3>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Teto Ideal Reflex</span>
+                    <h3 className="text-xl font-black text-emerald-400 font-mono">{recommendedCap} FPS</h3>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-white/5 space-y-2 text-xs text-gray-300">
+                  <p className="leading-relaxed">
+                    <strong>Padrão eSports / Blur Busters:</strong> Limitar a taxa de quadros a <strong>{recommendedCap} FPS</strong> (frequência do monitor - 3) impede que o buffer de renderização do DirectX transborde, mantendo o G-Sync/FreeSync permanentemente ativo na zona de <strong>0ms de latência de entrada</strong>.
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 flex-wrap gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs text-gray-400">Hz:</span>
+                    {[60, 120, 144, 165, 240, 360].map((hz) => (
+                      <button
+                        key={hz}
+                        onClick={async () => {
+                          setMonitorHz(hz);
+                          if (window.optimizerApi?.gsyncCalculateCap) {
+                            const cap = await window.optimizerApi.gsyncCalculateCap(hz);
+                            setRecommendedCap(cap);
+                          }
+                        }}
+                        className={`px-2 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
+                          monitorHz === hz
+                            ? 'bg-cyan-500 text-black shadow-md'
+                            : 'bg-white/5 hover:bg-white/10 text-gray-300'
+                        }`}
+                      >
+                        {hz}Hz
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={handleApplyGsync}
+                    disabled={isApplyingGsync}
+                    className="px-4 py-2 rounded-xl text-xs font-extrabold bg-cyan-500 hover:bg-cyan-400 text-black flex items-center gap-2 shadow-lg transition-all"
+                  >
+                    <Zap className="w-3.5 h-3.5" />
+                    <span>{isApplyingGsync ? 'A Aplicar...' : `Aplicar Teto de ${recommendedCap} FPS aos Jogos`}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Supported Games List */}
+              <div className="bg-[#0E1526] border border-[#1E293B] rounded-2xl p-4 space-y-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-gray-400 block">
+                  Jogos Sincronizados com 1-Clique:
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+                  <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 flex flex-col">
+                    <span className="text-white font-bold font-sans">CS2</span>
+                    <span className="text-[10px] text-cyan-400 font-bold">fps_max {recommendedCap}</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 flex flex-col">
+                    <span className="text-white font-bold font-sans">Apex Legends</span>
+                    <span className="text-[10px] text-cyan-400 font-bold">+fps_max {recommendedCap}</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 flex flex-col">
+                    <span className="text-white font-bold font-sans">Fortnite</span>
+                    <span className="text-[10px] text-cyan-400 font-bold">FrameRateLimit {recommendedCap}</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 flex flex-col">
+                    <span className="text-white font-bold font-sans">Roblox</span>
+                    <span className="text-[10px] text-cyan-400 font-bold">TargetFps {recommendedCap}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB: BENCHMARK DE JOGO & RELATÓRIO */}
+          {activeTab === 'benchmark' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                    <BarChart2 className="w-4 h-4 text-rose-400" />
+                    Sessão de Benchmark & Estabilidade de Frametime
+                  </h4>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Grava em tempo real a fluidez do jogo e gera um relatório com FPS médio e 1% Low.
+                  </p>
+                </div>
+                <span className="text-[11px] font-mono font-bold px-2 py-1 rounded bg-white/5 border border-white/10 text-gray-300">
+                  Atalho: Alt + B
+                </span>
+              </div>
+
+              {/* Recorder Live Card */}
+              <div className="bg-[#0E1526] border border-[#1E293B] rounded-2xl p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`p-3 rounded-2xl ${benchStatus.isRecording ? 'bg-rose-500/20 text-rose-400 animate-pulse' : 'bg-white/5 text-gray-400'}`}>
+                    <BarChart2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-white">
+                      {benchStatus.isRecording ? 'A Gravar Partida em Tempo Real...' : 'Nenhum Benchmark a Decorrer'}
+                    </h5>
+                    <p className="text-[11px] text-gray-400">
+                      {benchStatus.isRecording
+                        ? `Duração: ${benchStatus.elapsedSeconds}s | Amostras: ${benchStatus.sampleCount}`
+                        : 'Pressiona o botão ou Alt+B durante a partida para iniciar a amostragem.'}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleToggleBenchmarkSession}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+                    benchStatus.isRecording
+                      ? 'bg-rose-500 hover:bg-rose-600 text-white animate-pulse'
+                      : 'bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold'
+                  }`}
+                >
+                  {benchStatus.isRecording ? (
+                    <>
+                      <Square className="w-3.5 h-3.5 fill-current" />
+                      <span>Terminar Benchmark</span>
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-3.5 h-3.5 fill-current" />
+                      <span>Iniciar Benchmark (Alt+B)</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Latest Session Report */}
+              {benchStatus.lastSession ? (
+                <div className="bg-gradient-to-r from-emerald-950/25 via-[#0E1526] to-[#0A0F1D] border border-emerald-500/30 rounded-2xl p-5 space-y-4 shadow-xl">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] font-bold font-mono uppercase text-gray-400 tracking-wider">Último Relatório de Partida</span>
+                      <h4 className="text-base font-extrabold text-white flex items-center gap-2 mt-0.5">
+                        {benchStatus.lastSession.gameName}
+                        <span className="text-xs font-mono font-normal text-gray-400">({benchStatus.lastSession.durationSeconds} segundos)</span>
+                      </h4>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-400">Classificação:</span>
+                      <span className={`text-lg font-black font-mono px-3 py-1 rounded-xl border shadow-md ${
+                        benchStatus.lastSession.rating === 'S+'
+                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
+                          : benchStatus.lastSession.rating === 'A'
+                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50'
+                          : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50'
+                      }`}>
+                        {benchStatus.lastSession.rating}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    <div className="bg-black/40 border border-white/5 rounded-xl p-3 text-center">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase block">FPS Médio</span>
+                      <span className="text-lg font-black font-mono text-emerald-400">{benchStatus.lastSession.avgFps}</span>
+                    </div>
+                    <div className="bg-black/40 border border-white/5 rounded-xl p-3 text-center">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase block">1% Low FPS</span>
+                      <span className="text-lg font-black font-mono text-cyan-400">{benchStatus.lastSession.low1Percent}</span>
+                    </div>
+                    <div className="bg-black/40 border border-white/5 rounded-xl p-3 text-center">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase block">Frametime</span>
+                      <span className="text-lg font-black font-mono text-indigo-300">{benchStatus.lastSession.avgFrametimeMs}ms</span>
+                    </div>
+                    <div className="bg-black/40 border border-white/5 rounded-xl p-3 text-center">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase block">Estabilidade</span>
+                      <span className="text-lg font-black font-mono text-amber-300">{benchStatus.lastSession.frametimeStabilityScore}%</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-6 rounded-2xl bg-[#0E1526]/40 border border-dashed border-[#1E293B] text-center space-y-1">
+                  <BarChart2 className="w-8 h-8 text-gray-500 mx-auto opacity-50" />
+                  <p className="text-xs text-gray-400">Nenhum relatório gravado nesta sessão ainda.</p>
+                  <p className="text-[11px] text-gray-500">Pressiona Alt+B para começar uma gravação quando estiveres dentro de um jogo!</p>
+                </div>
+              )}
+            </div>
+          )}
           {activeTab === 'language' && (
             <div className="space-y-4">
               <div>
@@ -1078,8 +1438,35 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                     </div>
                   </div>
                   <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
-                    v1.10 PRO
+                    v2.1.0 PRO
                   </span>
+                </div>
+
+                {/* Windows Startup & Silent Mode Toggle Card */}
+                <div className="bg-[#121A2F] border border-[#232F4D] rounded-xl p-3.5 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400">
+                        <Power className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <strong className="text-white text-xs block">Iniciar com o Windows (Modo Furtivo)</strong>
+                        <span className="text-[11px] text-gray-400">Arranca minimizado no relógio (System Tray) com 0% de uso de CPU.</span>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleToggleStartup(!startupConfig.enabled)}
+                      disabled={isSavingStartup}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm ${
+                        startupConfig.enabled
+                          ? 'bg-emerald-500 text-black shadow-emerald-500/20'
+                          : 'bg-white/10 hover:bg-white/15 text-gray-300'
+                      }`}
+                    >
+                      {isSavingStartup ? '...' : startupConfig.enabled ? 'Ativo [✓]' : 'Desativado'}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="space-y-2 text-xs text-gray-300">
@@ -1089,7 +1476,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                   </div>
                   <div className="flex items-center justify-between py-1 border-b border-[#172238]">
                     <span className="text-gray-400">{t('settings.current_version')}</span>
-                    <span className="font-mono text-emerald-400 font-bold">v1.10.0 (Portable)</span>
+                    <span className="font-mono text-emerald-400 font-bold">v2.1.0 (Portable)</span>
                   </div>
                   <div className="flex items-center justify-between py-1">
                     <span className="text-gray-400">Arquitetura:</span>

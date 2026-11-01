@@ -47,6 +47,8 @@ let isQuitting = false;
 const isDev = process.env.NODE_ENV === 'development';
 
 function createWindow() {
+  const isSilentLaunch = process.argv.includes('--silent') || process.argv.includes('--minimized');
+
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 840,
@@ -55,7 +57,7 @@ function createWindow() {
     title: 'Optimizer - Windows 10/11 Performance & Latency',
     backgroundColor: '#0B0F19',
     frame: false,
-    show: true,
+    show: !isSilentLaunch,
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -114,40 +116,103 @@ function createWindow() {
   });
 }
 
+function toggleBenchmarkHotkeyPressed() {
+  const booster = GameBoosterDaemon.getInstance().getState();
+  const res = FpsMonitorService.getInstance().toggleBenchmark(booster.activeGame || 'Jogo');
+  const status = FpsMonitorService.getInstance().getBenchmarkStatus();
+
+  if (overlayWindow && !overlayWindow.isDestroyed()) {
+    try {
+      overlayWindow.webContents.send('benchmark:status-changed', status);
+      if (res.session) {
+        overlayWindow.webContents.send('benchmark:finished', res.session);
+      }
+    } catch {}
+  }
+
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    try {
+      mainWindow.webContents.send('benchmark:status-changed', status);
+      mainWindow.webContents.send('hotkey:trigger', {
+        action: 'toggle-benchmark',
+        message: res.message
+      });
+      if (res.session) {
+        mainWindow.webContents.send('benchmark:finished', res.session);
+      }
+    } catch {}
+  }
+}
+
 function createTray() {
   if (tray) return;
 
-  // Create an icon or use fallback native icon
   const iconPath = path.resolve(app.getAppPath(), 'dist-renderer/assets/msi-Cb6F3Wl9.svg');
   tray = new Tray(fs.existsSync(iconPath) ? iconPath : process.execPath);
-  tray.setToolTip('Optimizer - Windows Performance & Gaming Engine');
+  tray.setToolTip('Optimizer - Windows Performance & Gaming Engine (v2.1.0)');
 
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: 'Abrir Optimizer',
-      click: () => {
-        mainWindow?.show();
-        mainWindow?.focus();
-      }
-    },
-    {
-      label: 'Modo Jogo Ultra',
-      click: () => {
-        mainWindow?.show();
-        mainWindow?.webContents.send('tray:activate-gaming');
-      }
-    },
-    { type: 'separator' },
-    {
-      label: 'Sair Completamente',
-      click: () => {
-        isQuitting = true;
-        app.quit();
-      }
-    }
-  ]);
+  const updateContextMenu = () => {
+    const boosterState = GameBoosterDaemon.getInstance().getState();
+    const benchState = FpsMonitorService.getInstance().getBenchmarkStatus();
 
-  tray.setContextMenu(contextMenu);
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: 'Abrir Optimizer',
+        click: () => {
+          mainWindow?.show();
+          mainWindow?.focus();
+        }
+      },
+      {
+        label: overlayWindow && overlayWindow.isVisible() ? 'Ocultar HUD Overlay (Alt+O)' : 'Mostrar HUD Overlay (Alt+O)',
+        click: () => {
+          toggleOverlayWindow(true);
+        }
+      },
+      {
+        label: isOverlayClickThrough ? 'Desativar Modo Fantasma (Alt+G)' : 'Ativar Modo Fantasma (Alt+G)',
+        click: () => {
+          toggleOverlayGhost();
+        }
+      },
+      {
+        label: benchState.isRecording ? '⏹ Parar Benchmark de FPS (Alt+B)' : '🔴 Iniciar Benchmark de FPS (Alt+B)',
+        click: () => {
+          toggleBenchmarkHotkeyPressed();
+        }
+      },
+      { type: 'separator' },
+      {
+        label: `Auto Game-Booster: ${boosterState.daemonEnabled ? 'Ativo [✓]' : 'Pausado'}`,
+        type: 'checkbox',
+        checked: boosterState.daemonEnabled,
+        click: () => {
+          GameBoosterDaemon.getInstance().setDaemonEnabled(!boosterState.daemonEnabled);
+          updateContextMenu();
+        }
+      },
+      {
+        label: 'Modo Jogo Ultra',
+        click: () => {
+          mainWindow?.show();
+          mainWindow?.webContents.send('tray:activate-gaming');
+        }
+      },
+      { type: 'separator' },
+      {
+        label: 'Sair Completamente',
+        click: () => {
+          isQuitting = true;
+          app.quit();
+        }
+      }
+    ]);
+
+    tray?.setContextMenu(contextMenu);
+  };
+
+  updateContextMenu();
+
   tray.on('double-click', () => {
     mainWindow?.show();
     mainWindow?.focus();
@@ -209,15 +274,22 @@ function toggleOverlayWindow(isManual: boolean = true) {
 
   const { screen } = require('electron');
   const primaryDisplay = screen.getPrimaryDisplay();
-  const { width } = primaryDisplay.workAreaSize;
+  const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
   const cfg = OverlayConfigService.getInstance().getConfig();
   const { width: overlayWidth, height: overlayHeight } = getOverlayDimensions(cfg.format);
+
+  let initialX = Math.max(0, screenWidth - overlayWidth - 20);
+  let initialY = 16;
+  if (cfg.customPosition && typeof cfg.customPosition.x === 'number' && typeof cfg.customPosition.y === 'number') {
+    initialX = Math.max(0, Math.min(cfg.customPosition.x, screenWidth - overlayWidth));
+    initialY = Math.max(0, Math.min(cfg.customPosition.y, screenHeight - overlayHeight));
+  }
 
   overlayWindow = new BrowserWindow({
     width: overlayWidth,
     height: overlayHeight,
-    x: Math.max(0, width - overlayWidth - 20),
-    y: 16,
+    x: initialX,
+    y: initialY,
     type: 'toolbar', // Critical on Windows: WS_EX_TOOLWINDOW prevents full-screen games from burying or minimizing the overlay!
     frame: false,
     transparent: true,
@@ -244,6 +316,20 @@ function toggleOverlayWindow(isManual: boolean = true) {
   overlayWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   overlayWindow.moveTop();
   startOverlayTopGuard();
+
+  let moveSaveTimer: NodeJS.Timeout | null = null;
+  overlayWindow.on('moved', () => {
+    if (!overlayWindow || overlayWindow.isDestroyed()) return;
+    if (moveSaveTimer) clearTimeout(moveSaveTimer);
+    moveSaveTimer = setTimeout(() => {
+      try {
+        if (overlayWindow && !overlayWindow.isDestroyed()) {
+          const [curX, curY] = overlayWindow.getPosition();
+          OverlayConfigService.getInstance().setCustomPosition(curX, curY);
+        }
+      } catch {}
+    }, 350);
+  });
 
   if (isDev) {
     overlayWindow.loadURL('http://localhost:5173/#overlay');
@@ -296,6 +382,7 @@ function setOverlayPositionPreset(preset: 'top-right' | 'top-left' | 'top-center
   }
 
   overlayWindow.setPosition(x, y);
+  OverlayConfigService.getInstance().setCustomPosition(x, y);
 }
 
 function setOverlayClickThrough(ignore: boolean) {
@@ -939,6 +1026,33 @@ function registerIpc() {
   ipcMain.handle('overlay:enable-fullscreen-support', async () => {
     return OverlayConfigService.getInstance().enableFullscreenSupport();
   });
+
+  ipcMain.handle('gsync:calculate-cap', async (_, hz?: number) => {
+    const refreshRate = hz || FpsMonitorService.getInstance().getRefreshRate();
+    return GameConfigTunerService.getInstance().calculateGsyncCap(refreshRate);
+  });
+
+  ipcMain.handle('gsync:apply-cap', async (_, cap: number, hz?: number) => {
+    const refreshRate = hz || FpsMonitorService.getInstance().getRefreshRate();
+    return GameConfigTunerService.getInstance().applyGsyncCap(cap, refreshRate);
+  });
+
+  ipcMain.handle('benchmark:toggle', async () => {
+    toggleBenchmarkHotkeyPressed();
+    return FpsMonitorService.getInstance().getBenchmarkStatus();
+  });
+
+  ipcMain.handle('benchmark:get-status', async () => {
+    return FpsMonitorService.getInstance().getBenchmarkStatus();
+  });
+
+  ipcMain.handle('startup:get-status', async () => {
+    return StartupManagerService.getInstance().getAppStartupStatus();
+  });
+
+  ipcMain.handle('startup:set-status', async (_, enabled: boolean, silent?: boolean) => {
+    return StartupManagerService.getInstance().setAppStartup(enabled, silent);
+  });
 }
 
 app.whenReady().then(() => {
@@ -948,8 +1062,22 @@ app.whenReady().then(() => {
     try {
       HotkeyService.getInstance().setOverlayCallback(toggleOverlayWindow);
       HotkeyService.getInstance().setGhostToggleCallback(toggleOverlayGhost);
+      HotkeyService.getInstance().setBenchmarkCallback(toggleBenchmarkHotkeyPressed);
       HotkeyService.getInstance().init(mainWindow);
       GameBoosterDaemon.getInstance().setWindow(mainWindow);
+
+      FpsMonitorService.getInstance().onBenchmarkChange((st) => {
+        if (overlayWindow && !overlayWindow.isDestroyed()) {
+          try {
+            overlayWindow.webContents.send('benchmark:status-changed', st);
+          } catch {}
+        }
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          try {
+            mainWindow.webContents.send('benchmark:status-changed', st);
+          } catch {}
+        }
+      });
       GameBoosterDaemon.getInstance().setAutoOverlayCallback((show) => {
         if (show) {
           if (!overlayWindow || overlayWindow.isDestroyed()) {

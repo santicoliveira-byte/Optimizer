@@ -278,6 +278,36 @@ export interface OverlayConfig {
   theme: OverlayTheme;
   fontSize: OverlayFontSize;
   opacity: number;
+  customPosition?: { x: number; y: number };
+}
+
+export interface BenchmarkSession {
+  id: string;
+  timestamp: string;
+  gameName: string;
+  durationSeconds: number;
+  sampleCount: number;
+  avgFps: number;
+  minFps: number;
+  maxFps: number;
+  low1Percent: number;
+  low01Percent: number;
+  avgFrametimeMs: number;
+  frametimeStabilityScore: number; // 0 to 100%
+  rating: 'S+' | 'A' | 'B' | 'C' | 'D';
+}
+
+export interface GsyncCapResult {
+  currentRefreshRate: number;
+  recommendedCap: number;
+  appliedGames: string[];
+  success: boolean;
+  message: string;
+}
+
+export interface StartupConfig {
+  enabled: boolean;
+  isSilent: boolean;
 }
 
 

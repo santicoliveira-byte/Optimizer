@@ -26,12 +26,14 @@ export class HotkeyService {
   private configPath: string;
   private overlayCallback: (() => void) | null = null;
   private ghostToggleCallback: (() => void) | null = null;
+  private benchmarkCallback: (() => void) | null = null;
 
   private defaultShortcuts: Record<string, string> = {
     'ultra-game-mode': 'CommandOrControl+Shift+F1',
     'ram-clean': 'CommandOrControl+Shift+F2',
     'toggle-overlay': 'CommandOrControl+Shift+F3',
-    'toggle-ghost': 'CommandOrControl+Shift+F4'
+    'toggle-ghost': 'CommandOrControl+Shift+F4',
+    'toggle-benchmark': 'CommandOrControl+Shift+F5'
   };
 
   private shortcuts: Record<string, string> = {
@@ -94,6 +96,10 @@ export class HotkeyService {
     this.ghostToggleCallback = cb;
   }
 
+  public setBenchmarkCallback(cb: () => void) {
+    this.benchmarkCallback = cb;
+  }
+
   public registerAll() {
     this.unregisterAll();
 
@@ -101,7 +107,7 @@ export class HotkeyService {
       this.registerAction(actionId, accelerator);
     }
 
-    // Registo de atalhos ergonómicos adicionais (Alt + O e Alt + G)
+    // Registo de atalhos ergonómicos adicionais (Alt + O, Alt + G e Alt + B)
     // Permite que utilizadores de portáteis / teclados sem tecla Fn premida também consigam alternar com 1 mão
     if (this.shortcuts['toggle-overlay'] !== 'Alt+O') {
       try {
@@ -115,6 +121,14 @@ export class HotkeyService {
       try {
         globalShortcut.register('Alt+G', async () => {
           await this.handleActionTrigger('toggle-ghost');
+        });
+      } catch {}
+    }
+
+    if (this.shortcuts['toggle-benchmark'] !== 'Alt+B') {
+      try {
+        globalShortcut.register('Alt+B', async () => {
+          await this.handleActionTrigger('toggle-benchmark');
         });
       } catch {}
     }
@@ -172,6 +186,14 @@ export class HotkeyService {
         if (this.ghostToggleCallback) {
           try {
             this.ghostToggleCallback();
+          } catch {}
+        }
+        break;
+
+      case 'toggle-benchmark':
+        if (this.benchmarkCallback) {
+          try {
+            this.benchmarkCallback();
           } catch {}
         }
         break;

@@ -92,6 +92,15 @@ export class OverlayConfigService {
     return this.getConfig();
   }
 
+  public setCustomPosition(x: number, y: number): OverlayConfig {
+    this.currentConfig = {
+      ...this.currentConfig,
+      customPosition: { x: Math.round(x), y: Math.round(y) }
+    };
+    this.saveConfig();
+    return this.getConfig();
+  }
+
   public resetDefaults(): OverlayConfig {
     this.currentConfig = {
       ...DEFAULT_OVERLAY_CONFIG,

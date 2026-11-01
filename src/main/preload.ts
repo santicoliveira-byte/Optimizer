@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { DryRunPreview, OptimizationProfile, OptimizationState, SystemMetrics, OverlayConfig } from '../shared/types';
+import { DryRunPreview, OptimizationProfile, OptimizationState, SystemMetrics, OverlayConfig, BenchmarkSession, GsyncCapResult, StartupConfig } from '../shared/types';
 
 export interface OptimizerApi {
   getCatalog: () => Promise<any[]>;
@@ -125,6 +125,13 @@ export interface OptimizerApi {
   onOverlayConfigChanged: (callback: (config: OverlayConfig) => void) => () => void;
   overlayGetFullscreenSupport: () => Promise<{ enabled: boolean }>;
   overlayEnableFullscreenSupport: () => Promise<{ success: boolean; message: string }>;
+  gsyncCalculateCap: (hz?: number) => Promise<number>;
+  gsyncApplyCap: (cap: number, hz?: number) => Promise<GsyncCapResult>;
+  benchmarkToggle: (gameName?: string) => Promise<{ isRecording: boolean; session: BenchmarkSession | null; message: string }>;
+  benchmarkGetStatus: () => Promise<{ isRecording: boolean; elapsedSeconds: number; sampleCount: number; currentFps: number; lastSession: BenchmarkSession | null }>;
+  onBenchmarkStatusChanged: (callback: (status: { isRecording: boolean; elapsedSeconds: number }) => void) => () => void;
+  startupGetStatus: () => Promise<StartupConfig>;
+  startupSetStatus: (enabled: boolean, silent?: boolean) => Promise<{ success: boolean; message: string }>;
 }
 
 const api: OptimizerApi = {
@@ -294,7 +301,20 @@ const api: OptimizerApi = {
     };
   },
   overlayGetFullscreenSupport: () => ipcRenderer.invoke('overlay:get-fullscreen-support'),
-  overlayEnableFullscreenSupport: () => ipcRenderer.invoke('overlay:enable-fullscreen-support')
+  overlayEnableFullscreenSupport: () => ipcRenderer.invoke('overlay:enable-fullscreen-support'),
+  gsyncCalculateCap: (hz?: number) => ipcRenderer.invoke('gsync:calculate-cap', hz),
+  gsyncApplyCap: (cap: number, hz?: number) => ipcRenderer.invoke('gsync:apply-cap', cap, hz),
+  benchmarkToggle: (gameName?: string) => ipcRenderer.invoke('benchmark:toggle', gameName),
+  benchmarkGetStatus: () => ipcRenderer.invoke('benchmark:get-status'),
+  onBenchmarkStatusChanged: (callback: (status: { isRecording: boolean; elapsedSeconds: number }) => void) => {
+    const handler = (_: any, val: any) => callback(val);
+    ipcRenderer.on('benchmark:status-changed', handler);
+    return () => {
+      ipcRenderer.removeListener('benchmark:status-changed', handler);
+    };
+  },
+  startupGetStatus: () => ipcRenderer.invoke('startup:get-status'),
+  startupSetStatus: (enabled: boolean, silent?: boolean) => ipcRenderer.invoke('startup:set-status', enabled, silent)
 };
 
 contextBridge.exposeInMainWorld('optimizerApi', api);

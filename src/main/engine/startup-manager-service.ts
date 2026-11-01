@@ -146,4 +146,47 @@ export class StartupManagerService {
       };
     }
   }
+
+  public async getAppStartupStatus(): Promise<{ enabled: boolean; isSilent: boolean }> {
+    const script = `
+      $reg = Get-ItemProperty -Path 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run' -Name 'Optimizer' -ErrorAction SilentlyContinue
+      if ($reg -and $reg.Optimizer) {
+        $isSilent = $reg.Optimizer -like '*--silent*'
+        [PSCustomObject]@{ enabled = $true; isSilent = $isSilent } | ConvertTo-Json -Compress
+      } else {
+        [PSCustomObject]@{ enabled = $false; isSilent = $false } | ConvertTo-Json -Compress
+      }
+    `;
+    try {
+      const res = await this.runner.run(script, 4000, false);
+      if (res.success && res.stdout) {
+        return JSON.parse(res.stdout);
+      }
+    } catch {}
+    return { enabled: false, isSilent: false };
+  }
+
+  public async setAppStartup(enabled: boolean, silent: boolean = true): Promise<{ success: boolean; message: string }> {
+    const exePath = process.execPath;
+    let script: string;
+
+    if (enabled) {
+      const targetVal = silent ? `\\"${exePath}\\" --silent` : `\\"${exePath}\\"`;
+      script = `Set-ItemProperty -Path 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run' -Name 'Optimizer' -Value '${targetVal}' -Type String -Force`;
+    } else {
+      script = `Remove-ItemProperty -Path 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run' -Name 'Optimizer' -ErrorAction SilentlyContinue`;
+    }
+
+    try {
+      const res = await this.runner.run(script, 4000, false);
+      return {
+        success: res.success,
+        message: enabled
+          ? 'Optimizer configurado para arrancar com o Windows em Modo Furtivo (System Tray).'
+          : 'Optimizer removido do arranque do Windows.'
+      };
+    } catch (e: any) {
+      return { success: false, message: e.message };
+    }
+  }
 }

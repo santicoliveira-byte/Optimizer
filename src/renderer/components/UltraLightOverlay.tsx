@@ -7,7 +7,8 @@ import {
   Activity,
   Cpu,
   Radio,
-  Gauge
+  Gauge,
+  BarChart2
 } from 'lucide-react';
 import { SystemMetrics, OverlayConfig } from '../../shared/types';
 
@@ -38,6 +39,8 @@ export const UltraLightOverlay: React.FC = () => {
   const [frametimeMs, setFrametimeMs] = useState<number>(16.6);
   const [isGhostMode, setIsGhostMode] = useState<boolean>(false);
   const [positionPreset, setPositionPreset] = useState<'top-right' | 'top-left' | 'top-center' | 'bottom-right'>('top-right');
+  const [benchmarkStatus, setBenchmarkStatus] = useState<{ isRecording: boolean; elapsedSeconds: number } | null>(null);
+  const [recentBenchmarkToast, setRecentBenchmarkToast] = useState<string | null>(null);
 
   // Measure genuine display refresh rate / render loop
   useEffect(() => {
@@ -96,6 +99,13 @@ export const UltraLightOverlay: React.FC = () => {
       });
     }
 
+    let unsubBench: (() => void) | undefined;
+    if (window.optimizerApi?.onBenchmarkStatusChanged) {
+      unsubBench = window.optimizerApi.onBenchmarkStatusChanged((st) => {
+        if (isMounted) setBenchmarkStatus(st);
+      });
+    }
+
     const fetchTelemetry = async () => {
       try {
         if (window.optimizerApi?.getSystemMetrics) {
@@ -135,6 +145,7 @@ export const UltraLightOverlay: React.FC = () => {
       clearInterval(interval);
       unsubGhost?.();
       unsubConfig?.();
+      unsubBench?.();
     };
   }, []);
 
@@ -159,6 +170,16 @@ export const UltraLightOverlay: React.FC = () => {
 
     if (window.optimizerApi?.overlaySetPosition) {
       await window.optimizerApi.overlaySetPosition(nextPreset);
+    }
+  };
+
+  const toggleBenchmark = async () => {
+    if (window.optimizerApi?.benchmarkToggle) {
+      const res = await window.optimizerApi.benchmarkToggle();
+      if (res && res.session) {
+        setRecentBenchmarkToast(`${res.session.avgFps} FPS (${res.session.rating})`);
+        setTimeout(() => setRecentBenchmarkToast(null), 4500);
+      }
     }
   };
 
@@ -201,6 +222,23 @@ export const UltraLightOverlay: React.FC = () => {
         }
       >
         <Ghost className="w-3 h-3" />
+      </button>
+
+      {/* Benchmark Recorder Toggle */}
+      <button
+        onClick={toggleBenchmark}
+        className={`p-1 rounded-md transition-colors ${
+          benchmarkStatus?.isRecording
+            ? 'bg-rose-500 text-white font-bold animate-pulse'
+            : 'text-gray-400 hover:text-rose-300 hover:bg-white/10'
+        }`}
+        title={
+          benchmarkStatus?.isRecording
+            ? `Parar Benchmark de FPS e Gerar Relatório (Atalho: Alt+B) - A gravar há ${benchmarkStatus.elapsedSeconds}s`
+            : 'Iniciar Benchmark de FPS / 1% Low / Frametime (Atalho: Alt+B)'
+        }
+      >
+        <BarChart2 className="w-3 h-3" />
       </button>
 
       {/* Snap Position Cycle */}
@@ -246,7 +284,12 @@ export const UltraLightOverlay: React.FC = () => {
 
           {/* Active Game & Timer Row */}
           <div className="flex items-center justify-between gap-1 py-1">
-            {config.items.showTimer && (
+            {benchmarkStatus?.isRecording ? (
+              <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-rose-500/25 text-rose-300 border border-rose-500/50 animate-pulse flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />
+                REC {Math.floor(benchmarkStatus.elapsedSeconds / 60).toString().padStart(2, '0')}:{(benchmarkStatus.elapsedSeconds % 60).toString().padStart(2, '0')}
+              </span>
+            ) : config.items.showTimer && (
               <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                 {timerMs.toFixed(3)}ms
               </span>
@@ -320,6 +363,12 @@ export const UltraLightOverlay: React.FC = () => {
           className={`w-full h-full rounded-xl px-2.5 py-0.5 flex items-center justify-between text-white transition-all cursor-move ${containerThemeClass}`}
         >
           <div className="flex items-center gap-2.5 text-xs font-mono font-bold">
+            {benchmarkStatus?.isRecording && (
+              <span className="text-rose-400 text-[10px] font-mono animate-pulse font-extrabold flex items-center gap-1 bg-rose-500/20 px-1 py-0.5 rounded border border-rose-500/40">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />
+                REC {benchmarkStatus.elapsedSeconds}s
+              </span>
+            )}
             {config.items.showTimer && (
               <span className="text-emerald-400 text-[10px] font-mono">{timerMs.toFixed(3)}ms</span>
             )}
@@ -379,6 +428,20 @@ export const UltraLightOverlay: React.FC = () => {
 
         {/* Center: In-Game Ultra-Light Telemetry Ribbon */}
         <div className="flex items-center gap-2 text-xs font-mono font-bold shrink-0">
+          {/* Benchmark Live REC Indicator */}
+          {benchmarkStatus?.isRecording && (
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-rose-500/25 border border-rose-500/60 text-rose-300 font-extrabold text-[11px] animate-pulse shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />
+              <span>REC {Math.floor(benchmarkStatus.elapsedSeconds / 60).toString().padStart(2, '0')}:{(benchmarkStatus.elapsedSeconds % 60).toString().padStart(2, '0')}</span>
+            </div>
+          )}
+
+          {recentBenchmarkToast && (
+            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/25 border border-emerald-500/60 text-emerald-300 font-bold text-[10px] shadow-sm">
+              <span>✓ Bench: {recentBenchmarkToast}</span>
+            </div>
+          )}
+
           {/* FPS Counter */}
           {config.items.showFps && (
             <div

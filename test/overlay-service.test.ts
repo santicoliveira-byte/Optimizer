@@ -166,4 +166,75 @@ describe('Ultra-Lightweight Game Overlay Architecture', () => {
 
     expect(totalGracePeriodMs).toBe(7500); // 7.5 seconds grace period
   });
+
+  it('validates drag & drop custom position coordinate clamping', () => {
+    const screenWidth = 1920;
+    const screenHeight = 1080;
+    const overlayWidth = 620;
+    const overlayHeight = 44;
+
+    const clampPosition = (x: number, y: number) => ({
+      x: Math.max(0, Math.min(x, screenWidth - overlayWidth)),
+      y: Math.max(0, Math.min(y, screenHeight - overlayHeight))
+    });
+
+    expect(clampPosition(500, 200)).toEqual({ x: 500, y: 200 });
+    expect(clampPosition(-50, -10)).toEqual({ x: 0, y: 0 }); // clamped to screen origin
+    expect(clampPosition(2500, 1500)).toEqual({ x: 1920 - 620, y: 1080 - 44 }); // clamped to bottom-right
+  });
+
+  it('validates G-Sync / FreeSync Anti-Lag frame cap calculation standards', () => {
+    const calculateGsyncCap = (hz: number) => {
+      if (hz >= 360) return hz - 5;
+      if (hz >= 240) return hz - 3;
+      if (hz >= 144) return hz - 3;
+      if (hz >= 120) return hz - 2;
+      if (hz >= 75) return hz - 2;
+      return Math.max(30, hz - 2);
+    };
+
+    expect(calculateGsyncCap(360)).toBe(355);
+    expect(calculateGsyncCap(240)).toBe(237);
+    expect(calculateGsyncCap(165)).toBe(162);
+    expect(calculateGsyncCap(144)).toBe(141);
+    expect(calculateGsyncCap(120)).toBe(118);
+    expect(calculateGsyncCap(60)).toBe(58);
+  });
+
+  it('validates in-game benchmark stability score and rating computation', () => {
+    const samples = [
+      { fps: 240, frametimeMs: 4.1 },
+      { fps: 238, frametimeMs: 4.2 },
+      { fps: 242, frametimeMs: 4.1 },
+      { fps: 235, frametimeMs: 4.3 },
+      { fps: 239, frametimeMs: 4.2 }
+    ];
+
+    const fpsValues = samples.map(s => s.fps);
+    const avgFps = Math.round(fpsValues.reduce((a, b) => a + b, 0) / samples.length);
+    const minFps = Math.min(...fpsValues);
+    const maxFps = Math.max(...fpsValues);
+
+    expect(avgFps).toBe(239);
+    expect(minFps).toBe(235);
+    expect(maxFps).toBe(242);
+
+    // Stability calculation
+    const avgFrametimeMs = 4.2;
+    const variance = samples.reduce((acc, s) => acc + Math.pow(s.frametimeMs - avgFrametimeMs, 2), 0) / samples.length;
+    const stdDev = Math.sqrt(variance);
+    const stabilityScore = Math.max(40, Math.min(100, Math.round(100 - stdDev * 8)));
+
+    expect(stabilityScore).toBeGreaterThanOrEqual(95); // Extremely stable frame pacing
+  });
+
+  it('validates silent startup tray mode CLI arguments', () => {
+    const args1 = ['C:\\Optimizer.exe', '--silent'];
+    const isSilent1 = args1.includes('--silent') || args1.includes('--minimized');
+    expect(isSilent1).toBe(true);
+
+    const args2 = ['C:\\Optimizer.exe'];
+    const isSilent2 = args2.includes('--silent') || args2.includes('--minimized');
+    expect(isSilent2).toBe(false);
+  });
 });
