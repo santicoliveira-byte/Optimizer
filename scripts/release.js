@@ -177,13 +177,16 @@ function main() {
       const ghPath = 'C:\\Program Files\\GitHub CLI\\gh.exe';
       const ghCmd = fs.existsSync(ghPath) ? `"${ghPath}"` : 'gh';
       
-      const releaseNotes = `### Novidades da versão ${newTag} - Ultimate Launch Edition 🚀\n\n` +
-        `- **Instalador Oficial NSIS (\`Optimizer-Setup.exe\`)**: Novo assistente de instalação com criação automática de atalhos no Ambiente de Trabalho e Menu Iniciar, e desinstalador limpo.\n` +
-        `- **Histórico de Benchmarks Gravados**: Todas as partidas gravadas com Alt+B agora são automaticamente guardadas e persistidas no histórico local.\n` +
-        `- **Comparativo de Desempenho (Antes vs Depois)**: Análise comparativa automática mostrando percentagem de ganho em FPS Médio, 1% Lows e Estabilidade de frametime.\n` +
-        `- **Exportação para CSV**: Exportação instantânea de todo o histórico de benchmarks para ficheiro \`.csv\` com 1 clique.\n` +
-        `- **Suporte Multi-idioma Completo**: Interface 100% traduzida em Português, Inglês e Espanhol nas Definições.\n` +
-        `- **Segurança & Hardening Enterprise**: Content Security Policy (CSP), sanitização contra injeção de comandos, tranca de navegação externa e proteção anti-tampering em produção.`;
+      const releaseNotes = `### Novidades da versão ${newTag} - PRO Monetization & eSports Tier 👑🚀\n\n` +
+        `- **Sistema de Licenciamento PRO Criptográfico**: Autenticação offline segura por HMAC-SHA256, chaves alfanuméricas ativadas instantaneamente sem latência.\n` +
+        `- **Recursos Exclusivos PRO (Gated Tier)**:\n` +
+        `  • **HUD Overlay em Tempo Real (Alt+O)**: Monitorização de FPS, Frametimes, CPU, GPU e RAM sem sair da partida.\n` +
+        `  • **Benchmark e Análise de 1% Lows (Alt+B)**: Gravação e telemetria profunda com comparativo Antes vs Depois.\n` +
+        `  • **Modo Torneio eSports 0.500ms**: Bloqueio de hardware timer para a menor latência de input possível.\n` +
+        `  • **Otimização de P-Cores (Process Lasso)**: Afinidade de threads em CPUs híbridas Intel/AMD.\n` +
+        `  • **Teto G-Sync / FreeSync Automático**: Ajuste de 1 clique para todos os jogos detectados.\n` +
+        `  • **Prioridade de Interrupções MSI**: Afinidade direta na placa gráfica e placa de rede.\n` +
+        `- **Plano Gratuito Mantido**: Otimizador completo com 364 tweaks de registro, limpeza de disco, DNS benchmark e diagnósticos.`;
       const notesFile = path.join(rootDir, 'release', 'release-notes.tmp');
       fs.writeFileSync(notesFile, releaseNotes, 'utf8');
 
