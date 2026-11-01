@@ -1,4 +1,6 @@
 import { screen } from 'electron';
+import fs from 'fs';
+import path from 'path';
 import { GameBoosterDaemon } from './game-booster-daemon';
 import { HardwareService } from './hardware-service';
 import { BenchmarkSession } from '../../shared/types';
@@ -24,6 +26,8 @@ export class FpsMonitorService {
   private benchmarkSamples: { fps: number; frametimeMs: number }[] = [];
   private lastCompletedBenchmark: BenchmarkSession | null = null;
   private benchmarkChangeListeners: ((status: { isRecording: boolean; elapsedSeconds: number }) => void)[] = [];
+  private historyFilePath: string = '';
+  private benchmarkHistory: BenchmarkSession[] = [];
 
   // Calibrated hardware baseline FPS on typical modern rigs (e.g. RTX 5060 Ti / RTX 4060 / RX 6700)
   private gameBaseFps: Record<string, { avg: number; min1: number }> = {
@@ -66,6 +70,64 @@ export class FpsMonitorService {
 
   private constructor() {
     this.detectRefreshRate();
+    try {
+      const appData = process.env.APPDATA || path.join(process.env.USERPROFILE || 'C:\\Users\\Default', 'AppData', 'Roaming');
+      const optDir = path.join(appData, 'Optimizer');
+      if (!fs.existsSync(optDir)) {
+        fs.mkdirSync(optDir, { recursive: true });
+      }
+      this.historyFilePath = path.join(optDir, 'benchmark_history.json');
+      this.loadHistory();
+    } catch {
+      this.benchmarkHistory = [];
+    }
+  }
+
+  private loadHistory(): void {
+    try {
+      if (this.historyFilePath && fs.existsSync(this.historyFilePath)) {
+        const raw = fs.readFileSync(this.historyFilePath, 'utf8');
+        this.benchmarkHistory = JSON.parse(raw) || [];
+      }
+    } catch {
+      this.benchmarkHistory = [];
+    }
+  }
+
+  private saveHistory(): void {
+    try {
+      if (this.historyFilePath) {
+        fs.writeFileSync(this.historyFilePath, JSON.stringify(this.benchmarkHistory, null, 2), 'utf8');
+      }
+    } catch {}
+  }
+
+  public getBenchmarkHistory(): BenchmarkSession[] {
+    return [...this.benchmarkHistory];
+  }
+
+  public clearBenchmarkHistory(): boolean {
+    this.benchmarkHistory = [];
+    this.saveHistory();
+    return true;
+  }
+
+  public exportBenchmarkCsv(): { success: boolean; filePath?: string; csvContent: string } {
+    const headers = 'ID,Data/Hora,Jogo,Duracao(s),Amostras,FPS Medio,1% Low FPS,0.1% Low FPS,FPS Min,FPS Max,Frametime Medio(ms),Estabilidade(%),Classificacao\n';
+    const rows = this.benchmarkHistory.map((s) =>
+      `"${s.id}","${s.timestamp}","${s.gameName}",${s.durationSeconds},${s.sampleCount},${s.avgFps},${s.low1Percent},${s.low01Percent},${s.minFps},${s.maxFps},${s.avgFrametimeMs},${s.frametimeStabilityScore},"${s.rating}"`
+    ).join('\n');
+    const csvContent = headers + rows;
+
+    try {
+      const desktop = path.join(process.env.USERPROFILE || 'C:\\Users\\Default', 'Desktop');
+      const filename = `Optimizer-Benchmark-History-${Date.now()}.csv`;
+      const filePath = path.join(desktop, filename);
+      fs.writeFileSync(filePath, csvContent, 'utf8');
+      return { success: true, filePath, csvContent };
+    } catch {
+      return { success: true, csvContent };
+    }
   }
 
   public detectRefreshRate(): number {
@@ -233,6 +295,11 @@ export class FpsMonitorService {
     };
 
     this.lastCompletedBenchmark = session;
+    this.benchmarkHistory.unshift(session);
+    if (this.benchmarkHistory.length > 50) {
+      this.benchmarkHistory = this.benchmarkHistory.slice(0, 50);
+    }
+    this.saveHistory();
     return session;
   }
 

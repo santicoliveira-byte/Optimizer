@@ -129,6 +129,9 @@ export interface OptimizerApi {
   gsyncApplyCap: (cap: number, hz?: number) => Promise<GsyncCapResult>;
   benchmarkToggle: (gameName?: string) => Promise<{ isRecording: boolean; session: BenchmarkSession | null; message: string }>;
   benchmarkGetStatus: () => Promise<{ isRecording: boolean; elapsedSeconds: number; sampleCount: number; currentFps: number; lastSession: BenchmarkSession | null }>;
+  benchmarkGetHistory: () => Promise<BenchmarkSession[]>;
+  benchmarkClearHistory: () => Promise<boolean>;
+  benchmarkExportCsv: () => Promise<{ success: boolean; filePath?: string; csvContent: string }>;
   onBenchmarkStatusChanged: (callback: (status: { isRecording: boolean; elapsedSeconds: number }) => void) => () => void;
   startupGetStatus: () => Promise<StartupConfig>;
   startupSetStatus: (enabled: boolean, silent?: boolean) => Promise<{ success: boolean; message: string }>;
@@ -306,6 +309,9 @@ const api: OptimizerApi = {
   gsyncApplyCap: (cap: number, hz?: number) => ipcRenderer.invoke('gsync:apply-cap', cap, hz),
   benchmarkToggle: (gameName?: string) => ipcRenderer.invoke('benchmark:toggle', gameName),
   benchmarkGetStatus: () => ipcRenderer.invoke('benchmark:get-status'),
+  benchmarkGetHistory: () => ipcRenderer.invoke('benchmark:get-history'),
+  benchmarkClearHistory: () => ipcRenderer.invoke('benchmark:clear-history'),
+  benchmarkExportCsv: () => ipcRenderer.invoke('benchmark:export-csv'),
   onBenchmarkStatusChanged: (callback: (status: { isRecording: boolean; elapsedSeconds: number }) => void) => {
     const handler = (_: any, val: any) => callback(val);
     ipcRenderer.on('benchmark:status-changed', handler);

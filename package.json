@@ -1,6 +1,6 @@
 {
   "name": "optimizer-desktop",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "Windows 10/11 Performance, Input Delay & Network Optimizer",
   "main": "dist-electron/main/main.js",
   "scripts": {
@@ -11,6 +11,7 @@
     "build": "npm run build:renderer && npm run build:electron",
     "dist": "npm run build && electron-builder --win nsis",
     "dist:portable": "npm run build && electron-builder --win portable",
+    "dist:all": "npm run build && electron-builder --win nsis portable",
     "release": "node scripts/release.js --patch",
     "release:patch": "node scripts/release.js --patch",
     "release:minor": "node scripts/release.js --minor",
@@ -47,7 +48,9 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Optimizer"
+      "shortcutName": "Optimizer",
+      "artifactName": "Optimizer-Setup-${version}.${ext}",
+      "uninstallDisplayName": "Optimizer"
     },
     "portable": {
       "artifactName": "Optimizer-Portable-${version}.${ext}",

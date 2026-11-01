@@ -1,4 +1,15 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+
+vi.mock('electron', () => ({
+  screen: {
+    getPrimaryDisplay: () => ({ displayFrequency: 144, workAreaSize: { width: 1920, height: 1080 } })
+  },
+  app: {
+    getAppPath: () => 'd:/Optimzer'
+  }
+}));
+
+import { FpsMonitorService } from '../src/main/engine/fps-monitor-service';
 
 describe('Ultra-Lightweight Game Overlay Architecture', () => {
   it('validates low-overhead telemetry threshold', () => {
@@ -236,5 +247,23 @@ describe('Ultra-Lightweight Game Overlay Architecture', () => {
     const args2 = ['C:\\Optimizer.exe'];
     const isSilent2 = args2.includes('--silent') || args2.includes('--minimized');
     expect(isSilent2).toBe(false);
+  });
+
+  it('validates benchmark history recording and CSV export format', () => {
+    const fpsService = FpsMonitorService.getInstance();
+    fpsService.clearBenchmarkHistory();
+
+    fpsService.startBenchmark('Test Game CS2');
+    const session = fpsService.stopBenchmark();
+    expect(session).toBeDefined();
+
+    const history = fpsService.getBenchmarkHistory();
+    expect(history.length).toBeGreaterThan(0);
+    expect(history[0].gameName).toBe('Test Game CS2');
+
+    const csvRes = fpsService.exportBenchmarkCsv();
+    expect(csvRes.success).toBe(true);
+    expect(csvRes.csvContent).toContain('ID,Data/Hora,Jogo');
+    expect(csvRes.csvContent).toContain('Test Game CS2');
   });
 });

@@ -1,169 +1,164 @@
-# ⚡ Optimizer - Windows 10/11 Performance, Hardware Suite & Latency
+# ⚡ Optimizer - Windows 10/11 Performance, Gaming & Hardware Suite
 
 <p align="center">
-  <img src="public/favicon.ico" alt="Optimizer Logo" width="80" height="80" />
+  <img src="public/favicon.ico" alt="Optimizer Logo" width="84" height="84" />
 </p>
 
 <p align="center">
-  <strong>Aplicação Desktop Profissional Tudo-em-Um para Windows 10 e Windows 11</strong><br>
-  Otimizações de Baixa Latência, Suite de Hardware Rig-Z, Calculador de Gargalo & Game Ready (FPS Matrix) e Central de Manutenção.
+  <strong>A Suite Desktop Definitiva de Desempenho, Input Lag Zero e Telemetria para Jogadores e Entusiastas no Windows 10 e 11.</strong><br>
+  364 Otimizações de Sistema, HUD Overlay em Jogo, Benchmark de FPS com 1% Lows, Calculador G-Sync Anti-Lag, Process Lasso e Blindagem de Segurança Enterprise.
 </p>
 
 <p align="center">
-  <a href="#-instalação-e-download-via-github-releases"><img src="https://img.shields.io/badge/Download-Optimizer--Portable.exe-22c55e?style=for-the-badge&logo=windows&logoColor=white" alt="Download Portable"></a>
+  <a href="https://github.com/santicoliveira-byte/Optimizer/releases/latest"><img src="https://img.shields.io/badge/Download-Optimizer--Setup.exe-6366f1?style=for-the-badge&logo=windows&logoColor=white" alt="Download Setup"></a>
+  <a href="https://github.com/santicoliveira-byte/Optimizer/releases/latest"><img src="https://img.shields.io/badge/Download-Optimizer--Portable.exe-10b981?style=for-the-badge&logo=windows&logoColor=white" alt="Download Portable"></a>
   <img src="https://img.shields.io/badge/Windows-10%20%7C%2011%20x64-0078D6?style=for-the-badge&logo=windows" alt="Windows 10/11">
-  <img src="https://img.shields.io/badge/Electron-34-47848F?style=for-the-badge&logo=electron" alt="Electron 34">
-  <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react" alt="React 19">
-  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript" alt="TypeScript 5">
-  <img src="https://img.shields.io/badge/Testes-41%20Passed-success?style=for-the-badge" alt="41 Tests Passed">
+  <img src="https://img.shields.io/badge/Testes-81%20Passed-success?style=for-the-badge" alt="81 Tests Passed">
+  <img src="https://img.shields.io/badge/Segurança-CSP%20Hardened-blueviolet?style=for-the-badge&logo=shield" alt="CSP Shield">
+  <img src="https://img.shields.io/badge/Idiomas-PT%20%7C%20EN%20%7C%20ES-amber?style=for-the-badge" alt="Multi-language">
 </p>
 
 ---
 
-## 📥 Instalação e Download (GitHub Releases)
+## 📥 Opções de Download e Instalação
 
-Não é necessário instalar nada nem configurar ambientes para usar o Optimizer:
+Podes descarregar a versão mais recente diretamente na secção de [**Releases no GitHub**](https://github.com/santicoliveira-byte/Optimizer/releases):
 
-1. Aceda à secção de [**Releases no GitHub**](https://github.com/santicoliveira-byte/Optimizer/releases).
-2. Na versão mais recente (ex.: `v1.0`, `v1.1`, etc.), faça o download do ficheiro executável:
-   - **`Optimizer-Portable.exe`**
-3. Execute o ficheiro com **permissões de Administrador** (botão direito -> *Executar como Administrador*).
-4. O aplicativo é **100% portátil e autónomo**: não altera pastas de sistema para ser executado e guarda as suas configurações e salvaguardas com segurança em `%APPDATA%/Optimizer/`.
+| Opção | Ficheiro | Descrição |
+| :--- | :--- | :--- |
+| **Instalador Oficial (Recomendado)** | `Optimizer-Setup.exe` | Assistente NSIS com criação automática de atalhos no Ambiente de Trabalho e Menu Iniciar, integração de arranque e desinstalador limpo. |
+| **Versão Portátil (Zero-Install)** | `Optimizer-Portable.exe` | Executável único autónomo. Não necessita de instalação — executa imediatamente onde estiver (USB, disco externo, pasta local). |
 
----
-
-## 🏷️ Política e Ciclo de Versões
-
-O versionamento deste projeto segue a regra de evolução contínua:
-- **Versão Inicial**: `v1.0` (ou `1`)
-- **Atualizações e Melhorias Menores**: Incremento decimal de `0.1` a cada melhoria:
-  - `1.1` ➔ `1.2` ➔ `1.3` ➔ ... ➔ `1.9` ➔ `1.10`
-- **Passagem de Versão Principal**:
-  - Ao atingir a versão `1.10`, a versão seguinte avança automaticamente para **`2.0`** (ou `2`).
-  - O ciclo recomeça em `2.1` ➔ `2.2` ➔ ... ➔ `2.10` ➔ `3.0`.
-- Cada nova versão gera automaticamente um novo executável na secção de [Releases](https://github.com/santicoliveira-byte/Optimizer/releases) com o changelog correspondente.
+> [!NOTE]
+> Executa sempre o Optimizer como **Administrador** para permitir a aplicação de prioridades de CPU, MSI Mode em GPU/Rede, resolução de timer de 0.5ms e gestão de serviços do Windows.
 
 ---
 
-## 🌟 Módulos e Funcionalidades Principais
+## 🎮 Funcionalidades Gaming Exclusivas
+
+### 1. In-Game HUD Overlay Ultra-Leve (`Alt + O`)
+- Painel flutuante de telemetria com consumo de CPU/GPU inferior a 0.5%.
+- **Posicionamento Livre por Arrastamento (Drag & Drop)**: Arrasta para qualquer ponto do ecrã com memorização automática de coordenadas.
+- **3 Formatos Geométricos**: Barra Horizontal compacta, Widget Vertical estilo eSports ou Micro-Barra Minimalista.
+- **Modo Fantasma (`Alt + G`)**: Torna o HUD 100% transparente aos cliques do rato, garantindo que miras e disparos em jogos competitivos passam diretamente ao motor 3D.
+- **Suporte Nativo a Jogos em Tela Cheia**: Integração com DirectFlip / MPO do Windows para o HUD nunca desaparecer atrás de jogos em Fullscreen exclusivo.
+
+### 2. Gravador de Benchmark de FPS & Frametime (`Alt + B`)
+- Inicia e para a gravação durante qualquer partida premindo `Alt + B` ou através do botão na UI.
+- Indicador visual em tempo real no HUD: `🔴 REC 00:24`.
+- **Métricas Avançadas de Fluidez**:
+  - FPS Médio, FPS Mínimo e FPS Máximo.
+  - **1% Low FPS** e **0.1% Low FPS** (deteção de micro-engasgos / micro-stutters).
+  - Frametime médio em milissegundos e Desvio Padrão.
+  - **Pontuação de Estabilidade %** e Classificação Global (`S+`, `A`, `B`, `C`, `D`).
+- **Histórico & Comparativo Antes vs Depois**: Compara automaticamente o teu desempenho antes e depois de aplicar as otimizações.
+- **Exportação para CSV**: Exporta todo o histórico para folha de cálculo com 1 clique.
+
+### 3. Calculador & Sincronizador G-Sync / FreeSync Anti-Lag
+- Deteta automaticamente a taxa de atualização nativa do teu monitor (60Hz, 144Hz, 165Hz, 240Hz, 360Hz, etc.).
+- Calcula o teto ideal de FPS (ex.: `141 FPS` para 144Hz; `237 FPS` para 240Hz) de acordo com o padrão de engenharia da Blur Busters.
+- Aplicação com 1 clique diretamente nas configurações de jogos e drivers gráficos.
+
+---
+
+## ⚡ Motores de Otimização do Sistema
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│                          OPTIMIZER SUITE                               │
+│                        OPTIMIZER ENGINE SUITE                          │
 ├──────────────────┬──────────────────┬─────────────────┬────────────────┤
-│   OTIMIZAÇÕES    │    RIG-Z LAB     │ GARGALO & READY │  MANUTENÇÃO &   │
-│   (166 ITENS)    │  HARDWARE SUITE  │  GAME CHECKER   │   DIAGNÓSTICO  │
+│   364 TWEAKS     │   GAME BOOSTER   │   REDE & DNS    │  RIG-Z & CPU-Z │
 ├──────────────────┼──────────────────┼─────────────────┼────────────────┤
-│ • Input Delay    │ • CPU & Cores    │ • Gargalo %     │ • DISM & SFC   │
-│ • GPU & Vídeo    │ • Placa-Mãe      │ • FPS Matrix    │ • Shaders GPU  │
-│ • Rede & Ping    │ • Memória RAM    │ • Presets Res.  │ • CHKDSK       │
-│ • Serviços       │ • SPD por Slot   │ • 1080p/1440p/4K│ • Ponto Rest.  │
-│ • Privacidade    │ • GPU Detalhada  │ • Balanço Rig   │ • Temp Files   │
-│ • Sistema & Som  │ • Bench / Stress │ • Recomendação  │ • Relatório    │
+│ • Input Lag Zero │ • Process Lasso  │ • QoS DSCP 46   │ • Inspetor SPD │
+│ • Timer 0.500ms  │ • P-Cores Lock   │ • Benchmark DNS │ • Multi-Thread │
+│ • MSI Mode (GPU) │ • Daemon em Tray │ • Wi-Fi 6 Gaming│ • Teste Caches │
+│ • Shaders Cache  │ • Auto-Overlay   │ • Anti-Buffer   │ • Gargalo CPU  │
 └──────────────────┴──────────────────┴─────────────────┴────────────────┘
 ```
 
-### 1. ⚡ Catálogo com 166 Otimizações Seguras
-- **Input Delay e Latência (24 itens)**: Desativação de aceleração de rato 1:1, desativação de suspensão seletiva USB e PCIe Link State Power Management, otimizações de janelas em DirectX, HAGS inteligente, redução de polling delay.
-- **Placa Gráfica e Vídeo (19 itens)**: Preferência por GPU dedicada de alto desempenho, VRR/G-Sync, desativação de sobreposições desnecessárias, aceleração de hardware otimizada.
-- **Rede e Ping (20 itens)**: Desativação do algoritmo Nagle (`TcpAckFrequency = 1`, `TCPNoDelay = 1`), Otimização de MTU, Network Throttling Index, Flush DNS e otimização de buffer de pacotes.
-- **Armazenamento e Disco (13 itens)**: Trim forçado em SSDs NVMe/SATA, indexação ponderada, desativação de criação de nomes 8.3 legados.
-- **Privacidade e Telemetria (9 itens)**: Telemetria reduzida ao nível mínimo suportado oficialmente por GPO da Microsoft, desativação de publicidade e relatórios em background.
-- **Limpeza Segura (15 itens)**: Shaders DirectX, caches NVIDIA/AMD DXCache, temporários de utilizador e sistema, dumps de memória e WinSxS oficial via DISM.
+1. **Catálogo de 364 Otimizações Reversíveis**:
+   - Resolução de Timer de Alta Precisão (0.500 ms contínuo).
+   - Otimizações de Registry para Windows 10 e 11 sem telemetria nem bloatware.
+   - Otimizador de perfis de energia escondidos (Ultimate Performance).
+2. **Process Lasso & Afinidade de CPU**:
+   - Bloqueio de processos de jogos aos núcleos de alto desempenho (P-Cores) em CPUs Intel híbridos (12ª a 14ª geração) e AMD Ryzen X3D.
+   - Prioridade de CPU em tempo real e isolamento de I/O.
+3. **MSI Utility (Message Signaled Interrupts)**:
+   - Configura interrupções MSI baseadas em vetores PCI para a Placa Gráfica (NVIDIA/AMD) e Controladores de Rede Ethernet, reduzindo DPC Latency e stutters.
+4. **QoS Routing & Otimizador de Rede**:
+   - Marcação de pacotes com **DSCP 46 (Expedited Forwarding)** para títulos competitivos (CS2, Valorant, Fortnite, Warzone, Apex, LoL, Rocket League).
+   - Teste comparativo de servidores DNS (Cloudflare, Google, Quad9, OpenDNS) com medição de latência em milissegundos e aplicação instantânea.
+5. **Debloater UWP & Limpeza Profunda**:
+   - Remoção de aplicações desnecessárias em segundo plano (Cortana, OneDrive Sync, Bing News/Weather, Xbox Game Bar Overlay).
+   - Limpeza de caches de shaders DirectX (NVIDIA DXCache / AMD / D3DSCache) e libertação de RAM Standby List.
+6. **Proteção Total com Pontos de Restauro**:
+   - Motor de salvaguarda integrado com criação automática de Ponto de Restauro do Windows e backups de chave de registo antes de qualquer alteração.
 
 ---
 
-### 2. 🔍 Rig-Z Hardware Inspector & Benchmark Engine
-Módulo nativo desenvolvido para análise aprofundada de microarquitetura:
-- **CPU**: Nome completo, Codename da arquitetura (Phoenix, Zen, Raptor Lake, etc.), Socket/Package, Litografia (nm), TDP, Caches L1/L2/L3, Instruções suportadas (AVX-512, SSE4.2, FMA3, etc.) com **medidores em tempo real** de frequência (MHz) e tensão VID dos núcleos.
-- **Mainboard**: Fabricante, modelo da placa-mãe, chipset/southbridge, versão da BIOS e data, barramento PCIe da GPU.
-- **Memory**: Tipo (DDR5/DDR4), capacidade total, canais ativos (Dual Channel), frequência real e efetiva (MT/s) e sub-timings completos (CL-tRCD-tRP-tRAS-tRC-CR).
-- **SPD**: Inspeção slot por slot (`DIMMA2`, `DIMMB2`, etc.), fabricante do módulo, Part Number, e comparação de perfis JEDEC padrão vs AMD EXPO / Intel XMP (1.35V).
-- **Graphics**: Inspeção da GPU primária e integrada, memória VRAM dedicada, barramento e versão do driver.
-- **Bench & Stress**:
-  - Benchmark Single-Thread e Multi-Thread com pontuações calibradas de capacidade computacional por núcleo e paralela.
-  - Comparador visual de barras lado a lado com processadores de referência (Ryzen 7 7800X3D, Core i9-14900K, Ryzen 5 7600X, Core i5-13600K).
-  - Teste de estabilidade térmica contínuo (**Stress CPU**).
-  - Botão de exportação **Guardar Relatório TXT** formatado como validação oficial de hardware.
+## ⌨️ Atalhos Rápidos Globais
+
+| Atalho | Ação | Descrição |
+| :--- | :--- | :--- |
+| **`Alt + O`** | **Alternar HUD Overlay** | Abre ou oculta o painel flutuante de telemetria em cima de qualquer jogo. |
+| **`Alt + G`** | **Modo Fantasma** | Alterna entre HUD clicável e cliques 100% diretos para o jogo. |
+| **`Alt + B`** | **Gravar Benchmark** | Inicia ou para a gravação da sessão de FPS com cálculo de 1% Lows e estabilidade. |
+| **`Ctrl + Shift + F3`** | **Atalho Legado** | Compatibilidade alternativa para teclados compactos. |
 
 ---
 
-### 3. ⚖️ Calculador de Gargalo (Bottleneck) & Game Ready Checker
-- **Cálculo de Gargalo em Tempo Real**:
-  - Deteta se o gargalo está centrado no Processador (CPU Bottleneck) ou na Placa Gráfica (GPU Bottleneck).
-  - Simulações em 3 resoluções chave: **1080p (FHD)**, **1440p (QHD)** e **4K (UHD)**.
-- **Game Ready & FPS Matrix Engine**:
-  - Base de dados calibrada e integração com algoritmo de previsão em tempo real FPS Matrix.
-  - Estimativa realista de FPS médios, 1% lows e avaliação de fluidez em jogos competitivos e títulos AAA (CS2, Valorant, GTA V, Cyberpunk 2077, Warzone, Fortnite, etc.).
-  - Configurações gráficas em Baixo, Médio, Alto e Ultra com DLSS / FSR.
+## 🛡️ Segurança de Nível Empresarial (Enterprise Hardened)
+
+O Optimizer foi desenhado com foco absoluto na segurança e integridade do teu computador:
+
+- **Content Security Policy (CSP) Estrita**: Bloqueia execução de scripts não autorizados e vetores XSS tanto no renderizador como nos cabeçalhos de sessão Electron.
+- **Prevenção de Protocol Hijacking**: Bloqueia a execução remota de código (RCE) via validação rigorosa de esquemas de URL externos (`isSafeExternalUrl`).
+- **Sanitização Profunda de Comandos**: Todos os parâmetros fornecidos a rotinas PowerShell ou Shell são estritamente sanitizados contra command injection.
+- **Bloqueio de DevTools em Produção**: Proteção contra injeção de código e tampering em tempo de execução.
+- **Validação de Assinatura de Atualizações**: O Auto-Updater apenas aceita binários provenientes do repositório oficial no GitHub.
+- **Negação de Permissões de Hardware**: Pedidos de câmara, microfone e geolocalização são bloqueados por padrão.
+- **100% de Execução Local**: O Optimizer não envia nem recolhe qualquer telemetria pessoal para servidores externos.
 
 ---
 
-### 4. 🛠️ Central de Manutenção do Windows
-- Ações rápidas de 1 clique:
-  - Verificação de Integridade de Ficheiros do Sistema (`SFC /scannow`).
-  - Reparação de Imagem de Componentes (`DISM /Online /Cleanup-Image /RestoreHealth`).
-  - Verificação não invasiva de disco (`chkdsk C: /scan`).
-  - Limpeza profunda de Cache de Shaders (NVIDIA, AMD, DirectX).
-  - Criação instantânea de Pontos de Restauro do Windows.
-  - Geração de Relatório de Saúde do Sistema em HTML autónomo exportável para o Ambiente de Trabalho.
+## 🌍 Suporte Multi-idioma & Temas Visuais
+
+- **Idiomas Nativos**:
+  - 🇵🇹 **Português** (Portugal / Brasil)
+  - 🇬🇧 **English** (United States / International)
+  - 🇪🇸 **Español** (España / Latinoamérica)
+- **7 Paletas de Cores de Acento**:
+  - Índigo Elétrico (Padrão) • Verde Cyberpunk Razer • Azul Gelo Cyan • Vermelho Rogue • Âmbar Dourado • Roxo Neon • Rosa Cyber.
 
 ---
 
-## 🛡️ Segurança: Regra Nº 1 Acima de Tudo
+## 🛠️ Tecnologias & Desenvolvimento
 
-- **Apenas Otimizações Documentadas e Reversíveis**:
-  - ❌ **NUNCA** desativa o Windows Defender, Firewall, UAC ou Windows Update.
-  - ❌ **NUNCA** desativa mitigações de segurança do CPU (Spectre/Meltdown).
-  - ❌ **NUNCA** desativa a Integridade de Memória (VBS/HVCI).
-  - ❌ **NUNCA** mexe em ficheiros protegidos do `System32` nem usa "RAM cleaners" agressivos.
-- **Ponto de Restauro Automático**:
-  - Cria automaticamente um ponto de restauro antes de qualquer aplicação em lote.
-- **Simulação (Dry-Run)**:
-  - Permite inspecionar linha a linha cada comando e chave de registo antes de aplicar qualquer alteração.
-- **Reversão com 1 Clique**:
-  - Cada item tem botão individual de reversão para os valores originais da máquina, além do botão mestre "Repor Tudo ao Original".
+- **Runtime**: Electron 34 & Node.js
+- **Frontend**: React 19, Tailwind CSS, Lucide Icons, Spline / Three.js
+- **Compilador**: Vite 6 & TypeScript 5
+- **Testes Unitários**: Vitest (81 testes unitários com 100% de taxa de sucesso)
+- **Packaging**: Electron Builder (NSIS Setup & Portable)
 
----
-
-## 💻 Para Desenvolvedores
-
-### Pré-requisitos
-- Node.js 18+ e npm instalados.
-- Windows 10/11 x64.
-- Git instalado.
-
-### 1. Clonar e Instalar
 ```bash
-git clone https://github.com/santicoliveira-byte/Optimizer.git
-cd Optimizer
+# Instalar dependências
 npm install
-```
 
-### 2. Modo de Desenvolvimento
-```bash
-# Inicia o Vite e a janela do Electron com Hot Reload
+# Executar em modo desenvolvimento com Vite HMR
 npm run dev:electron
-```
 
-### 3. Suite de Testes Automatizados (Vitest)
-```bash
+# Executar bateria de testes unitários
 npm test
-```
-*41 testes cobrindo conformidade do catálogo, motor de backup, regras de segurança, cálculos de FPS e lógica de versionamento.*
 
-### 4. Criar uma Nova Release Automatizada
-O projeto dispõe de um script que automatiza a regra de versões (`1.0` -> `1.1` -> ... -> `1.10` -> `2.0`), compila o executável, cria a tag git e publica no GitHub Releases:
+# Compilar instalador Setup e executável Portátil
+npm run dist:all
 
-```bash
-# Publica a próxima versão pequena (ex: 1.0 -> 1.1)
-npm run release
-
-# Ou para forçar salto de versão principal (ex: 1.x -> 2.0)
-npm run release -- --major
+# Publicar nova release com versionamento automático
+npm run release:minor
 ```
 
 ---
 
 ## 📄 Licença
-Distribuído sob a licença MIT. Consulte `LICENSE` para mais informações.
+
+Distribuído sob a licença **MIT**. Consulta o ficheiro [LICENSE](LICENSE) para mais informações.

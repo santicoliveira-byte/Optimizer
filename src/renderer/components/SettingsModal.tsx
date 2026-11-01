@@ -27,7 +27,11 @@ import {
   Monitor,
   Play,
   Square,
-  Power
+  Power,
+  Download,
+  Trash2,
+  TrendingUp,
+  History
 } from 'lucide-react';
 import { useI18n, ACCENT_COLORS, ThemeAccent, Language } from '../i18n';
 import { OverlayConfig, OverlayItemsConfig, OverlayFormat, OverlayTheme, BenchmarkSession, GsyncCapResult, StartupConfig } from '../../shared/types';
@@ -59,6 +63,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     sampleCount: 0,
     lastSession: null
   });
+  const [benchHistory, setBenchHistory] = useState<BenchmarkSession[]>([]);
 
   // Windows Startup & Silent Mode State
   const [startupConfig, setStartupConfig] = useState<StartupConfig>({ enabled: false, isSilent: true });
@@ -117,6 +122,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
         if (window.optimizerApi?.benchmarkGetStatus) {
           const bStatus = await window.optimizerApi.benchmarkGetStatus();
           if (bStatus) setBenchStatus(bStatus as any);
+        }
+        if (window.optimizerApi?.benchmarkGetHistory) {
+          const hist = await window.optimizerApi.benchmarkGetHistory();
+          if (hist) setBenchHistory(hist);
         }
         if (window.optimizerApi?.startupGetStatus) {
           const st = await window.optimizerApi.startupGetStatus();
@@ -291,10 +300,42 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             const updated = await window.optimizerApi.benchmarkGetStatus();
             if (updated) setBenchStatus(updated as any);
           }
+          if (window.optimizerApi?.benchmarkGetHistory) {
+            const hist = await window.optimizerApi.benchmarkGetHistory();
+            if (hist) setBenchHistory(hist);
+          }
         }
       }
     } catch {
       setFeedbackMsg({ text: 'Erro ao alternar benchmark.', type: 'error' });
+    }
+  };
+
+  const handleClearHistory = async () => {
+    try {
+      if (window.optimizerApi?.benchmarkClearHistory) {
+        await window.optimizerApi.benchmarkClearHistory();
+        setBenchHistory([]);
+        setFeedbackMsg({ text: 'Histórico de benchmarks limpo com sucesso.', type: 'success' });
+      }
+    } catch {
+      setFeedbackMsg({ text: 'Erro ao limpar histórico.', type: 'error' });
+    }
+  };
+
+  const handleExportCsv = async () => {
+    try {
+      if (window.optimizerApi?.benchmarkExportCsv) {
+        const res = await window.optimizerApi.benchmarkExportCsv();
+        if (res.success) {
+          setFeedbackMsg({
+            text: res.filePath ? `Relatório exportado para o Desktop: ${res.filePath.split('\\').pop()}` : 'Relatório CSV exportado com sucesso!',
+            type: 'success'
+          });
+        }
+      }
+    } catch {
+      setFeedbackMsg({ text: 'Erro ao exportar relatório CSV.', type: 'error' });
     }
   };
 
@@ -429,7 +470,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             }`}
           >
             <Crosshair className="w-3.5 h-3.5 text-cyan-400" />
-            <span>G-Sync / Anti-Lag</span>
+            <span>{t('settings.tab_gsync')}</span>
           </button>
           <button
             onClick={() => setActiveTab('benchmark')}
@@ -440,7 +481,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             }`}
           >
             <BarChart2 className="w-3.5 h-3.5 text-rose-400" />
-            <span>Benchmark FPS</span>
+            <span>{t('settings.tab_benchmark')}</span>
           </button>
           <button
             onClick={() => setActiveTab('hotkeys')}
@@ -1206,6 +1247,141 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                   <p className="text-[11px] text-gray-500">Pressiona Alt+B para começar uma gravação quando estiveres dentro de um jogo!</p>
                 </div>
               )}
+
+              {/* Before vs After Comparison Card */}
+              {benchHistory.length >= 2 && (() => {
+                const latest = benchHistory[0];
+                const baseline = benchHistory[benchHistory.length - 1];
+                const fpsDiff = latest.avgFps - baseline.avgFps;
+                const fpsPercent = baseline.avgFps > 0 ? ((fpsDiff / baseline.avgFps) * 100).toFixed(1) : '0';
+                const low1Diff = latest.low1Percent - baseline.low1Percent;
+                const low1Percent = baseline.low1Percent > 0 ? ((low1Diff / baseline.low1Percent) * 100).toFixed(1) : '0';
+                const stabDiff = latest.frametimeStabilityScore - baseline.frametimeStabilityScore;
+
+                return (
+                  <div className="bg-gradient-to-r from-indigo-950/40 via-[#0F172A] to-cyan-950/30 border border-indigo-500/30 rounded-2xl p-4 space-y-3 shadow-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4 text-emerald-400" />
+                        <h5 className="text-xs font-bold text-white uppercase tracking-wider">
+                          Comparativo de Performance: Antes vs Depois
+                        </h5>
+                      </div>
+                      <span className="text-[10px] text-gray-400 font-mono">
+                        Base: {baseline.timestamp} → Atual: {latest.timestamp}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="bg-black/40 border border-white/5 rounded-xl p-2.5 text-center">
+                        <span className="text-[10px] text-gray-400 block">Ganho FPS Médio</span>
+                        <span className={`text-base font-black font-mono ${fpsDiff >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          {fpsDiff >= 0 ? `+${fpsDiff}` : fpsDiff} FPS ({fpsDiff >= 0 ? `+${fpsPercent}%` : `${fpsPercent}%`})
+                        </span>
+                      </div>
+                      <div className="bg-black/40 border border-white/5 rounded-xl p-2.5 text-center">
+                        <span className="text-[10px] text-gray-400 block">Ganho 1% Low</span>
+                        <span className={`text-base font-black font-mono ${low1Diff >= 0 ? 'text-cyan-400' : 'text-rose-400'}`}>
+                          {low1Diff >= 0 ? `+${low1Diff}` : low1Diff} FPS ({low1Diff >= 0 ? `+${low1Percent}%` : `${low1Percent}%`})
+                        </span>
+                      </div>
+                      <div className="bg-black/40 border border-white/5 rounded-xl p-2.5 text-center">
+                        <span className="text-[10px] text-gray-400 block">Estabilidade</span>
+                        <span className={`text-base font-black font-mono ${stabDiff >= 0 ? 'text-amber-300' : 'text-rose-400'}`}>
+                          {stabDiff >= 0 ? `+${stabDiff}%` : `${stabDiff}%`}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Benchmark History Section */}
+              <div className="space-y-3 pt-2 border-t border-[#1E293B]">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <History className="w-4 h-4 text-gray-400" />
+                    <h5 className="text-xs font-bold text-white">
+                      Histórico de Partidas Gravadas ({benchHistory.length})
+                    </h5>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {benchHistory.length > 0 && (
+                      <>
+                        <button
+                          onClick={handleExportCsv}
+                          className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-[#1E293B] hover:bg-[#2B3B66] text-gray-200 hover:text-white flex items-center gap-1.5 transition-all border border-[#2D3B55]"
+                          title="Exportar dados para CSV no Ambiente de Trabalho"
+                        >
+                          <Download className="w-3 h-3 text-cyan-400" />
+                          <span>Exportar CSV</span>
+                        </button>
+                        <button
+                          onClick={handleClearHistory}
+                          className="px-2 py-1.5 rounded-lg text-[11px] font-bold bg-white/5 hover:bg-rose-500/20 text-gray-400 hover:text-rose-300 flex items-center gap-1 transition-all"
+                          title="Limpar histórico gravado"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {benchHistory.length > 0 ? (
+                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
+                    {benchHistory.map((sess) => (
+                      <div
+                        key={sess.id}
+                        className="bg-[#0E1526] border border-[#1E293B] hover:border-[#2D3B55] rounded-xl p-3 flex items-center justify-between transition-all"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span
+                            className={`w-7 h-7 rounded-lg flex items-center justify-center font-black font-mono text-xs border ${
+                              sess.rating === 'S+'
+                                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                                : sess.rating === 'A'
+                                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                                : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                            }`}
+                          >
+                            {sess.rating}
+                          </span>
+                          <div>
+                            <div className="text-xs font-bold text-white flex items-center gap-2">
+                              <span>{sess.gameName}</span>
+                              <span className="text-[10px] font-normal text-gray-400">({sess.durationSeconds}s)</span>
+                            </div>
+                            <div className="text-[10px] text-gray-500 font-mono">
+                              {sess.timestamp} • {sess.sampleCount} amostras
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-4 text-right">
+                          <div>
+                            <span className="text-[10px] text-gray-400 block">Méd / 1% Low</span>
+                            <span className="text-xs font-mono font-bold text-emerald-400">
+                              {sess.avgFps} <span className="text-gray-500 font-normal">/</span> {sess.low1Percent}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-gray-400 block">Estabilidade</span>
+                            <span className="text-xs font-mono font-bold text-amber-300">
+                              {sess.frametimeStabilityScore}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-gray-500 italic text-center py-2">
+                    Nenhum registo persistido ainda. As sessões completas aparecerão aqui automaticamente.
+                  </p>
+                )}
+              </div>
             </div>
           )}
           {activeTab === 'language' && (

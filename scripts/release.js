@@ -95,29 +95,44 @@ function main() {
   console.log('\n--- 1/4: A validar testes unitários ---');
   run('npm test');
 
-  // 3. Compilar aplicação e gerar executável portátil
-  console.log('\n--- 2/4: A compilar executável portátil (dist:portable) ---');
-  run('npm run dist:portable');
+  // 3. Compilar aplicação e gerar instalador Setup e executável portátil
+  console.log('\n--- 2/4: A compilar executáveis (Setup NSIS & Portable) via dist:all ---');
+  run('npm run dist:all');
 
-  const exeName = `Optimizer-Portable-${newSemver}.exe`;
-  const exePath = path.join(rootDir, 'release', exeName);
+  const portableExeName = `Optimizer-Portable-${newSemver}.exe`;
+  const setupExeName = `Optimizer-Setup-${newSemver}.exe`;
+  const portablePath = path.join(rootDir, 'release', portableExeName);
+  const setupPath = path.join(rootDir, 'release', setupExeName);
 
-  if (!fs.existsSync(exePath)) {
-    throw new Error(`Erro: O ficheiro executável ${exePath} não foi encontrado.`);
+  if (!fs.existsSync(portablePath)) {
+    throw new Error(`Erro: O ficheiro executável portátil ${portablePath} não foi encontrado.`);
   }
 
   // 4. Copiar para o Desktop e E: (se disponível)
-  console.log('\n--- 3/4: A instalar executável localmente ---');
-  const desktopDest = path.join(process.env.USERPROFILE || 'C:\\Users\\Santiago', 'Desktop', 'Optimizer-Portable.exe');
-  fs.copyFileSync(exePath, desktopDest);
-  console.log(`✓ Copiado para: ${desktopDest}`);
+  console.log('\n--- 3/4: A instalar executáveis localmente ---');
+  const desktopDir = path.join(process.env.USERPROFILE || 'C:\\Users\\Santiago', 'Desktop');
+  const portableDest = path.join(desktopDir, 'Optimizer-Portable.exe');
+  fs.copyFileSync(portablePath, portableDest);
+  console.log(`✓ Copiado para: ${portableDest}`);
+
+  if (fs.existsSync(setupPath)) {
+    const setupDest = path.join(desktopDir, 'Optimizer-Setup.exe');
+    fs.copyFileSync(setupPath, setupDest);
+    console.log(`✓ Copiado para: ${setupDest}`);
+  }
 
   const driveEDir = 'E:\\Optimizer Final';
   if (fs.existsSync('E:\\')) {
     if (!fs.existsSync(driveEDir)) fs.mkdirSync(driveEDir, { recursive: true });
-    const driveEDest = path.join(driveEDir, 'Optimizer-Portable.exe');
-    fs.copyFileSync(exePath, driveEDest);
-    console.log(`✓ Copiado para: ${driveEDest}`);
+    const drivePortable = path.join(driveEDir, 'Optimizer-Portable.exe');
+    fs.copyFileSync(portablePath, drivePortable);
+    console.log(`✓ Copiado para: ${drivePortable}`);
+
+    if (fs.existsSync(setupPath)) {
+      const driveSetup = path.join(driveEDir, 'Optimizer-Setup.exe');
+      fs.copyFileSync(setupPath, driveSetup);
+      console.log(`✓ Copiado para: ${driveSetup}`);
+    }
   }
 
   // 5. Git Commit, Tag e GitHub Release
@@ -162,23 +177,29 @@ function main() {
       const ghPath = 'C:\\Program Files\\GitHub CLI\\gh.exe';
       const ghCmd = fs.existsSync(ghPath) ? `"${ghPath}"` : 'gh';
       
-      const releaseNotes = `### Novidades da versão ${newTag} - Enterprise-Grade Security & Public Hardening 🛡️\n\n` +
-        `- **Proteção contra Protocol Hijacking & RCE**: Validação estrita de protocolos externos (\`isSafeExternalUrl\`) em janelas e popups, bloqueando esquemas perigosos (\`file://\`, \`javascript:\`, \`ms-msdt:\`, \`calc:\`).\n` +
-        `- **Content Security Policy (CSP)**: Implementada política CSP estrita no HTML (\`index.html\`) e nos cabeçalhos de sessão Electron, mitigando XSS e injeção de código.\n` +
-        `- **Anti-Tampering & DevTools Lock**: Bloqueio ativo de ferramentas de inspeção (\`F12\`, \`Ctrl+Shift+I\`, \`Ctrl+Shift+J\`, \`Ctrl+U\`) em ambiente de produção.\n` +
-        `- **Navegação & WebViews Restritas**: Bloqueio de navegação externa não autorizada (\`will-navigate\`) e proibição de tags \`<webview>\`.\n` +
-        `- **Sanitização Rigorosa contra Command Injection**: Sanitização de parâmetros nos motores de PowerShell (\`RestorePointManager\`, \`DnsBenchmarkService\`, \`MsiUtilityService\`, \`ProcessLassoService\`, \`StartupManagerService\`, \`GameTrafficRoutingService\`).\n` +
-        `- **Validação do Auto-Updater**: O atualizador automático rejeita qualquer binário que não provenha do repositório oficial no GitHub.\n` +
-        `- **Permissões de Hardware Trancadas**: Negação imediata de permissões para câmara, microfone e geolocalização.`;
+      const releaseNotes = `### Novidades da versão ${newTag} - Ultimate Launch Edition 🚀\n\n` +
+        `- **Instalador Oficial NSIS (\`Optimizer-Setup.exe\`)**: Novo assistente de instalação com criação automática de atalhos no Ambiente de Trabalho e Menu Iniciar, e desinstalador limpo.\n` +
+        `- **Histórico de Benchmarks Gravados**: Todas as partidas gravadas com Alt+B agora são automaticamente guardadas e persistidas no histórico local.\n` +
+        `- **Comparativo de Desempenho (Antes vs Depois)**: Análise comparativa automática mostrando percentagem de ganho em FPS Médio, 1% Lows e Estabilidade de frametime.\n` +
+        `- **Exportação para CSV**: Exportação instantânea de todo o histórico de benchmarks para ficheiro \`.csv\` com 1 clique.\n` +
+        `- **Suporte Multi-idioma Completo**: Interface 100% traduzida em Português, Inglês e Espanhol nas Definições.\n` +
+        `- **Segurança & Hardening Enterprise**: Content Security Policy (CSP), sanitização contra injeção de comandos, tranca de navegação externa e proteção anti-tampering em produção.`;
       const notesFile = path.join(rootDir, 'release', 'release-notes.tmp');
       fs.writeFileSync(notesFile, releaseNotes, 'utf8');
 
       const portableAliasPath = path.join(rootDir, 'release', 'Optimizer-Portable.exe');
-      fs.copyFileSync(exePath, portableAliasPath);
+      fs.copyFileSync(portablePath, portableAliasPath);
 
-      const createReleaseCmd = `${ghCmd} release create ${tag} "${portableAliasPath}" --title "Optimizer v${newTag}" --notes-file "${notesFile}"`;
+      let releaseAssets = `"${portableAliasPath}"`;
+      if (fs.existsSync(setupPath)) {
+        const setupAliasPath = path.join(rootDir, 'release', 'Optimizer-Setup.exe');
+        fs.copyFileSync(setupPath, setupAliasPath);
+        releaseAssets += ` "${setupAliasPath}"`;
+      }
+
+      const createReleaseCmd = `${ghCmd} release create ${tag} ${releaseAssets} --title "Optimizer v${newTag}" --notes-file "${notesFile}"`;
       run(createReleaseCmd);
-      console.log(`🎉 Release ${tag} publicada com sucesso no GitHub com o ficheiro Optimizer-Portable.exe!`);
+      console.log(`🎉 Release ${tag} publicada com sucesso no GitHub com os ficheiros Optimizer-Setup.exe e Optimizer-Portable.exe!`);
       
       if (fs.existsSync(notesFile)) fs.unlinkSync(notesFile);
     } catch (err) {

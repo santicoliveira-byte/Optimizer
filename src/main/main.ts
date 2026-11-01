@@ -1112,6 +1112,18 @@ function registerIpc() {
     return FpsMonitorService.getInstance().getBenchmarkStatus();
   });
 
+  ipcMain.handle('benchmark:get-history', async () => {
+    return FpsMonitorService.getInstance().getBenchmarkHistory();
+  });
+
+  ipcMain.handle('benchmark:clear-history', async () => {
+    return FpsMonitorService.getInstance().clearBenchmarkHistory();
+  });
+
+  ipcMain.handle('benchmark:export-csv', async () => {
+    return FpsMonitorService.getInstance().exportBenchmarkCsv();
+  });
+
   ipcMain.handle('startup:get-status', async () => {
     return StartupManagerService.getInstance().getAppStartupStatus();
   });
