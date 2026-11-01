@@ -4,6 +4,7 @@ import path from 'path';
 import os from 'os';
 import { spawn } from 'child_process';
 import { app } from 'electron';
+import { isOfficialReleaseUrl } from './security-utils';
 
 export interface UpdateInfo {
   hasUpdate: boolean;
@@ -201,6 +202,14 @@ export class AutoUpdaterService {
   ): Promise<{ success: boolean; path?: string; error?: string }> {
     if (!downloadUrl) {
       return { success: false, error: 'URL de download inválido.' };
+    }
+
+    // Strict Security Validation: Only allow official GitHub Release binary downloads
+    if (!isOfficialReleaseUrl(downloadUrl)) {
+      return {
+        success: false,
+        error: 'Segurança: Origem de download de atualização não autorizada. Apenas binários oficiais do repositório no GitHub são permitidos.'
+      };
     }
 
     const tempDir = os.tmpdir();

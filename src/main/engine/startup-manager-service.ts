@@ -107,30 +107,32 @@ export class StartupManagerService {
 
   public async toggleItem(item: StartupItem, enable: boolean): Promise<{ success: boolean; message: string }> {
     try {
+      const safeName = (item.name || '').replace(/'/g, "''");
+      const safeCommand = (item.command || '').replace(/'/g, "''");
       let script = '';
       if (item.location.startsWith('HKCU')) {
         const regPath = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run';
         if (!enable) {
-          script = `Remove-ItemProperty -Path '${regPath}' -Name '${item.name}' -ErrorAction SilentlyContinue`;
+          script = `Remove-ItemProperty -Path '${regPath}' -Name '${safeName}' -ErrorAction SilentlyContinue`;
         } else {
-          script = `Set-ItemProperty -Path '${regPath}' -Name '${item.name}' -Value '${item.command}' -ErrorAction SilentlyContinue`;
+          script = `Set-ItemProperty -Path '${regPath}' -Name '${safeName}' -Value '${safeCommand}' -ErrorAction SilentlyContinue`;
         }
       } else if (item.location.startsWith('HKLM')) {
         const regPath = item.location.includes('32-bit')
           ? 'HKLM:\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run'
           : 'HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run';
         if (!enable) {
-          script = `Remove-ItemProperty -Path '${regPath}' -Name '${item.name}' -ErrorAction SilentlyContinue`;
+          script = `Remove-ItemProperty -Path '${regPath}' -Name '${safeName}' -ErrorAction SilentlyContinue`;
         } else {
-          script = `Set-ItemProperty -Path '${regPath}' -Name '${item.name}' -Value '${item.command}' -ErrorAction SilentlyContinue`;
+          script = `Set-ItemProperty -Path '${regPath}' -Name '${safeName}' -Value '${safeCommand}' -ErrorAction SilentlyContinue`;
         }
       } else {
         // Startup folder file
         const backupExt = enable ? '' : '.disabled';
         if (!enable) {
-          script = `Rename-Item -Path '${item.command}' -NewName '$([System.IO.Path]::GetFileName('${item.command}')).disabled' -ErrorAction SilentlyContinue`;
+          script = `Rename-Item -Path '${safeCommand}' -NewName '$([System.IO.Path]::GetFileName('${safeCommand}')).disabled' -ErrorAction SilentlyContinue`;
         } else {
-          script = `Rename-Item -Path '${item.command}.disabled' -NewName '$([System.IO.Path]::GetFileName('${item.command}'))' -ErrorAction SilentlyContinue`;
+          script = `Rename-Item -Path '${safeCommand}.disabled' -NewName '$([System.IO.Path]::GetFileName('${safeCommand}'))' -ErrorAction SilentlyContinue`;
         }
       }
 

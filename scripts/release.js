@@ -162,7 +162,14 @@ function main() {
       const ghPath = 'C:\\Program Files\\GitHub CLI\\gh.exe';
       const ghCmd = fs.existsSync(ghPath) ? `"${ghPath}"` : 'gh';
       
-      const releaseNotes = `### Novidades da versão ${newTag}\n\n- Correção Crítica do Atalho do HUD Overlay: Corrigido o conflito de duplo toggle instantâneo onde o HUD abria e fechava imediatamente ao premir as teclas\n- Novos Atalhos Rápidos Ergonómicos de 1 Mão: Pressiona Alt + O para alternar o HUD e Alt + G para alternar o Modo Fantasma (perfeito para portáteis sem necessidade de carregar na tecla Fn)\n- Suporte Simultâneo: Tanto Ctrl + Shift + F3 como Alt + O funcionam ativamente em qualquer momento\n- Novo Botão de Teste nas Definições: Testa o aparecimento do HUD com 1 clique no separador Atalhos de Teclado`;
+      const releaseNotes = `### Novidades da versão ${newTag} - Enterprise-Grade Security & Public Hardening 🛡️\n\n` +
+        `- **Proteção contra Protocol Hijacking & RCE**: Validação estrita de protocolos externos (\`isSafeExternalUrl\`) em janelas e popups, bloqueando esquemas perigosos (\`file://\`, \`javascript:\`, \`ms-msdt:\`, \`calc:\`).\n` +
+        `- **Content Security Policy (CSP)**: Implementada política CSP estrita no HTML (\`index.html\`) e nos cabeçalhos de sessão Electron, mitigando XSS e injeção de código.\n` +
+        `- **Anti-Tampering & DevTools Lock**: Bloqueio ativo de ferramentas de inspeção (\`F12\`, \`Ctrl+Shift+I\`, \`Ctrl+Shift+J\`, \`Ctrl+U\`) em ambiente de produção.\n` +
+        `- **Navegação & WebViews Restritas**: Bloqueio de navegação externa não autorizada (\`will-navigate\`) e proibição de tags \`<webview>\`.\n` +
+        `- **Sanitização Rigorosa contra Command Injection**: Sanitização de parâmetros nos motores de PowerShell (\`RestorePointManager\`, \`DnsBenchmarkService\`, \`MsiUtilityService\`, \`ProcessLassoService\`, \`StartupManagerService\`, \`GameTrafficRoutingService\`).\n` +
+        `- **Validação do Auto-Updater**: O atualizador automático rejeita qualquer binário que não provenha do repositório oficial no GitHub.\n` +
+        `- **Permissões de Hardware Trancadas**: Negação imediata de permissões para câmara, microfone e geolocalização.`;
       const notesFile = path.join(rootDir, 'release', 'release-notes.tmp');
       fs.writeFileSync(notesFile, releaseNotes, 'utf8');
 

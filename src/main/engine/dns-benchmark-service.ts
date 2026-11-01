@@ -124,6 +124,11 @@ export class DnsBenchmarkService {
   }
 
   public async applyDns(primaryIp: string, secondaryIp: string): Promise<{ success: boolean; message: string }> {
+    // Security validation: ensure strings are strictly valid IPv4 or IPv6 addresses
+    if (!net.isIP(primaryIp) || (secondaryIp && !net.isIP(secondaryIp))) {
+      return { success: false, message: 'Segurança: Endereço IP de DNS inválido ou potencialmente inseguro.' };
+    }
+
     try {
       // Apply on all active physical network adapters via netsh/PowerShell
       const script = `

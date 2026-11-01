@@ -110,10 +110,13 @@ export class GameTrafficRoutingService {
    * Add a custom game executable to QoS routing
    */
   public async addCustomGame(name: string, processName: string): Promise<{ success: boolean; message: string; game?: GameRouteItem }> {
-    const cleanName = name.trim();
-    let cleanProc = processName.trim();
+    const cleanName = (name || '').replace(/[^a-zA-Z0-9_\-\s]/g, '').trim().slice(0, 50);
+    let cleanProc = (processName || '').replace(/[^a-zA-Z0-9_\-\.]/g, '').trim();
     if (!cleanProc.toLowerCase().endsWith('.exe')) {
       cleanProc += '.exe';
+    }
+    if (!cleanName || !cleanProc || cleanProc === '.exe') {
+      return { success: false, message: 'Nome ou executável de jogo inválido.' };
     }
     const id = 'custom_' + cleanProc.toLowerCase().replace(/[^a-z0-9]/g, '_');
 

@@ -175,13 +175,19 @@ export class ProcessLassoService {
     processName: string,
     priority: 'Normal' | 'AboveNormal' | 'High' | 'RealTime'
   ): Promise<{ success: boolean; message: string }> {
-    const cleanName = processName.replace(/\.exe$/i, '');
+    const cleanName = (processName || '').replace(/\.exe$/i, '').replace(/[^a-zA-Z0-9_\-]/g, '').trim();
+    if (!cleanName) {
+      return { success: false, message: 'Nome de processo inválido.' };
+    }
+    const allowed = ['Normal', 'AboveNormal', 'High', 'RealTime'];
+    const safePriority = allowed.includes(priority) ? priority : 'Normal';
+
     try {
       const psScript = `
         $ErrorActionPreference = 'SilentlyContinue'
         $proc = Get-Process -Name "${cleanName}" -ErrorAction SilentlyContinue
         if ($proc) {
-          $proc | ForEach-Object { $_.PriorityClass = '${priority}' }
+          $proc | ForEach-Object { $_.PriorityClass = '${safePriority}' }
           "OK"
         } else {
           "NOT_RUNNING"
@@ -197,7 +203,7 @@ export class ProcessLassoService {
         return { success: false, message: `O processo ${processName} não está em execução no momento.` };
       }
 
-      return { success: true, message: `Prioridade de ${processName} definida para ${priority} com sucesso.` };
+      return { success: true, message: `Prioridade de ${processName} definida para ${safePriority} com sucesso.` };
     } catch (e: any) {
       return { success: false, message: `Falha ao alterar prioridade: ${e.message}` };
     }
@@ -210,9 +216,15 @@ export class ProcessLassoService {
     processName: string,
     coreIndices: number[]
   ): Promise<{ success: boolean; message: string }> {
-    const cleanName = processName.replace(/\.exe$/i, '');
+    const cleanName = (processName || '').replace(/\.exe$/i, '').replace(/[^a-zA-Z0-9_\-]/g, '').trim();
+    if (!cleanName) {
+      return { success: false, message: 'Nome de processo inválido.' };
+    }
+    const validCores = (Array.isArray(coreIndices) ? coreIndices : []).filter(
+      (c) => typeof c === 'number' && Number.isInteger(c) && c >= 0 && c < 64
+    );
     let mask = 0;
-    for (const core of coreIndices) {
+    for (const core of validCores) {
       mask |= (1 << core);
     }
 
@@ -269,7 +281,7 @@ export class ProcessLassoService {
    * Add a custom game / application executable to monitored list
    */
   public addCustomProcess(processName: string): boolean {
-    const clean = processName.trim();
+    const clean = (processName || '').trim().replace(/[^a-zA-Z0-9_\-\.]/g, '');
     if (!clean) return false;
     const formatted = clean.endsWith('.exe') ? clean : `${clean}.exe`;
     if (!this.config.customProcesses.includes(formatted)) {

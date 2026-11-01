@@ -1,4 +1,5 @@
 import { PowerShellRunner } from './powershell-runner';
+import { sanitizeRestorePointDescription } from './security-utils';
 
 export interface RestorePointInfo {
   sequenceNumber: number;
@@ -37,8 +38,10 @@ export class RestorePointManager {
         Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\SystemRestore" -Name "SystemRestorePointCreationFrequency" -Value 0 -Force -ErrorAction SilentlyContinue
       `);
 
-      // 3. Create the restore point
-      const cmd = `Checkpoint-Computer -Description "${description}" -RestorePointType "MODIFY_SETTINGS" -ErrorAction Stop`;
+      // 3. Create the restore point (strictly sanitize description against command injection)
+      const safeDesc = sanitizeRestorePointDescription(description);
+
+      const cmd = `Checkpoint-Computer -Description "${safeDesc}" -RestorePointType "MODIFY_SETTINGS" -ErrorAction Stop`;
       const res = await this.runner.run(cmd, 45000);
 
       if (res.success) {

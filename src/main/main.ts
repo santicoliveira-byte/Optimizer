@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, shell, Tray, Menu } from 'electron';
+import { app, BrowserWindow, ipcMain, shell, Tray, Menu, session } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
@@ -30,6 +30,7 @@ import { AutoUpdaterService } from './engine/auto-updater-service';
 import { GameSensorService } from './engine/game-sensor-service';
 import { FpsMonitorService } from './engine/fps-monitor-service';
 import { OverlayConfigService } from './engine/overlay-config-service';
+import { isSafeExternalUrl } from './engine/security-utils';
 
 // Hardware & low-end PC performance switches
 app.commandLine.appendSwitch('disable-renderer-backgrounding');
@@ -84,9 +85,39 @@ function createWindow() {
   }
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url);
+    if (isSafeExternalUrl(url)) {
+      shell.openExternal(url);
+    }
     return { action: 'deny' };
   });
+
+  mainWindow.webContents.on('will-navigate', (event, navigationUrl) => {
+    if (isDev) {
+      if (!navigationUrl.startsWith('http://localhost:5173')) {
+        event.preventDefault();
+      }
+    } else {
+      if (!navigationUrl.startsWith('file://')) {
+        event.preventDefault();
+      }
+    }
+  });
+
+  mainWindow.webContents.on('will-attach-webview', (e) => {
+    e.preventDefault();
+  });
+
+  if (!isDev) {
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+      const isDevTools =
+        input.key === 'F12' ||
+        (input.control && input.shift && (input.key.toLowerCase() === 'i' || input.key.toLowerCase() === 'j')) ||
+        (input.control && input.key.toLowerCase() === 'u');
+      if (isDevTools) {
+        event.preventDefault();
+      }
+    });
+  }
 
   mainWindow.on('blur', () => {
     mainWindow?.webContents.send('window:state-changed', { isFocused: false });
@@ -149,7 +180,7 @@ function createTray() {
 
   const iconPath = path.resolve(app.getAppPath(), 'dist-renderer/assets/msi-Cb6F3Wl9.svg');
   tray = new Tray(fs.existsSync(iconPath) ? iconPath : process.execPath);
-  tray.setToolTip('Optimizer - Windows Performance & Gaming Engine (v2.1.0)');
+  tray.setToolTip(`Optimizer - Windows Performance & Gaming Engine (v${app.getVersion()})`);
 
   const updateContextMenu = () => {
     const boosterState = GameBoosterDaemon.getInstance().getState();
@@ -330,6 +361,41 @@ function toggleOverlayWindow(isManual: boolean = true) {
       } catch {}
     }, 350);
   });
+
+  overlayWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (isSafeExternalUrl(url)) {
+      shell.openExternal(url);
+    }
+    return { action: 'deny' };
+  });
+
+  overlayWindow.webContents.on('will-navigate', (event, navigationUrl) => {
+    if (isDev) {
+      if (!navigationUrl.startsWith('http://localhost:5173')) {
+        event.preventDefault();
+      }
+    } else {
+      if (!navigationUrl.startsWith('file://')) {
+        event.preventDefault();
+      }
+    }
+  });
+
+  overlayWindow.webContents.on('will-attach-webview', (e) => {
+    e.preventDefault();
+  });
+
+  if (!isDev) {
+    overlayWindow.webContents.on('before-input-event', (event, input) => {
+      const isDevTools =
+        input.key === 'F12' ||
+        (input.control && input.shift && (input.key.toLowerCase() === 'i' || input.key.toLowerCase() === 'j')) ||
+        (input.control && input.key.toLowerCase() === 'u');
+      if (isDevTools) {
+        event.preventDefault();
+      }
+    });
+  }
 
   if (isDev) {
     overlayWindow.loadURL('http://localhost:5173/#overlay');
@@ -1056,6 +1122,25 @@ function registerIpc() {
 }
 
 app.whenReady().then(() => {
+  // Security Hardening: Deny all sensitive permission requests (camera, mic, geolocation, notifications, etc.)
+  session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => {
+    callback(false);
+  });
+
+  // Security Hardening: Dynamic Content-Security-Policy header
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [
+          isDev
+            ? "default-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:5173 ws://localhost:5173 https://fonts.googleapis.com https://fonts.gstatic.com data:;"
+            : "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https:;"
+        ]
+      }
+    });
+  });
+
   registerIpc();
   createWindow();
   if (mainWindow) {

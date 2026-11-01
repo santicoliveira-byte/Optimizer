@@ -101,13 +101,20 @@ export class MsiUtilityService {
     priority: 'Undefined' | 'Low' | 'Normal' | 'High' = 'High'
   ): Promise<{ success: boolean; message: string }> {
     try {
-      const prioVal = priority === 'High' ? 3 : priority === 'Normal' ? 2 : priority === 'Low' ? 1 : 0;
+      const safeDeviceId = (deviceInstanceId || '').replace(/[^a-zA-Z0-9\\&_\-]/g, '').trim();
+      if (!safeDeviceId || safeDeviceId.length > 200) {
+        return { success: false, message: 'ID de dispositivo inválido.' };
+      }
+      const allowedPriorities = ['Undefined', 'Low', 'Normal', 'High'];
+      const safePriority = allowedPriorities.includes(priority) ? priority : 'High';
+      const prioVal = safePriority === 'High' ? 3 : safePriority === 'Normal' ? 2 : safePriority === 'Low' ? 1 : 0;
+
       const psScript = `
-        $path = "HKLM:\\SYSTEM\\CurrentControlSet\\Enum\\${deviceInstanceId}\\Device Parameters\\Interrupt Management\\MessageSignaledInterruptProperties"
+        $path = "HKLM:\\SYSTEM\\CurrentControlSet\\Enum\\${safeDeviceId}\\Device Parameters\\Interrupt Management\\MessageSignaledInterruptProperties"
         if (-not (Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
         Set-ItemProperty -Path $path -Name "MSISupported" -Value ${enableMsi ? 1 : 0} -Type DWord -Force
 
-        $affPath = "HKLM:\\SYSTEM\\CurrentControlSet\\Enum\\${deviceInstanceId}\\Device Parameters\\Interrupt Management\\Affinity Policy"
+        $affPath = "HKLM:\\SYSTEM\\CurrentControlSet\\Enum\\${safeDeviceId}\\Device Parameters\\Interrupt Management\\Affinity Policy"
         if (-not (Test-Path $affPath)) { New-Item -Path $affPath -Force | Out-Null }
         if (${prioVal} -gt 0) {
           Set-ItemProperty -Path $affPath -Name "DevicePriority" -Value ${prioVal} -Type DWord -Force
@@ -121,7 +128,7 @@ export class MsiUtilityService {
 
       return {
         success: true,
-        message: `Modo MSI ${enableMsi ? 'Ativado' : 'Desativado'} (Prioridade: ${priority}) com sucesso.`
+        message: `Modo MSI ${enableMsi ? 'Ativado' : 'Desativado'} (Prioridade: ${safePriority}) com sucesso.`
       };
     } catch (e: any) {
       return {
