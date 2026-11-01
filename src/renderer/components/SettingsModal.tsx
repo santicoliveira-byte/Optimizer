@@ -34,7 +34,8 @@ import {
   History,
   Crown,
   ShieldCheck,
-  Key
+  Key,
+  Gamepad2
 } from 'lucide-react';
 import { useI18n, ACCENT_COLORS, ThemeAccent, Language } from '../i18n';
 import { OverlayConfig, OverlayItemsConfig, OverlayFormat, OverlayTheme, BenchmarkSession, GsyncCapResult, StartupConfig, LicenseStatus } from '../../shared/types';
@@ -1010,6 +1011,50 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, i
                       </button>
                     );
                   })}
+                </div>
+              </div>
+
+              {/* Toggle de Abertura Automática */}
+              <div
+                onClick={async () => {
+                  const newVal = !overlayConfig.autoOpenOnGameLaunch;
+                  const nextConfig = { ...overlayConfig, autoOpenOnGameLaunch: newVal };
+                  setOverlayConfig(nextConfig);
+                  if (window.optimizerApi?.overlayUpdateConfig) {
+                    await window.optimizerApi.overlayUpdateConfig({ autoOpenOnGameLaunch: newVal });
+                    setFeedbackMsg({
+                      text: newVal ? 'HUD abrirá automaticamente ao iniciar jogos!' : 'Abertura automática desativada (HUD apenas via atalho).',
+                      type: 'success'
+                    });
+                  }
+                }}
+                className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                  overlayConfig.autoOpenOnGameLaunch
+                    ? 'bg-[#0E172A] border-indigo-500/40 hover:border-indigo-500/70'
+                    : 'bg-[#0A0F1D] border-[#1E293B] opacity-75 hover:opacity-100'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
+                    <Gamepad2 className="w-4 h-4 text-indigo-400" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-white flex items-center gap-2">
+                      <span>Abrir HUD Automaticamente ao Detetar Jogo</span>
+                      <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300">Inteligente</span>
+                    </div>
+                    <p className="text-[11px] text-gray-400 leading-tight mt-0.5">
+                      Se desativado, o HUD só aparece no ecrã quando premires o atalho configurado (ex: F11 ou Alt+O).
+                    </p>
+                  </div>
+                </div>
+
+                <div
+                  className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors shrink-0 ml-3 ${
+                    overlayConfig.autoOpenOnGameLaunch ? 'bg-indigo-600 justify-end' : 'bg-gray-700 justify-start'
+                  }`}
+                >
+                  <div className="bg-white w-4 h-4 rounded-full shadow-md transform transition-transform" />
                 </div>
               </div>
 

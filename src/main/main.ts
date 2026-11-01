@@ -265,6 +265,7 @@ function createTray() {
 let overlayWindow: BrowserWindow | null = null;
 let isOverlayClickThrough = false;
 let isOverlayManuallyOpened = false;
+let isOverlayUserDismissed = false; // Flag to ensure user manual dismissal (e.g. F11 / Alt+O) is strictly respected
 let overlayTopGuard: NodeJS.Timeout | null = null;
 
 function startOverlayTopGuard() {
@@ -309,22 +310,31 @@ function toggleOverlayWindow(isManual: boolean = true) {
     return { isOpen: false, isClickThrough: false };
   }
 
-  if (isManual) {
-    isOverlayManuallyOpened = !isOverlayManuallyOpened;
-  }
-
   if (overlayWindow && !overlayWindow.isDestroyed()) {
     if (overlayWindow.isVisible()) {
       overlayWindow.hide();
       stopOverlayTopGuard();
+      if (isManual) {
+        isOverlayUserDismissed = true;
+        isOverlayManuallyOpened = false;
+      }
       return { isOpen: false, isClickThrough: isOverlayClickThrough };
     } else {
       overlayWindow.showInactive();
       overlayWindow.setAlwaysOnTop(true, 'screen-saver', 1);
       overlayWindow.moveTop();
       startOverlayTopGuard();
+      if (isManual) {
+        isOverlayUserDismissed = false;
+        isOverlayManuallyOpened = true;
+      }
       return { isOpen: true, isClickThrough: isOverlayClickThrough };
     }
+  }
+
+  if (isManual) {
+    isOverlayUserDismissed = false;
+    isOverlayManuallyOpened = true;
   }
 
   const { screen } = require('electron');
@@ -641,7 +651,6 @@ function registerIpc() {
     return new Promise((resolve) => {
       const now = Date.now();
       const notifyDaemonAndResolve = (found: string | null) => {
-        GameBoosterDaemon.getInstance().onGameDetected(found);
         resolve(found);
       };
 
@@ -1199,6 +1208,7 @@ function registerIpc() {
 
   ipcMain.handle('overlay:close', async () => {
     isOverlayManuallyOpened = false;
+    isOverlayUserDismissed = true;
     if (overlayWindow && !overlayWindow.isDestroyed()) {
       overlayWindow.hide();
       stopOverlayTopGuard();
@@ -1342,6 +1352,16 @@ app.whenReady().then(() => {
       });
       GameBoosterDaemon.getInstance().setAutoOverlayCallback((show) => {
         if (show) {
+          const cfg = OverlayConfigService.getInstance().getConfig();
+          // 1. Respeitar configuração de utilizador para auto-abrir
+          if (cfg.autoOpenOnGameLaunch === false) {
+            return;
+          }
+          // 2. Se o utilizador fechou/alternou o overlay manualmente com F11 / Alt+O, NUNCA reabrir automaticamente
+          if (isOverlayUserDismissed) {
+            return;
+          }
+
           if (!overlayWindow || overlayWindow.isDestroyed()) {
             toggleOverlayWindow(false);
           } else if (!overlayWindow.isVisible()) {
@@ -1355,6 +1375,8 @@ app.whenReady().then(() => {
             overlayWindow.moveTop();
           }
         } else {
+          // Quando o jogo termina, limpa a flag de dispensa para que o próximo jogo possa abrir limpo
+          isOverlayUserDismissed = false;
           // If the user manually opened the overlay via Alt+O, keep it open!
           // Only auto-hide if it was opened solely by the auto game booster daemon
           if (!isOverlayManuallyOpened && overlayWindow && !overlayWindow.isDestroyed() && overlayWindow.isVisible()) {

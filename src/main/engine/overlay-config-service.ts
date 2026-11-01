@@ -18,7 +18,8 @@ export const DEFAULT_OVERLAY_CONFIG: OverlayConfig = {
   format: 'horizontal',
   theme: 'dark-gamer',
   fontSize: 'compact',
-  opacity: 95
+  opacity: 95,
+  autoOpenOnGameLaunch: false
 };
 
 export class OverlayConfigService {

@@ -278,6 +278,7 @@ export interface OverlayConfig {
   theme: OverlayTheme;
   fontSize: OverlayFontSize;
   opacity: number;
+  autoOpenOnGameLaunch?: boolean;
   customPosition?: { x: number; y: number };
 }
 

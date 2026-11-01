@@ -35,7 +35,7 @@ const KNOWN_GAME_METADATA: Record<string, {
   'valorant': {
     category: 'Competitivo FPS',
     coverImage: 'https://media.rawg.io/media/games/618/618c2031a07bbff6b4f611f10f6bcdbc.jpg',
-    processNames: ['VALORANT-Win64-Shipping.exe', 'RiotClientServices.exe'],
+    processNames: ['VALORANT-Win64-Shipping.exe'],
     optimizations: ['input_timer_resolution', 'input_mouse_accel', 'net_tcp_autotuning', 'cpu_priority_high', 'game_mode'],
     description: 'Prioridade em timer resolution 0.5ms, raw mouse input e mitigação de bufferbloat UDP.'
   },
@@ -140,7 +140,7 @@ const KNOWN_GAME_METADATA: Record<string, {
   'league of legends': {
     category: 'MOBA Competitivo',
     coverImage: 'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Aatrox_0.jpg',
-    processNames: ['League of Legends.exe', 'RiotClientServices.exe'],
+    processNames: ['League of Legends.exe'],
     optimizations: ['input_timer_resolution', 'input_pointer_speed', 'net_disable_nagling'],
     description: 'Timer de kernel a 0.5ms e TCP NoDelay para tempo de resposta perfeito de cliques e habilidades.'
   },

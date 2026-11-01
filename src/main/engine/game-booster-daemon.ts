@@ -118,10 +118,10 @@ export class GameBoosterDaemon {
     else if (gameProcess && gameProcess === this.activeGame) {
       this.missedCheckCount = 0;
     }
-    // Game not seen in this poll: debounce 3 cycles (~7.5s) to avoid closing overlay during map loads/transitions
+    // Game not seen in this poll: debounce 6 cycles (~15s) to avoid closing overlay during map loads/transitions
     else if (!gameProcess && this.activeGame) {
       this.missedCheckCount++;
-      if (this.missedCheckCount >= 3) {
+      if (this.missedCheckCount >= 6) {
         this.missedCheckCount = 0;
         const finishedGame = this.activeGame;
         this.activeGame = null;

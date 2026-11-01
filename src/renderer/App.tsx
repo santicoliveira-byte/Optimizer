@@ -43,7 +43,6 @@ const COMMON_GAME_PROCESSES = [
   'cs2.exe',
   'csgo.exe',
   'VALORANT-Win64-Shipping.exe',
-  'RiotClientServices.exe',
   'b1-Win64-Shipping.exe',
   'RDR2.exe',
   'GTA5.exe',
