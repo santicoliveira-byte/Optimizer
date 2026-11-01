@@ -5,7 +5,8 @@ import {
   Minus,
   Square,
   X,
-  Radio
+  Radio,
+  Crown
 } from 'lucide-react';
 import { useI18n } from '../i18n';
 import { OptimizationRisk, OptimizationType } from '../../shared/types';
@@ -29,6 +30,8 @@ interface HeaderProps {
   onOpenUpdates?: () => void;
   hasUpdateAvailable?: boolean;
   currentAppVersion?: string;
+  isPro?: boolean;
+  onOpenSettingsPro?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -40,7 +43,9 @@ export const Header: React.FC<HeaderProps> = ({
   timerResolutionMs = 1.0,
   onOpenUpdates,
   hasUpdateAvailable = false,
-  currentAppVersion = '1.3'
+  currentAppVersion = '1.3',
+  isPro = false,
+  onOpenSettingsPro
 }) => {
   const { t } = useI18n();
 
@@ -135,6 +140,22 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <span className={`w-1.5 h-1.5 rounded-full ${hasUpdateAvailable ? 'bg-emerald-400 animate-ping' : 'bg-indigo-400'}`} />
             <span className="font-mono text-[11px]">v{currentAppVersion}</span>
+          </button>
+        )}
+
+        {/* PRO Badge / Upgrade Button */}
+        {onOpenSettingsPro && (
+          <button
+            onClick={onOpenSettingsPro}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-bold transition-all shadow-sm ${
+              isPro
+                ? 'bg-amber-500/15 border-amber-500/50 text-amber-300 hover:bg-amber-500/25 shadow-amber-500/10'
+                : 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 border-amber-500/50 text-amber-300 animate-pulse'
+            }`}
+            title={isPro ? 'Optimizer PRO Ativado' : 'Desbloquear Optimizer PRO'}
+          >
+            <Crown className={`w-3.5 h-3.5 ${isPro ? 'fill-amber-400 text-amber-400' : 'text-amber-400'}`} />
+            <span className="font-sans text-[11px] font-extrabold">{isPro ? 'PRO' : 'Ativar PRO'}</span>
           </button>
         )}
 

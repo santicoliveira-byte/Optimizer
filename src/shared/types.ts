@@ -310,5 +310,13 @@ export interface StartupConfig {
   isSilent: boolean;
 }
 
+export interface LicenseStatus {
+  isPro: boolean;
+  plan: 'Free' | 'PRO';
+  licenseKey?: string;
+  activatedAt?: string;
+  ownerName?: string;
+}
+
 
 

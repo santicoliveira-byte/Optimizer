@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { DryRunPreview, OptimizationProfile, OptimizationState, SystemMetrics, OverlayConfig, BenchmarkSession, GsyncCapResult, StartupConfig } from '../shared/types';
+import { DryRunPreview, OptimizationProfile, OptimizationState, SystemMetrics, OverlayConfig, BenchmarkSession, GsyncCapResult, StartupConfig, LicenseStatus } from '../shared/types';
 
 export interface OptimizerApi {
   getCatalog: () => Promise<any[]>;
@@ -135,6 +135,9 @@ export interface OptimizerApi {
   onBenchmarkStatusChanged: (callback: (status: { isRecording: boolean; elapsedSeconds: number }) => void) => () => void;
   startupGetStatus: () => Promise<StartupConfig>;
   startupSetStatus: (enabled: boolean, silent?: boolean) => Promise<{ success: boolean; message: string }>;
+  licenseGetStatus: () => Promise<LicenseStatus>;
+  licenseActivate: (key: string, name?: string) => Promise<{ success: boolean; message: string; isPro: boolean }>;
+  licenseDeactivate: () => Promise<{ success: boolean; message: string }>;
 }
 
 const api: OptimizerApi = {
@@ -320,7 +323,10 @@ const api: OptimizerApi = {
     };
   },
   startupGetStatus: () => ipcRenderer.invoke('startup:get-status'),
-  startupSetStatus: (enabled: boolean, silent?: boolean) => ipcRenderer.invoke('startup:set-status', enabled, silent)
+  startupSetStatus: (enabled: boolean, silent?: boolean) => ipcRenderer.invoke('startup:set-status', enabled, silent),
+  licenseGetStatus: () => ipcRenderer.invoke('license:get-status'),
+  licenseActivate: (key: string, name?: string) => ipcRenderer.invoke('license:activate', key, name),
+  licenseDeactivate: () => ipcRenderer.invoke('license:deactivate')
 };
 
 contextBridge.exposeInMainWorld('optimizerApi', api);

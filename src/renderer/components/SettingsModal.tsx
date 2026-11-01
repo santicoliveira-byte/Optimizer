@@ -31,19 +31,23 @@ import {
   Download,
   Trash2,
   TrendingUp,
-  History
+  History,
+  Crown,
+  ShieldCheck,
+  Key
 } from 'lucide-react';
 import { useI18n, ACCENT_COLORS, ThemeAccent, Language } from '../i18n';
-import { OverlayConfig, OverlayItemsConfig, OverlayFormat, OverlayTheme, BenchmarkSession, GsyncCapResult, StartupConfig } from '../../shared/types';
+import { OverlayConfig, OverlayItemsConfig, OverlayFormat, OverlayTheme, BenchmarkSession, GsyncCapResult, StartupConfig, LicenseStatus } from '../../shared/types';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialTab?: 'appearance' | 'overlay' | 'gsync' | 'benchmark' | 'hotkeys' | 'language' | 'pro' | 'about';
 }
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
+export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, initialTab = 'appearance' }) => {
   const { language, setLanguage, accent, setAccent, t } = useI18n();
-  const [activeTab, setActiveTab] = useState<'appearance' | 'overlay' | 'gsync' | 'benchmark' | 'hotkeys' | 'language' | 'about'>('appearance');
+  const [activeTab, setActiveTab] = useState<'appearance' | 'overlay' | 'gsync' | 'benchmark' | 'hotkeys' | 'language' | 'pro' | 'about'>(initialTab);
 
   const [hotkeys, setHotkeys] = useState<any[]>([]);
   const [isGhostActive, setIsGhostActive] = useState<boolean>(false);
@@ -65,6 +69,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
   });
   const [benchHistory, setBenchHistory] = useState<BenchmarkSession[]>([]);
 
+  // PRO License State
+  const [licenseStatus, setLicenseStatus] = useState<LicenseStatus>({ isPro: false, plan: 'Free' });
+  const [licenseKeyInput, setLicenseKeyInput] = useState<string>('');
+  const [isActivatingLicense, setIsActivatingLicense] = useState<boolean>(false);
+
   // Windows Startup & Silent Mode State
   const [startupConfig, setStartupConfig] = useState<StartupConfig>({ enabled: false, isSilent: true });
   const [isSavingStartup, setIsSavingStartup] = useState<boolean>(false);
@@ -85,6 +94,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     fontSize: 'compact',
     opacity: 95
   });
+
+  useEffect(() => {
+    if (isOpen && initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [isOpen, initialTab]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -130,6 +145,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
         if (window.optimizerApi?.startupGetStatus) {
           const st = await window.optimizerApi.startupGetStatus();
           if (st) setStartupConfig(st);
+        }
+        if (window.optimizerApi?.licenseGetStatus) {
+          const lic = await window.optimizerApi.licenseGetStatus();
+          if (lic) setLicenseStatus(lic);
         }
       } catch {}
     };
@@ -339,6 +358,49 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     }
   };
 
+  const handleActivateLicense = async () => {
+    if (!licenseKeyInput.trim()) {
+      setFeedbackMsg({ text: 'Por favor, insere a tua chave de licença.', type: 'error' });
+      return;
+    }
+    setIsActivatingLicense(true);
+    try {
+      if (window.optimizerApi?.licenseActivate) {
+        const res = await window.optimizerApi.licenseActivate(licenseKeyInput.trim());
+        if (res.success) {
+          setLicenseStatus({
+            isPro: true,
+            plan: 'PRO',
+            licenseKey: licenseKeyInput.trim().toUpperCase(),
+            activatedAt: new Date().toLocaleDateString()
+          });
+          setFeedbackMsg({ text: res.message, type: 'success' });
+          setLicenseKeyInput('');
+        } else {
+          setFeedbackMsg({ text: res.message, type: 'error' });
+        }
+      }
+    } catch {
+      setFeedbackMsg({ text: 'Falha na validação da licença.', type: 'error' });
+    } finally {
+      setIsActivatingLicense(false);
+    }
+  };
+
+  const handleDeactivateLicense = async () => {
+    try {
+      if (window.optimizerApi?.licenseDeactivate) {
+        const res = await window.optimizerApi.licenseDeactivate();
+        if (res.success) {
+          setLicenseStatus({ isPro: false, plan: 'Free' });
+          setFeedbackMsg({ text: res.message, type: 'success' });
+        }
+      }
+    } catch {
+      setFeedbackMsg({ text: 'Erro ao desativar licença.', type: 'error' });
+    }
+  };
+
   const handleToggleStartup = async (nextEnabled: boolean) => {
     setIsSavingStartup(true);
     try {
@@ -515,6 +577,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
           >
             <Power className="w-3.5 h-3.5" />
             <span>Arranque & Sobre</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('pro')}
+            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
+              activeTab === 'pro'
+                ? 'border-amber-400 text-amber-300'
+                : 'border-transparent text-amber-400/80 hover:text-amber-300'
+            }`}
+          >
+            <Crown className={`w-3.5 h-3.5 ${licenseStatus.isPro ? 'fill-amber-400 text-amber-400' : 'text-amber-400'}`} />
+            <span>{licenseStatus.isPro ? '👑 PRO Ativo' : '👑 Licença PRO'}</span>
           </button>
         </div>
 
@@ -1670,6 +1743,153 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                   <span>{t('settings.repository')}</span>
                 </a>
               </div>
+            </div>
+          )}
+
+          {/* TAB: LICENÇA PRO & MONETIZAÇÃO */}
+          {activeTab === 'pro' && (
+            <div className="space-y-5">
+              {licenseStatus.isPro ? (
+                /* PRO ACTIVATED STATE */
+                <div className="bg-gradient-to-r from-amber-950/40 via-[#181B2B] to-[#0D1222] border border-amber-500/50 rounded-2xl p-5 space-y-4 shadow-xl">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-amber-300 shadow-inner">
+                        <Crown className="w-6 h-6 fill-amber-400" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-base font-extrabold text-white">Optimizer PRO Ativado</h4>
+                          <span className="text-[10px] font-bold uppercase font-mono px-2 py-0.5 rounded-full bg-amber-500 text-black">
+                            Vitalício
+                          </span>
+                        </div>
+                        <p className="text-xs text-amber-200/80 mt-0.5">
+                          Obrigado pelo teu apoio! Tens acesso irrestrito a todas as ferramentas e motores de jogo.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-black/40 border border-white/10 rounded-xl p-3.5 space-y-2 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-400">Chave de Licença:</span>
+                      <span className="font-mono font-bold text-amber-300 tracking-wider">
+                        {licenseStatus.licenseKey
+                          ? `${licenseStatus.licenseKey.slice(0, 11)}••••-••••`
+                          : 'OPT-PRO-••••-••••'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-400">Ativado em:</span>
+                      <span className="font-mono text-gray-200">{licenseStatus.activatedAt || 'Hoje'}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-400">Estado da Conta:</span>
+                      <span className="font-bold text-emerald-400 flex items-center gap-1">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        Autenticado (Permanente)
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex items-center justify-between">
+                    <p className="text-[11px] text-gray-500">
+                      Podes desativar para transferir a tua chave para outro PC quando quiseres.
+                    </p>
+                    <button
+                      onClick={handleDeactivateLicense}
+                      className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/5 hover:bg-rose-500/20 text-gray-400 hover:text-rose-300 border border-white/5 transition-all"
+                    >
+                      Desativar Licença
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* FREE EDITION / PRO UPGRADE STATE */
+                <div className="space-y-4">
+                  {/* Hero Upgrade Banner */}
+                  <div className="bg-gradient-to-r from-amber-500/15 via-[#1A2035] to-[#10172A] border border-amber-500/30 rounded-2xl p-5 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300">
+                        <Crown className="w-5 h-5 fill-amber-400" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-extrabold text-white flex items-center gap-2">
+                          Desbloqueia a Edição PRO
+                          <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-amber-500 text-black font-black">
+                            Vip
+                          </span>
+                        </h4>
+                        <p className="text-xs text-gray-300 mt-0.5">
+                          Potência máxima, frametimes consistentes e todas as funcionalidades de eSports.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Features unlocked in PRO */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+                      {[
+                        'In-Game HUD Overlay com Modo Fantasma',
+                        'Benchmark de FPS com 1% Lows & CSV',
+                        'Auto Game Booster Daemon em Tray',
+                        'Calculador G-Sync / FreeSync Anti-Lag',
+                        'Process Lasso com Trava de P-Cores',
+                        'Acesso vitalício sem mensalidades'
+                      ].map((feat, idx) => (
+                        <div key={idx} className="flex items-center gap-2 text-xs text-gray-300 bg-black/30 px-2.5 py-1.5 rounded-lg border border-white/5">
+                          <Check className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                          <span>{feat}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* License Key Activation Card */}
+                  <div className="bg-[#0E1526] border border-[#1E293B] rounded-2xl p-4 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Key className="w-4 h-4 text-amber-400" />
+                      <strong className="text-xs text-white">Já tens uma Chave de Ativação?</strong>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={licenseKeyInput}
+                        onChange={(e) => setLicenseKeyInput(e.target.value.toUpperCase())}
+                        placeholder="OPT-PRO-XXXX-XXXX-XXXX"
+                        className="flex-1 bg-[#151E33] border border-[#2B3B66] rounded-xl px-3.5 py-2 text-xs font-mono font-bold text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 uppercase tracking-wider"
+                      />
+                      <button
+                        onClick={handleActivateLicense}
+                        disabled={isActivatingLicense}
+                        className="px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-black shadow-md transition-all whitespace-nowrap font-sans flex items-center gap-1.5"
+                      >
+                        <Crown className="w-3.5 h-3.5 fill-current" />
+                        <span>{isActivatingLicense ? 'A Validar...' : 'Ativar Licença'}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Buy License Button / External Link */}
+                  <div className="bg-[#121A2E] border border-amber-500/20 rounded-2xl p-4 flex items-center justify-between">
+                    <div>
+                      <strong className="text-xs text-white block">Ainda não tens a tua chave?</strong>
+                      <span className="text-[11px] text-gray-400">Adquire a tua licença vitalícia por apenas 4,99€ (pagamento único seguro via MB WAY, Cartão ou PayPal).</span>
+                    </div>
+
+                    <a
+                      href="https://github.com/santicoliveira-byte/Optimizer#readme"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-4 py-2 rounded-xl text-xs font-extrabold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black shadow-lg shadow-amber-500/20 transition-all flex items-center gap-1.5 shrink-0"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>Comprar PRO (4,99€)</span>
+                    </a>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

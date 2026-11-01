@@ -31,6 +31,7 @@ import { GameSensorService } from './engine/game-sensor-service';
 import { FpsMonitorService } from './engine/fps-monitor-service';
 import { OverlayConfigService } from './engine/overlay-config-service';
 import { isSafeExternalUrl } from './engine/security-utils';
+import { LicenseService } from './engine/license-service';
 
 // Hardware & low-end PC performance switches
 app.commandLine.appendSwitch('disable-renderer-backgrounding');
@@ -1130,6 +1131,18 @@ function registerIpc() {
 
   ipcMain.handle('startup:set-status', async (_, enabled: boolean, silent?: boolean) => {
     return StartupManagerService.getInstance().setAppStartup(enabled, silent);
+  });
+
+  ipcMain.handle('license:get-status', async () => {
+    return LicenseService.getInstance().getStatus();
+  });
+
+  ipcMain.handle('license:activate', async (_, key: string, name?: string) => {
+    return LicenseService.getInstance().activate(key, name);
+  });
+
+  ipcMain.handle('license:deactivate', async () => {
+    return LicenseService.getInstance().deactivate();
   });
 }
 

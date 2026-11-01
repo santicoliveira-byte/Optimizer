@@ -94,6 +94,8 @@ export const App: React.FC = () => {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [isUpdaterOpen, setIsUpdaterOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [settingsInitialTab, setSettingsInitialTab] = useState<'appearance' | 'overlay' | 'gsync' | 'benchmark' | 'hotkeys' | 'language' | 'pro' | 'about'>('appearance');
+  const [isPro, setIsPro] = useState<boolean>(false);
   const [updateInfo, setUpdateInfo] = useState<any>(null);
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
 
@@ -119,6 +121,12 @@ export const App: React.FC = () => {
           setTimerResolutionMs(st.currentMs);
           if (st.isLockedHalfMs) setIsTournamentMode(true);
         }
+      });
+    }
+
+    if (window.optimizerApi?.licenseGetStatus) {
+      window.optimizerApi.licenseGetStatus().then((lic) => {
+        if (lic?.isPro) setIsPro(true);
       });
     }
 
@@ -751,7 +759,12 @@ export const App: React.FC = () => {
           timerResolutionMs={timerResolutionMs}
           onOpenUpdates={() => setIsUpdaterOpen(true)}
           hasUpdateAvailable={!!updateInfo?.hasUpdate}
-          currentAppVersion={updateInfo?.currentVersion || '1.3'}
+          currentAppVersion={updateInfo?.currentVersion || '2.2'}
+          isPro={isPro}
+          onOpenSettingsPro={() => {
+            setSettingsInitialTab('pro');
+            setIsSettingsOpen(true);
+          }}
         />
 
         {/* Stealth Mode Indicator Banner when game is running */}
@@ -1123,10 +1136,18 @@ export const App: React.FC = () => {
         isChecking={isCheckingUpdate}
       />
 
-      {/* Settings Modal (Theme Color & Language) */}
+      {/* Settings Modal (Theme Color, Language & PRO Activation) */}
       <SettingsModal
         isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
+        onClose={() => {
+          setIsSettingsOpen(false);
+          if (window.optimizerApi?.licenseGetStatus) {
+            window.optimizerApi.licenseGetStatus().then((lic) => {
+              setIsPro(Boolean(lic?.isPro));
+            });
+          }
+        }}
+        initialTab={settingsInitialTab}
       />
 
       {/* Floating Notification Toast */}
