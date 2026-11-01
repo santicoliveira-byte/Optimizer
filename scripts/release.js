@@ -212,7 +212,9 @@ function main() {
 
   console.log('\n==================================================');
   console.log(`✅ Release v${newTag} finalizada com sucesso!`);
-  console.log(`Ficheiro pronto para download: ${exePath}`);
+  console.log(`Ficheiros prontos para download:`);
+  console.log(`- Portable: ${portablePath}`);
+  console.log(`- Setup:    ${setupPath}`);
   console.log('==================================================\n');
 }
 
