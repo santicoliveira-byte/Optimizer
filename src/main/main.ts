@@ -1152,6 +1152,10 @@ function registerIpc() {
     return CpuZInspectorService.getInstance().getLiveMetrics();
   });
 
+  ipcMain.handle('app:get-version', async () => {
+    return app.getVersion();
+  });
+
   ipcMain.handle('updater:check', async () => {
     return AutoUpdaterService.getInstance().checkForUpdates();
   });

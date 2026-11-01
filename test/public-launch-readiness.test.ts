@@ -144,4 +144,14 @@ describe('Public Launch Readiness Master QA Suite', () => {
       }
     });
   });
+
+  describe('6. Dynamic Versioning', () => {
+    it('ensures no hardcoded legacy versions (v1.3, v2.1.0) exist in UI components', () => {
+      const sidebarContent = fs.readFileSync(path.join(rootDir, 'src/renderer/components/Sidebar.tsx'), 'utf-8');
+      expect(sidebarContent).not.toContain('>v1.3<');
+
+      const settingsContent = fs.readFileSync(path.join(rootDir, 'src/renderer/components/SettingsModal.tsx'), 'utf-8');
+      expect(settingsContent).not.toContain('v2.1.0');
+    });
+  });
 });

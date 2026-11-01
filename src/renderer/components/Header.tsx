@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useI18n } from '../i18n';
 import { OptimizationRisk, OptimizationType } from '../../shared/types';
+import { APP_VERSION, getDisplayVersion } from '../utils/version';
 
 interface HeaderProps {
   searchQuery: string;
@@ -43,7 +44,7 @@ export const Header: React.FC<HeaderProps> = ({
   timerResolutionMs = 1.0,
   onOpenUpdates,
   hasUpdateAvailable = false,
-  currentAppVersion = '1.3',
+  currentAppVersion = APP_VERSION,
   isPro = false,
   onOpenSettingsPro
 }) => {
@@ -139,7 +140,7 @@ export const Header: React.FC<HeaderProps> = ({
             title="Verificar atualizações no GitHub"
           >
             <span className={`w-1.5 h-1.5 rounded-full ${hasUpdateAvailable ? 'bg-emerald-400 animate-ping' : 'bg-indigo-400'}`} />
-            <span className="font-mono text-[11px]">v{currentAppVersion}</span>
+            <span className="font-mono text-[11px]">{getDisplayVersion(currentAppVersion)}</span>
           </button>
         )}
 

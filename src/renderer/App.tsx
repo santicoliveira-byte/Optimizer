@@ -17,6 +17,7 @@ import { BottleneckCanIRunItView } from './components/BottleneckCanIRunItView';
 import { CpuZHardwareView } from './components/CpuZHardwareView';
 import { AutoUpdaterModal } from './components/AutoUpdaterModal';
 import { SettingsModal } from './components/SettingsModal';
+import { APP_VERSION } from './utils/version';
 
 import {
   AuditLogEntry,
@@ -85,6 +86,7 @@ export const App: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settingsInitialTab, setSettingsInitialTab] = useState<'appearance' | 'overlay' | 'gsync' | 'benchmark' | 'hotkeys' | 'language' | 'pro' | 'about'>('appearance');
   const [isPro, setIsPro] = useState<boolean>(false);
+  const [appVersion, setAppVersion] = useState<string>(APP_VERSION);
   const [updateInfo, setUpdateInfo] = useState<any>(null);
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
 
@@ -116,6 +118,12 @@ export const App: React.FC = () => {
     if (window.optimizerApi?.licenseGetStatus) {
       window.optimizerApi.licenseGetStatus().then((lic) => {
         if (lic?.isPro) setIsPro(true);
+      });
+    }
+
+    if (window.optimizerApi?.getAppVersion) {
+      window.optimizerApi.getAppVersion().then((v) => {
+        if (v) setAppVersion(v);
       });
     }
 
@@ -653,6 +661,7 @@ export const App: React.FC = () => {
         sectionStats={sectionStats}
         onOpenShaderModal={() => setIsShaderModalOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        appVersion={appVersion}
       />
 
       {/* Main Content Area */}
@@ -676,7 +685,7 @@ export const App: React.FC = () => {
           timerResolutionMs={timerResolutionMs}
           onOpenUpdates={() => setIsUpdaterOpen(true)}
           hasUpdateAvailable={!!updateInfo?.hasUpdate}
-          currentAppVersion={updateInfo?.currentVersion || '2.2'}
+          currentAppVersion={appVersion}
           isPro={isPro}
           onOpenSettingsPro={() => {
             setSettingsInitialTab('pro');

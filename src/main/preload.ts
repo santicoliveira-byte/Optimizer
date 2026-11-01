@@ -106,6 +106,7 @@ export interface OptimizerApi {
   cpuzRunBench: (mode: 'single' | 'multi' | 'stress') => Promise<any>;
   cpuzStopStress: () => Promise<{ success: boolean }>;
   cpuzGetLiveMetrics: () => Promise<any>;
+  getAppVersion: () => Promise<string>;
   updaterCheck: () => Promise<any>;
   updaterDownloadInstall: (downloadUrl: string) => Promise<{ success: boolean; path?: string; error?: string }>;
   gameSensorScan: () => Promise<any[]>;
@@ -278,6 +279,7 @@ const api: OptimizerApi = {
   cpuzRunBench: (mode: 'single' | 'multi' | 'stress') => ipcRenderer.invoke('cpuz:run-bench', mode),
   cpuzStopStress: () => ipcRenderer.invoke('cpuz:stop-stress'),
   cpuzGetLiveMetrics: () => ipcRenderer.invoke('cpuz:get-live-metrics'),
+  getAppVersion: () => ipcRenderer.invoke('app:get-version'),
   updaterCheck: () => ipcRenderer.invoke('updater:check'),
   updaterDownloadInstall: (downloadUrl: string) => ipcRenderer.invoke('updater:download-install', downloadUrl),
   gameSensorScan: () => ipcRenderer.invoke('game-sensor:scan'),

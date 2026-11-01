@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import { useI18n, ACCENT_COLORS, Language } from '../i18n';
 import { OverlayConfig, OverlayItemsConfig, OverlayFormat, OverlayTheme, BenchmarkSession, StartupConfig, LicenseStatus } from '../../shared/types';
+import { APP_VERSION, getDisplayVersion } from '../utils/version';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -1738,7 +1739,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, i
                     </div>
                   </div>
                   <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
-                    v2.1.0 PRO
+                    {getDisplayVersion(APP_VERSION)} PRO
                   </span>
                 </div>
 
@@ -1776,7 +1777,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, i
                   </div>
                   <div className="flex items-center justify-between py-1 border-b border-[#172238]">
                     <span className="text-gray-400">{t('settings.current_version')}</span>
-                    <span className="font-mono text-emerald-400 font-bold">v2.1.0 (Portable)</span>
+                    <span className="font-mono text-emerald-400 font-bold">{getDisplayVersion(APP_VERSION)} (Portable / Setup)</span>
                   </div>
                   <div className="flex items-center justify-between py-1">
                     <span className="text-gray-400">Arquitetura:</span>

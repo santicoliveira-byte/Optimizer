@@ -8,6 +8,7 @@ import {
   Settings
 } from 'lucide-react';
 import { useI18n, ACCENT_COLORS } from '../i18n';
+import { APP_VERSION, getDisplayVersion } from '../utils/version';
 
 export type MainSection =
   | 'dashboard'
@@ -29,13 +30,15 @@ interface SidebarProps {
   sectionStats: Record<MainSection, SectionStats>;
   onOpenShaderModal?: () => void;
   onOpenSettings?: () => void;
+  appVersion?: string;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   currentSection,
   onSelectSection,
   sectionStats,
-  onOpenSettings
+  onOpenSettings,
+  appVersion
 }) => {
   const { t, accent } = useI18n();
 
@@ -188,7 +191,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           <span className="font-semibold text-emerald-300 text-[11px] tracking-wide">100% Seguro & Reversível</span>
         </div>
-        <span className="text-[10px] font-mono text-gray-500 bg-[#121A2F] px-1.5 py-0.5 rounded border border-[#1E293B]">v1.3</span>
+        <span className="text-[10px] font-mono text-gray-400 bg-[#121A2F] px-1.5 py-0.5 rounded border border-[#1E293B]">
+          {getDisplayVersion(appVersion || APP_VERSION)}
+        </span>
       </div>
     </aside>
   );
