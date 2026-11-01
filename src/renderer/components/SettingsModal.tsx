@@ -458,7 +458,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, i
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
-      <div className="bg-[#0B101D] border border-[#232F4D] rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col max-h-[88vh]">
+      <div className="bg-[#0B101D] border border-[#232F4D] rounded-2xl w-full max-w-3xl lg:max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="bg-gradient-to-r from-[#12192B] to-[#18233C] px-6 py-4 border-b border-[#1E293B] flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -501,13 +501,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, i
         )}
 
         {/* Sub-tabs Navigation */}
-        <div className="flex items-center gap-1 px-6 pt-3 border-b border-[#1E293B] bg-[#0E1526]/60 overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1.5 px-6 py-2.5 border-b border-[#1E293B] bg-[#0E1526]/80 overflow-x-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
           <button
             onClick={() => setActiveTab('appearance')}
-            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
               activeTab === 'appearance'
-                ? 'border-indigo-500 text-white'
-                : 'border-transparent text-gray-400 hover:text-gray-200'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
             }`}
           >
             <Palette className="w-3.5 h-3.5" />
@@ -515,10 +515,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, i
           </button>
           <button
             onClick={() => setActiveTab('overlay')}
-            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
               activeTab === 'overlay'
-                ? 'border-indigo-500 text-white'
-                : 'border-transparent text-gray-400 hover:text-gray-200'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
             }`}
           >
             <Gauge className="w-3.5 h-3.5" />
@@ -526,10 +526,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, i
           </button>
           <button
             onClick={() => setActiveTab('gsync')}
-            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
               activeTab === 'gsync'
-                ? 'border-cyan-400 text-white'
-                : 'border-transparent text-gray-400 hover:text-gray-200'
+                ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30'
+                : 'text-gray-400 hover:text-cyan-300 hover:bg-white/5'
             }`}
           >
             <Crosshair className="w-3.5 h-3.5 text-cyan-400" />
@@ -537,10 +537,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, i
           </button>
           <button
             onClick={() => setActiveTab('benchmark')}
-            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
               activeTab === 'benchmark'
-                ? 'border-rose-500 text-white'
-                : 'border-transparent text-gray-400 hover:text-gray-200'
+                ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30'
+                : 'text-gray-400 hover:text-rose-300 hover:bg-white/5'
             }`}
           >
             <BarChart2 className="w-3.5 h-3.5 text-rose-400" />
@@ -548,10 +548,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, i
           </button>
           <button
             onClick={() => setActiveTab('hotkeys')}
-            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
               activeTab === 'hotkeys'
-                ? 'border-indigo-500 text-white'
-                : 'border-transparent text-gray-400 hover:text-gray-200'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
             }`}
           >
             <Keyboard className="w-3.5 h-3.5" />
@@ -559,10 +559,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, i
           </button>
           <button
             onClick={() => setActiveTab('language')}
-            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
               activeTab === 'language'
-                ? 'border-indigo-500 text-white'
-                : 'border-transparent text-gray-400 hover:text-gray-200'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
             }`}
           >
             <Globe className="w-3.5 h-3.5" />
@@ -570,10 +570,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, i
           </button>
           <button
             onClick={() => setActiveTab('about')}
-            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
               activeTab === 'about'
-                ? 'border-indigo-500 text-white'
-                : 'border-transparent text-gray-400 hover:text-gray-200'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
             }`}
           >
             <Power className="w-3.5 h-3.5" />
@@ -581,13 +581,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, i
           </button>
           <button
             onClick={() => setActiveTab('pro')}
-            className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
               activeTab === 'pro'
-                ? 'border-amber-400 text-amber-300'
-                : 'border-transparent text-amber-400/80 hover:text-amber-300'
+                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-black font-extrabold shadow-md shadow-amber-500/30'
+                : 'bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20'
             }`}
           >
-            <Crown className={`w-3.5 h-3.5 ${licenseStatus.isPro ? 'fill-amber-400 text-amber-400' : 'text-amber-400'}`} />
+            <Crown className={`w-3.5 h-3.5 ${activeTab === 'pro' ? 'fill-black' : 'fill-amber-400 text-amber-400'}`} />
             <span>{licenseStatus.isPro ? '👑 PRO Ativo' : '👑 Licença PRO'}</span>
           </button>
         </div>
@@ -761,12 +761,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, i
                   </button>
                 </div>
 
-                <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[11px] text-gray-400">
-                  <span className="flex items-center gap-1.5">
-                    <Ghost className="w-3.5 h-3.5 text-amber-400" />
-                    Pressiona <strong className="text-white font-mono bg-white/10 px-1 py-0.5 rounded">Alt+G</strong> para os cliques do rato atravessarem diretamente para o jogo.
+                <div className="pt-2.5 border-t border-white/5 flex flex-wrap items-center justify-between gap-2 text-[11px] text-gray-400">
+                  <span className="flex items-center gap-1.5 min-w-0">
+                    <Ghost className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span>Pressiona <strong className="text-white font-mono bg-white/10 px-1 py-0.5 rounded">Alt+G</strong> para os cliques do rato atravessarem diretamente para o jogo.</span>
                   </span>
-                  <span className="text-[10px] text-cyan-400 font-mono">
+                  <span className="text-[10px] text-cyan-400 font-mono px-2 py-0.5 rounded bg-cyan-950/60 border border-cyan-500/20 shrink-0">
                     Atalho Overlay: Alt+O
                   </span>
                 </div>
