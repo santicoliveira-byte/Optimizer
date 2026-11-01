@@ -14,7 +14,6 @@ import { GameRouterView } from './components/GameRouterView';
 import { ShaderCacheCleanerModal } from './components/ShaderCacheCleanerModal';
 import { Sidebar, MainSection, SectionStats } from './components/Sidebar';
 import { TopTabBar } from './components/TopTabBar';
-import { GameOverlayWidget } from './components/GameOverlayWidget';
 import { PowerToolkitView } from './components/PowerToolkitView';
 import { NetworkPriorityWidget } from './components/NetworkPriorityWidget';
 import { ProcessLassoView } from './components/ProcessLassoView';
@@ -90,7 +89,6 @@ export const App: React.FC = () => {
   const [isApplyingGaming, setIsApplyingGaming] = useState(false);
   const [isAdmin, setIsAdmin] = useState(true);
   const [isShaderModalOpen, setIsShaderModalOpen] = useState(false);
-  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [isUpdaterOpen, setIsUpdaterOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settingsInitialTab, setSettingsInitialTab] = useState<'appearance' | 'overlay' | 'gsync' | 'benchmark' | 'hotkeys' | 'language' | 'pro' | 'about'>('appearance');
@@ -264,9 +262,7 @@ export const App: React.FC = () => {
         if (data.action === 'ultra-game-mode') {
           handleApplyGamingMode();
         } else if (data.action === 'toggle-overlay') {
-          // O HotkeyService no processo principal do Electron já alternou a janela do overlay.
-          // Não chamar overlayToggle() aqui para evitar toggle duplo instantâneo (abrir e fechar em 2ms).
-          setIsOverlayOpen((prev) => !prev);
+          // O HotkeyService no processo principal do Electron já alternou a janela do overlay de forma nativa.
         }
         showNotification(data.message, 'success');
       });
@@ -753,8 +749,6 @@ export const App: React.FC = () => {
         onSelectSection={(sec) => setCurrentSection(sec)}
         sectionStats={sectionStats}
         onOpenShaderModal={() => setIsShaderModalOpen(true)}
-        onToggleOverlay={() => setIsOverlayOpen(!isOverlayOpen)}
-        isOverlayOpen={isOverlayOpen}
         onOpenSettings={() => setIsSettingsOpen(true)}
       />
 
@@ -1097,15 +1091,6 @@ export const App: React.FC = () => {
         <ShaderCacheCleanerModal
           onClose={() => setIsShaderModalOpen(false)}
           onSuccess={() => loadAllData()}
-        />
-      )}
-
-      {/* Game HUD Overlay */}
-      {isOverlayOpen && (
-        <GameOverlayWidget
-          metrics={metrics}
-          detectedGame={detectedGame}
-          onClose={() => setIsOverlayOpen(false)}
         />
       )}
 

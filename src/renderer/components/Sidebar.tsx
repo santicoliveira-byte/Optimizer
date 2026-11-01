@@ -28,8 +28,6 @@ interface SidebarProps {
   onSelectSection: (section: MainSection) => void;
   sectionStats: Record<MainSection, SectionStats>;
   onOpenShaderModal?: () => void;
-  onToggleOverlay?: () => void;
-  isOverlayOpen?: boolean;
   onOpenSettings?: () => void;
 }
 

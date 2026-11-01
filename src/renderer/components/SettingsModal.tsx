@@ -501,7 +501,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, i
         )}
 
         {/* Sub-tabs Navigation */}
-        <div className="flex items-center gap-1.5 px-6 py-2.5 border-b border-[#1E293B] bg-[#0E1526]/80 overflow-x-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+        <div 
+          className="flex items-center gap-1.5 px-6 py-2.5 border-b border-[#1E293B] bg-[#0E1526]/80 overflow-x-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent select-none"
+          onWheel={(e) => {
+            if (e.deltaY !== 0) {
+              e.currentTarget.scrollLeft += e.deltaY;
+            }
+          }}
+        >
           <button
             onClick={() => setActiveTab('appearance')}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
@@ -761,14 +768,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, i
                   </button>
                 </div>
 
-                <div className="pt-2.5 border-t border-white/5 flex flex-wrap items-center justify-between gap-2 text-[11px] text-gray-400">
-                  <span className="flex items-center gap-1.5 min-w-0">
+                <div className="pt-2.5 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-[11px] text-gray-400">
+                  <div className="flex items-center gap-2 min-w-0">
                     <Ghost className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                    <span>Pressiona <strong className="text-white font-mono bg-white/10 px-1 py-0.5 rounded">Alt+G</strong> para os cliques do rato atravessarem diretamente para o jogo.</span>
-                  </span>
-                  <span className="text-[10px] text-cyan-400 font-mono px-2 py-0.5 rounded bg-cyan-950/60 border border-cyan-500/20 shrink-0">
-                    Atalho Overlay: Alt+O
-                  </span>
+                    <span>Pressiona <strong className="text-white font-mono bg-white/10 px-1.5 py-0.5 rounded">Alt+G</strong> para os cliques passarem diretamente para o jogo.</span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-[10px] text-cyan-300 font-mono px-2 py-0.5 rounded-md bg-cyan-950/70 border border-cyan-500/30">
+                      Atalho Overlay: <strong className="text-cyan-200">Alt+O</strong>
+                    </span>
+                  </div>
                 </div>
               </div>
 
