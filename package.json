@@ -35,6 +35,14 @@
       {
         "from": "src/main/catalog/catalog.json",
         "to": "catalog.json"
+      },
+      {
+        "from": "build/icon.ico",
+        "to": "icon.ico"
+      },
+      {
+        "from": "build/icon.png",
+        "to": "icon.png"
       }
     ],
     "win": {
@@ -42,6 +50,7 @@
         "nsis",
         "portable"
       ],
+      "icon": "build/icon.ico",
       "requestedExecutionLevel": "requireAdministrator"
     },
     "nsis": {
@@ -51,7 +60,9 @@
       "createStartMenuShortcut": true,
       "shortcutName": "Optimizer",
       "artifactName": "Optimizer-Setup-${version}.${ext}",
-      "uninstallDisplayName": "Optimizer"
+      "uninstallDisplayName": "Optimizer",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico"
     },
     "portable": {
       "artifactName": "Optimizer-Portable-${version}.${ext}",

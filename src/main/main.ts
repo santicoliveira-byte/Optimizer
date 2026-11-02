@@ -60,8 +60,24 @@ let tray: Tray | null = null;
 let isQuitting = false;
 const isDev = process.env.NODE_ENV === 'development';
 
+function getAppIconPath(): string {
+  const possiblePaths = [
+    app.isPackaged ? path.join(process.resourcesPath, 'icon.ico') : '',
+    app.isPackaged ? path.join(process.resourcesPath, 'icon.png') : '',
+    path.resolve(__dirname, '../../build/icon.ico'),
+    path.resolve(__dirname, '../../build/icon.png'),
+    path.resolve(app.getAppPath(), 'build/icon.ico'),
+    path.resolve(app.getAppPath(), 'build/icon.png')
+  ];
+  for (const p of possiblePaths) {
+    if (p && fs.existsSync(p)) return p;
+  }
+  return process.execPath;
+}
+
 function createWindow() {
   const isSilentLaunch = process.argv.includes('--silent') || process.argv.includes('--minimized');
+  const appIcon = getAppIconPath();
 
   mainWindow = new BrowserWindow({
     width: 1280,
@@ -70,6 +86,7 @@ function createWindow() {
     minHeight: 700,
     title: 'Optimizer - Windows 10/11 Performance & Latency',
     backgroundColor: '#0B0F19',
+    icon: appIcon,
     frame: false,
     show: !isSilentLaunch,
     autoHideMenuBar: true,
@@ -202,8 +219,8 @@ function toggleBenchmarkHotkeyPressed() {
 function createTray() {
   if (tray) return;
 
-  const iconPath = path.resolve(app.getAppPath(), 'dist-renderer/assets/msi-Cb6F3Wl9.svg');
-  tray = new Tray(fs.existsSync(iconPath) ? iconPath : process.execPath);
+  const appIcon = getAppIconPath();
+  tray = new Tray(appIcon);
   tray.setToolTip(`Optimizer - Windows Performance & Gaming Engine (v${app.getVersion()})`);
 
   const updateContextMenu = () => {

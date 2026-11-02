@@ -1,4 +1,5 @@
 import React from 'react';
+import appLogo from '../assets/logo.png';
 import {
   LayoutDashboard,
   Gamepad2,
@@ -98,10 +99,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       >
         <div className="flex items-center gap-3">
           <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg transition-colors"
-            style={{ backgroundColor: currentAccentConfig.hex }}
+            className="w-9 h-9 rounded-xl flex items-center justify-center bg-[#12192B] border border-white/10 overflow-hidden shrink-0 transition-shadow"
+            style={{ boxShadow: `0 4px 14px ${currentAccentConfig.hex}40` }}
           >
-            <Gamepad2 className="w-5 h-5 text-white" />
+            <img src={appLogo} alt="Optimizer Logo" className="w-8 h-8 object-contain" />
           </div>
           <div>
             <h1 className="font-extrabold text-base tracking-tight text-white flex items-center gap-1.5">
