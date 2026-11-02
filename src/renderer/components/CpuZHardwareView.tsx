@@ -325,25 +325,25 @@ Multi Thread Ratio: ${benchScores.ratio}
           <div className="bg-[#090E1A]/80 border border-white/5 rounded-xl px-3 py-2">
             <span className="text-[10px] text-gray-500 uppercase font-bold block">Processador</span>
             <span className="text-xs font-bold text-purple-300 truncate block">
-              {data?.cpu.name.replace(/w\/.*Graphics/i, '') || 'AMD Ryzen 5 8600G'}
+              {data?.cpu.name.replace(/w\/.*Graphics/i, '').trim() || 'Processador'}
             </span>
           </div>
           <div className="bg-[#090E1A]/80 border border-white/5 rounded-xl px-3 py-2">
             <span className="text-[10px] text-gray-500 uppercase font-bold block">Placa-Mãe</span>
             <span className="text-xs font-bold text-cyan-300 truncate block">
-              {data?.motherboard.model || 'MSI B650M GAMING PLUS'}
+              {data?.motherboard.model || 'Placa-Mãe'}
             </span>
           </div>
           <div className="bg-[#090E1A]/80 border border-white/5 rounded-xl px-3 py-2">
             <span className="text-[10px] text-gray-500 uppercase font-bold block">Memória RAM</span>
             <span className="text-xs font-bold text-emerald-300 truncate block">
-              32 GB DDR5-6000 (Dual Channel)
+              {data?.memory ? `${data.memory.sizeGb} GB ${data.memory.type} (${data.memory.channel})` : 'Memória RAM'}
             </span>
           </div>
           <div className="bg-[#090E1A]/80 border border-white/5 rounded-xl px-3 py-2">
             <span className="text-[10px] text-gray-500 uppercase font-bold block">Placa Gráfica</span>
             <span className="text-xs font-bold text-amber-300 truncate block">
-              NVIDIA RTX 5060 Ti 8GB
+              {data?.graphics.devices?.[0]?.name || 'Placa de Vídeo'}
             </span>
           </div>
         </div>

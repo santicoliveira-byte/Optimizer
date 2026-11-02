@@ -812,7 +812,7 @@ export const BottleneckCanIRunItView: React.FC = () => {
                       )}
                     </div>
                     <div className="text-[11px] font-semibold text-gray-300 mt-1 truncate">
-                      {rig?.gpuName || 'RTX 5060 Ti'} + {rig?.cpuName ? rig.cpuName.replace(/with.*graphics/i, '') : 'Ryzen 5 8600G'}
+                      {rig?.gpuName || 'Placa Gráfica'} + {rig?.cpuName ? rig.cpuName.replace(/with.*graphics/i, '').trim() : 'Processador'}
                     </div>
                   </div>
                 </div>

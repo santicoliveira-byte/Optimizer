@@ -73,7 +73,7 @@ const APPS_LIST: TunableApp[] = [
     name: 'NVIDIA Control Panel & App',
     icon: nvidiaIcon,
     iconBg: 'bg-[#76B900]',
-    category: 'Drivers Gráficos (RTX 5060 Ti)',
+    category: 'Drivers Gráficos & GPU',
     status: 'default',
     description: 'Configura perfil global do driver para "Preferir desempenho máximo" de energia, Low Latency Mode Ultra e Shader Cache de 10GB.',
     actions: ['Power management: Prefer Maximum Performance', 'Low Latency Mode: Ultra', 'Shader Cache Size: 10GB']

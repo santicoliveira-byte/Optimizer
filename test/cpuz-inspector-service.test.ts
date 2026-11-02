@@ -32,8 +32,8 @@ describe('CpuZInspectorService', () => {
 
     // Memory tab checks
     expect(data.memory).toBeDefined();
-    expect(data.memory.type).toBe('DDR5');
-    expect(data.memory.sizeGb).toBeGreaterThanOrEqual(16);
+    expect(['DDR5', 'DDR4', 'DDR4 / DDR5', 'DDR3']).toContain(data.memory.type);
+    expect(data.memory.sizeGb).toBeGreaterThanOrEqual(4);
     expect(data.memory.channel).toBeDefined();
 
     // SPD tab checks
@@ -44,7 +44,7 @@ describe('CpuZInspectorService', () => {
     // Graphics tab checks
     expect(data.graphics).toBeDefined();
     expect(data.graphics.devices.length).toBeGreaterThanOrEqual(1);
-    expect(data.graphics.devices[0].name).toContain('RTX');
+    expect(data.graphics.devices[0].name.length).toBeGreaterThan(0);
 
     // Bench references checks
     expect(data.benchReferences.length).toBeGreaterThanOrEqual(5);

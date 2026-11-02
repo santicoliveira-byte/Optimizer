@@ -158,31 +158,55 @@ export class CpuZInspectorService {
   }
 
   private buildCpuZData(wmi: any): CpuZData {
-    const cpuName = wmi?.CPU?.Name?.trim() || 'AMD Ryzen 5 8600G w/ Radeon 760M Graphics';
-    const cores = Number(wmi?.CPU?.NumberOfCores) || 6;
-    const threads = Number(wmi?.CPU?.NumberOfLogicalProcessors) || 12;
+    const cpuName = wmi?.CPU?.Name?.trim() || (os.cpus()[0]?.model ? os.cpus()[0].model.trim() : 'Processador Moderno');
+    const cores = Number(wmi?.CPU?.NumberOfCores) || os.cpus().length || 6;
+    const threads = Number(wmi?.CPU?.NumberOfLogicalProcessors) || os.cpus().length || 12;
 
     // Detect Ryzen Phoenix / Raphael / Granite Ridge etc
-    let codeName = 'Phoenix';
-    let tech = '4 nm';
-    let socket = wmi?.CPU?.SocketDesignation || 'Socket AM5 (LGA1718)';
+    let codeName = 'Desktop / Mobile Processor';
+    let tech = 'TSMC / Intel Process';
+    let socket = wmi?.CPU?.SocketDesignation || (cpuName.includes('AMD') ? 'Socket AM5 / AM4' : 'LGA1700 / LGA1851');
     if (cpuName.includes('8600G') || cpuName.includes('8700G')) {
       codeName = 'Phoenix / Hawk Point';
       tech = '4 nm FinFET (TSMC)';
       socket = 'Socket AM5';
-    } else if (cpuName.includes('7800X3D') || cpuName.includes('7600')) {
-      codeName = 'Raphael';
+    } else if (cpuName.includes('7800X3D') || cpuName.includes('7600') || cpuName.includes('7700') || cpuName.includes('7900') || cpuName.includes('7950')) {
+      codeName = 'Raphael (Zen 4)';
       tech = '5 nm FinFET';
       socket = 'Socket AM5';
-    } else if (cpuName.includes('Intel')) {
+    } else if (cpuName.includes('9800X3D') || cpuName.includes('9700') || cpuName.includes('9600') || cpuName.includes('9900') || cpuName.includes('9950')) {
+      codeName = 'Granite Ridge (Zen 5)';
+      tech = '4 nm FinFET';
+      socket = 'Socket AM5';
+    } else if (cpuName.includes('5600') || cpuName.includes('5700') || cpuName.includes('5800') || cpuName.includes('5900') || cpuName.includes('5950')) {
+      codeName = 'Vermeer (Zen 3)';
+      tech = '7 nm FinFET';
+      socket = 'Socket AM4';
+    } else if (cpuName.includes('3600') || cpuName.includes('3700') || cpuName.includes('3800')) {
+      codeName = 'Matisse (Zen 2)';
+      tech = '7 nm FinFET';
+      socket = 'Socket AM4';
+    } else if (cpuName.includes('14900') || cpuName.includes('14700') || cpuName.includes('14600') || cpuName.includes('14400')) {
+      codeName = 'Raptor Lake Refresh';
+      tech = 'Intel 7 (10 nm)';
+      socket = 'LGA1700';
+    } else if (cpuName.includes('13900') || cpuName.includes('13700') || cpuName.includes('13600') || cpuName.includes('13400')) {
       codeName = 'Raptor Lake';
       tech = 'Intel 7 (10 nm)';
       socket = 'LGA1700';
+    } else if (cpuName.includes('12900') || cpuName.includes('12700') || cpuName.includes('12600') || cpuName.includes('12400')) {
+      codeName = 'Alder Lake';
+      tech = 'Intel 7 (10 nm)';
+      socket = 'LGA1700';
+    } else if (cpuName.includes('Intel')) {
+      codeName = 'Intel Core Architecture';
+      tech = 'Intel 7 / 10 nm';
+      socket = 'LGA1700';
     }
 
-    const mbMaker = wmi?.Motherboard?.Manufacturer || 'Micro-Star International Co., Ltd.';
-    const mbModel = wmi?.Motherboard?.Product || 'B650M GAMING PLUS WIFI (MS-7E24)';
-    const biosVer = wmi?.BIOS?.SMBIOSBIOSVersion || '1.80';
+    const mbMaker = wmi?.Motherboard?.Manufacturer || 'Fabricante do Sistema';
+    const mbModel = wmi?.Motherboard?.Product || (wmi?.Motherboard?.Manufacturer ? 'Placa-Mãe Principal' : 'Placa-Mãe Base');
+    const biosVer = wmi?.BIOS?.SMBIOSBIOSVersion || 'UEFI 1.0';
     let biosDate = '12/12/2024';
     if (wmi?.BIOS?.ReleaseDate) {
       const match = String(wmi.BIOS.ReleaseDate).match(/Date\((\d+)\)/);
@@ -198,20 +222,26 @@ export class CpuZInspectorService {
 
     if (rawRamList.length > 0) {
       for (const r of rawRamList) {
-        const capGb = Math.round(Number(r.Capacity) / (1024 * 1024 * 1024)) || 16;
-        const part = String(r.PartNumber || 'F5-6000J3038F16G').trim();
-        const serial = String(r.SerialNumber || '245D8AF8').trim();
-        const confSpeed = Number(r.ConfiguredClockSpeed) || 6000;
+        const capGb = Math.round(Number(r.Capacity) / (1024 * 1024 * 1024)) || 8;
+        const part = String(r.PartNumber || 'Módulo RAM').trim();
+        const serial = String(r.SerialNumber || '---').trim();
+        const confSpeed = Number(r.ConfiguredClockSpeed) || Number(r.Speed) || 3200;
 
-        let maker = 'G.Skill';
-        if (part.startsWith('F5-') || part.startsWith('F4-')) maker = 'G.Skill';
-        else if (part.startsWith('KF') || part.startsWith('HX')) maker = 'Kingston';
-        else if (part.startsWith('CM')) maker = 'Corsair';
+        let maker = r.Manufacturer?.trim() || '';
+        if (!maker || maker.toLowerCase() === 'unknown') {
+          if (part.startsWith('F5-') || part.startsWith('F4-')) maker = 'G.Skill';
+          else if (part.startsWith('KF') || part.startsWith('HX')) maker = 'Kingston';
+          else if (part.startsWith('CM')) maker = 'Corsair';
+          else maker = 'OEM / Sistema';
+        }
+
+        const isDdr5 = confSpeed >= 4800 || (r.SMBIOSMemoryType && Number(r.SMBIOSMemoryType) === 34);
+        const memType = isDdr5 ? 'DDR5' : 'DDR4';
 
         slots.push({
           slotName: r.DeviceLocator || 'DIMM',
           moduleSizeMb: capGb * 1024,
-          maxBandwidth: `DDR5-${r.Speed || 4800} (PC5-${((r.Speed || 4800) * 8)} )`,
+          maxBandwidth: `${memType}-${r.Speed || confSpeed} (PC-${((r.Speed || confSpeed) * 8)})`,
           manufacturer: maker,
           partNumber: part,
           serialNumber: serial,
@@ -219,98 +249,202 @@ export class CpuZInspectorService {
           timingsTable: [
             {
               profile: 'JEDEC #1',
-              frequencyMhz: 2400,
-              cas: 40,
-              rcd: 40,
-              rp: 40,
-              ras: 77,
-              rc: 117,
-              voltage: '1.10 V'
+              frequencyMhz: Math.round((confSpeed || 3200) / 2),
+              cas: isDdr5 ? 40 : 16,
+              rcd: isDdr5 ? 40 : 18,
+              rp: isDdr5 ? 40 : 18,
+              ras: isDdr5 ? 77 : 36,
+              rc: isDdr5 ? 117 : 54,
+              voltage: isDdr5 ? '1.10 V' : '1.20 V'
             },
             {
-              profile: 'JEDEC #2',
-              frequencyMhz: 2400,
-              cas: 42,
-              rcd: 40,
-              rp: 40,
-              ras: 77,
-              rc: 117,
-              voltage: '1.10 V'
-            },
-            {
-              profile: 'EXPO-6000',
-              frequencyMhz: confSpeed / 2,
-              cas: 30,
-              rcd: 38,
-              rp: 38,
-              ras: 96,
-              rc: 134,
+              profile: isDdr5 ? 'EXPO / XMP' : 'XMP 2.0',
+              frequencyMhz: Math.round((confSpeed || 3200) / 2),
+              cas: isDdr5 ? 30 : 16,
+              rcd: isDdr5 ? 38 : 18,
+              rp: isDdr5 ? 38 : 18,
+              ras: isDdr5 ? 96 : 36,
+              rc: isDdr5 ? 134 : 54,
               voltage: '1.35 V'
             }
           ]
         });
       }
     } else {
-      // Default slots
-      slots.push(
-        {
-          slotName: 'DIMMA2',
-          moduleSizeMb: 16384,
-          maxBandwidth: 'DDR5-4800 (PC5-38400)',
-          manufacturer: 'G.Skill',
-          partNumber: 'F5-6000J3038F16G',
-          serialNumber: '245D8AF8',
+      // Dynamic fallback based on real os.totalmem()
+      const totalSysGb = Math.round(os.totalmem() / (1024 * 1024 * 1024)) || 16;
+      const singleStickGb = totalSysGb > 8 ? Math.round(totalSysGb / 2) : totalSysGb;
+      const numSticks = totalSysGb > 8 ? 2 : 1;
+
+      for (let s = 1; s <= numSticks; s++) {
+        slots.push({
+          slotName: `DIMM ${s}`,
+          moduleSizeMb: singleStickGb * 1024,
+          maxBandwidth: 'DDR4/DDR5 (Instalada)',
+          manufacturer: 'Sistema',
+          partNumber: `${singleStickGb}GB Module`,
+          serialNumber: '---',
           ranks: 'Single',
           timingsTable: [
-            { profile: 'JEDEC #1', frequencyMhz: 2400, cas: 40, rcd: 40, rp: 40, ras: 77, rc: 117, voltage: '1.10 V' },
-            { profile: 'EXPO-6000', frequencyMhz: 3000, cas: 30, rcd: 38, rp: 38, ras: 96, rc: 134, voltage: '1.35 V' }
+            { profile: 'JEDEC #1', frequencyMhz: 1600, cas: 16, rcd: 18, rp: 18, ras: 36, rc: 54, voltage: '1.20 V' }
           ]
-        },
-        {
-          slotName: 'DIMMB2',
-          moduleSizeMb: 16384,
-          maxBandwidth: 'DDR5-4800 (PC5-38400)',
-          manufacturer: 'G.Skill',
-          partNumber: 'F5-6000J3038F16G',
-          serialNumber: '585C06FD',
-          ranks: 'Single',
-          timingsTable: [
-            { profile: 'JEDEC #1', frequencyMhz: 2400, cas: 40, rcd: 40, rp: 40, ras: 77, rc: 117, voltage: '1.10 V' },
-            { profile: 'EXPO-6000', frequencyMhz: 3000, cas: 30, rcd: 38, rp: 38, ras: 96, rc: 134, voltage: '1.35 V' }
-          ]
-        }
-      );
+        });
+      }
     }
 
-    const totalRamGb = slots.reduce((acc, s) => acc + Math.round(s.moduleSizeMb / 1024), 0) || 32;
+    const totalRamGb = slots.reduce((acc, s) => acc + Math.round(s.moduleSizeMb / 1024), 0) || Math.round(os.totalmem() / (1024 * 1024 * 1024)) || 16;
 
-    // GPU devices
-    const devices = [
-      {
-        name: 'NVIDIA GeForce RTX 5060 Ti',
-        codeName: 'GB206',
-        technology: '4 nm',
-        memorySizeMb: 8192,
-        memoryType: 'GDDR6',
-        busWidthBits: 128,
-        gpuClockMhz: 2407,
-        memoryClockMhz: 1750,
-        driverVersion: '572.16 (DCH)',
-        isPrimary: true
-      },
-      {
-        name: 'AMD Radeon 760M Graphics (Integrada)',
-        codeName: 'RDNA 3',
-        technology: '4 nm',
-        memorySizeMb: 512,
-        memoryType: 'DDR5 Compartilhada',
-        busWidthBits: 128,
-        gpuClockMhz: 2600,
-        memoryClockMhz: 3000,
-        driverVersion: '31.0.24002.92',
-        isPrimary: false
+    // Dynamic GPU devices detection
+    const rawGpus = Array.isArray(wmi?.GPU) ? wmi.GPU : wmi?.GPU ? [wmi.GPU] : [];
+    const devices: CpuZData['graphics']['devices'] = [];
+
+    if (rawGpus.length > 0) {
+      for (let i = 0; i < rawGpus.length; i++) {
+        const g = rawGpus[i];
+        const name = String(g.Name || 'Placa Gráfica').trim();
+        const driver = String(g.DriverVersion || 'Padrão').trim();
+
+        let gpuCodeName = 'DirectX Display Adapter';
+        let gpuTech = 'TSMC / Samsung';
+        let memoryType = 'GDDR6';
+        let busWidthBits = 128;
+        let gpuClockMhz = 2100;
+        let memoryClockMhz = 1750;
+        let memorySizeMb = Math.round(Number(g.AdapterRAM) / (1024 * 1024));
+
+        const isDedicated = /NVIDIA|GeForce|RTX|GTX|Radeon RX|Radeon Pro|Arc/i.test(name);
+
+        if (/RTX 50/i.test(name)) {
+          gpuCodeName = 'Blackwell';
+          gpuTech = 'TSMC 4N';
+          memoryType = 'GDDR7';
+          busWidthBits = name.includes('5090') ? 512 : name.includes('5080') ? 256 : name.includes('5070') ? 192 : 128;
+          if (name.includes('5090')) memorySizeMb = 32768;
+          else if (name.includes('5080')) memorySizeMb = 16384;
+          else if (name.includes('5070 Ti')) memorySizeMb = 16384;
+          else if (name.includes('5070')) memorySizeMb = 12288;
+          else if (name.includes('5060 Ti')) memorySizeMb = 8192;
+          else if (name.includes('5060')) memorySizeMb = 8192;
+        } else if (/RTX 40/i.test(name)) {
+          gpuCodeName = 'Ada Lovelace';
+          gpuTech = 'TSMC 4N';
+          memoryType = 'GDDR6X';
+          busWidthBits = name.includes('4090') ? 384 : name.includes('4080') ? 256 : name.includes('4070') ? 192 : 128;
+          if (name.includes('4090')) memorySizeMb = 24576;
+          else if (name.includes('4080')) memorySizeMb = 16384;
+          else if (name.includes('4070 Ti')) memorySizeMb = 12288;
+          else if (name.includes('4070')) memorySizeMb = 12288;
+          else if (name.includes('4060 Ti')) memorySizeMb = 8192;
+          else if (name.includes('4060')) memorySizeMb = 8192;
+        } else if (/RTX 30/i.test(name)) {
+          gpuCodeName = 'Ampere';
+          gpuTech = 'Samsung 8 nm';
+          memoryType = 'GDDR6';
+          busWidthBits = name.includes('3090') ? 384 : name.includes('3080') ? 320 : name.includes('3070') ? 256 : 192;
+          if (name.includes('3090')) memorySizeMb = 24576;
+          else if (name.includes('3080 Ti')) memorySizeMb = 12288;
+          else if (name.includes('3080')) memorySizeMb = 10240;
+          else if (name.includes('3070')) memorySizeMb = 8192;
+          else if (name.includes('3060 Ti')) memorySizeMb = 8192;
+          else if (name.includes('3060')) memorySizeMb = 12288;
+        } else if (/RTX 20|GTX 16/i.test(name)) {
+          gpuCodeName = 'Turing';
+          gpuTech = 'TSMC 12 nm';
+          memoryType = 'GDDR6';
+          busWidthBits = 192;
+          if (name.includes('2080 Ti')) memorySizeMb = 11264;
+          else if (name.includes('2080') || name.includes('2070')) memorySizeMb = 8192;
+          else if (name.includes('2060')) memorySizeMb = 6144;
+          else if (name.includes('1660')) memorySizeMb = 6144;
+          else if (name.includes('1650')) memorySizeMb = 4096;
+        } else if (/GTX 10/i.test(name)) {
+          gpuCodeName = 'Pascal';
+          gpuTech = 'TSMC 16 nm';
+          memoryType = 'GDDR5';
+          busWidthBits = name.includes('1080 Ti') ? 352 : name.includes('1080') || name.includes('1070') ? 256 : 192;
+          if (name.includes('1080 Ti')) memorySizeMb = 11264;
+          else if (name.includes('1080') || name.includes('1070')) memorySizeMb = 8192;
+          else if (name.includes('1060')) memorySizeMb = 6144;
+          else if (name.includes('1050 Ti') || name.includes('1050')) memorySizeMb = 4096;
+        } else if (/RX 7[0-9]{3}/i.test(name)) {
+          gpuCodeName = 'RDNA 3';
+          gpuTech = 'TSMC 5 nm';
+          memoryType = 'GDDR6';
+          busWidthBits = name.includes('7900') ? 384 : name.includes('7800') ? 256 : name.includes('7700') ? 192 : 128;
+          if (name.includes('7900 XTX')) memorySizeMb = 24576;
+          else if (name.includes('7900 XT')) memorySizeMb = 20480;
+          else if (name.includes('7800 XT')) memorySizeMb = 16384;
+          else if (name.includes('7700 XT')) memorySizeMb = 12288;
+          else if (name.includes('7600')) memorySizeMb = 8192;
+        } else if (/RX 6[0-9]{3}/i.test(name)) {
+          gpuCodeName = 'RDNA 2';
+          gpuTech = 'TSMC 7 nm';
+          memoryType = 'GDDR6';
+          busWidthBits = name.includes('6800') || name.includes('6900') ? 256 : 128;
+          if (name.includes('6900 XT') || name.includes('6800 XT')) memorySizeMb = 16384;
+          else if (name.includes('6700 XT')) memorySizeMb = 12288;
+          else if (name.includes('6600')) memorySizeMb = 8192;
+        } else if (/Radeon.*(Graphics|[0-9]{3}M|Vega)/i.test(name)) {
+          gpuCodeName = 'AMD Radeon Graphics';
+          gpuTech = 'TSMC FinFET';
+          memoryType = 'DDR4/DDR5 Compartilhada';
+          busWidthBits = 128;
+          if (!memorySizeMb || memorySizeMb <= 0 || memorySizeMb > 8192) memorySizeMb = 512;
+        } else if (/Intel.*(Iris|UHD|HD Graphics)/i.test(name)) {
+          gpuCodeName = 'Intel Iris / UHD Graphics';
+          gpuTech = 'Intel 10 nm / 14 nm';
+          memoryType = 'DDR4/DDR5 Compartilhada';
+          busWidthBits = 128;
+          if (!memorySizeMb || memorySizeMb <= 0 || memorySizeMb > 8192) memorySizeMb = 512;
+        } else if (/Intel.*Arc/i.test(name)) {
+          gpuCodeName = 'Alchemist';
+          gpuTech = 'TSMC N6';
+          memoryType = 'GDDR6';
+          busWidthBits = name.includes('A770') ? 256 : name.includes('A750') ? 256 : 128;
+          if (name.includes('A770')) memorySizeMb = 16384;
+          else if (name.includes('A750') || name.includes('A580')) memorySizeMb = 8192;
+          else if (name.includes('A380')) memorySizeMb = 6144;
+        }
+
+        if (!memorySizeMb || memorySizeMb <= 0) {
+          memorySizeMb = isDedicated ? 8192 : 1024;
+        }
+
+        devices.push({
+          name,
+          codeName: gpuCodeName,
+          technology: gpuTech,
+          memorySizeMb,
+          memoryType,
+          busWidthBits,
+          gpuClockMhz,
+          memoryClockMhz,
+          driverVersion: driver,
+          isPrimary: isDedicated || i === 0
+        });
       }
-    ];
+    }
+
+    // Sort so primary/dedicated GPU is first
+    devices.sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0));
+
+    if (devices.length === 0) {
+      devices.push({
+        name: 'Placa de Vídeo Integrada / Básica',
+        codeName: 'Generic Display Adapter',
+        technology: 'Standard',
+        memorySizeMb: 1024,
+        memoryType: 'DDR Compartilhada',
+        busWidthBits: 128,
+        gpuClockMhz: 1500,
+        memoryClockMhz: 1500,
+        driverVersion: 'WDDM',
+        isPrimary: true
+      });
+    }
+
+    const detectedChipset = mbModel.match(/(B650|X670|B550|X570|A520|Z790|B760|Z690|B660|H610|Z490)/i)?.[0];
+    const chipset = detectedChipset ? `${cpuName.includes('AMD') ? 'AMD' : 'Intel'} ${detectedChipset.toUpperCase()}` : (cpuName.includes('AMD') ? 'AMD Promontory' : 'Intel Chipset');
 
     return {
       cpu: {
@@ -351,25 +485,25 @@ export class CpuZInspectorService {
       motherboard: {
         manufacturer: mbMaker,
         model: mbModel,
-        chipset: 'AMD B650',
-        southbridge: 'AMD Promontory 21',
+        chipset,
+        southbridge: cpuName.includes('AMD') ? 'AMD Promontory' : 'Intel PCH',
         biosVendor: wmi?.BIOS?.Manufacturer || 'American Megatrends International, LLC.',
         biosVersion: biosVer,
         biosDate,
-        pciInterface: 'PCI-Express 4.0 (16.0 GT/s)',
+        pciInterface: 'PCI-Express 4.0 / 5.0',
         linkWidth: 'x16 (Max Support x16)'
       },
       memory: {
-        type: 'DDR5',
+        type: slots[0]?.maxBandwidth?.includes('DDR5') ? 'DDR5' : (slots[0]?.maxBandwidth?.includes('DDR4') ? 'DDR4' : 'DDR4 / DDR5'),
         sizeGb: totalRamGb,
-        channel: '2 x 32-bit (Dual Channel)',
-        dramFrequencyMhz: 3000.0,
-        fsbDram: '1:30',
-        casLatency: 30.0,
-        rasToCas: 38,
-        rasPrecharge: 38,
-        cycleTimeTras: 96,
-        bankCycleTimeTrc: 134,
+        channel: slots.length > 1 ? 'Dual Channel' : 'Single Channel',
+        dramFrequencyMhz: slots[0]?.timingsTable?.[0]?.frequencyMhz || 1600.0,
+        fsbDram: '1:1',
+        casLatency: slots[0]?.timingsTable?.[0]?.cas || 16.0,
+        rasToCas: slots[0]?.timingsTable?.[0]?.rcd || 18,
+        rasPrecharge: slots[0]?.timingsTable?.[0]?.rp || 18,
+        cycleTimeTras: slots[0]?.timingsTable?.[0]?.ras || 36,
+        bankCycleTimeTrc: slots[0]?.timingsTable?.[0]?.rc || 54,
         commandRate: '1T'
       },
       spd: {

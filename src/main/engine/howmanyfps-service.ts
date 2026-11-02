@@ -53,9 +53,22 @@ export class HowManyFpsService {
     'geforce rtx 4060 ti': { id: '6923678292b93b48e99cd655', queryName: 'geforce-rtx-4060-ti-8-gb', name: 'NVIDIA GeForce RTX 4060 Ti' },
     'geforce rtx 4070': { id: '6923678292b93b48e99cd657', queryName: 'geforce-rtx-4070', name: 'NVIDIA GeForce RTX 4070' },
     'geforce rtx 4070 super': { id: '6923678292b93b48e99cd658', queryName: 'geforce-rtx-4070-super', name: 'NVIDIA GeForce RTX 4070 SUPER' },
+    'geforce rtx 4080': { id: '6923678292b93b48e99cd65a', queryName: 'geforce-rtx-4080', name: 'NVIDIA GeForce RTX 4080' },
+    'geforce rtx 4090': { id: '6923678292b93b48e99cd65c', queryName: 'geforce-rtx-4090', name: 'NVIDIA GeForce RTX 4090' },
     'geforce rtx 3060': { id: '6923678292b93b48e99cd663', queryName: 'geforce-rtx-3060', name: 'NVIDIA GeForce RTX 3060' },
+    'geforce rtx 3070': { id: '6923678292b93b48e99cd660', queryName: 'geforce-rtx-3070', name: 'NVIDIA GeForce RTX 3070' },
+    'geforce rtx 3080': { id: '6923678292b93b48e99cd65e', queryName: 'geforce-rtx-3080', name: 'NVIDIA GeForce RTX 3080' },
+    'gtx 1660 super': { id: '6923678292b93b48e99cd675', queryName: 'geforce-gtx-1660-super', name: 'NVIDIA GeForce GTX 1660 SUPER' },
+    'gtx 1650': { id: '6923678292b93b48e99cd67a', queryName: 'geforce-gtx-1650', name: 'NVIDIA GeForce GTX 1650' },
+    'gtx 1060': { id: '6923678292b93b48e99cd67b', queryName: 'geforce-gtx-1060-6gb', name: 'NVIDIA GeForce GTX 1060' },
+    'radeon rx 6600': { id: '6923678392b93b48e99cd695', queryName: 'radeon-rx-6600', name: 'AMD Radeon RX 6600' },
     'radeon rx 6700 xt': { id: '6923678392b93b48e99cd693', queryName: 'radeon-rx-6700-xt', name: 'AMD Radeon RX 6700 XT' },
-    'radeon rx 7800 xt': { id: '6923678392b93b48e99cd681', queryName: 'radeon-rx-7800-xt', name: 'AMD Radeon RX 7800 XT' }
+    'radeon rx 7600': { id: '6923678392b93b48e99cd685', queryName: 'radeon-rx-7600', name: 'AMD Radeon RX 7600' },
+    'radeon rx 7800 xt': { id: '6923678392b93b48e99cd681', queryName: 'radeon-rx-7800-xt', name: 'AMD Radeon RX 7800 XT' },
+    'radeon 780m': { id: '6923678392b93b48e99cd6a1', queryName: 'radeon-780m', name: 'AMD Radeon 780M Graphics' },
+    'radeon 760m': { id: '6923678392b93b48e99cd6a2', queryName: 'radeon-760m', name: 'AMD Radeon 760M Graphics' },
+    'intel arc a750': { id: '6923678392b93b48e99cd6b0', queryName: 'intel-arc-a750', name: 'Intel Arc A750' },
+    'intel arc a770': { id: '6923678392b93b48e99cd6b1', queryName: 'intel-arc-a770', name: 'Intel Arc A770' }
   };
 
   // Maps local game catalog IDs to HowManyFPS game IDs & query names
@@ -257,11 +270,24 @@ export class HowManyFpsService {
       if (name.includes(key)) return val;
     }
 
-    // Dynamic extraction: e.g. "NVIDIA GeForce RTX 5060 Ti" -> "geforce-rtx-5060-ti"
+    // Dynamic extraction:
+    let query = '';
     const rtxMatch = name.match(/rtx\s*([0-9]{4})(?:\s*(ti|super))?/i);
+    const gtxMatch = name.match(/gtx\s*([0-9]{3,4})(?:\s*(ti|super))?/i);
+    const rxMatch = name.match(/rx\s*([0-9]{4})(?:\s*(xt))?/i);
+
     if (rtxMatch) {
       const suffix = rtxMatch[2] ? `-${rtxMatch[2].toLowerCase()}` : '';
-      const query = `geforce-rtx-${rtxMatch[1]}${suffix}`;
+      query = `geforce-rtx-${rtxMatch[1]}${suffix}`;
+    } else if (gtxMatch) {
+      const suffix = gtxMatch[2] ? `-${gtxMatch[2].toLowerCase()}` : '';
+      query = `geforce-gtx-${gtxMatch[1]}${suffix}`;
+    } else if (rxMatch) {
+      const suffix = rxMatch[2] ? `-${rxMatch[2].toLowerCase()}` : '';
+      query = `radeon-rx-${rxMatch[1]}${suffix}`;
+    }
+
+    if (query) {
       try {
         const res = await this.httpGet(`https://v1.howmanyfps.com/gpus/${query}/`);
         if (res.status === 200) {
@@ -277,7 +303,11 @@ export class HowManyFpsService {
       }
     }
 
-    // Default to RTX 5060 Ti fallback
+    // Generic fallback for custom / unmapped GPU
+    if (detectedName && detectedName.trim().length > 2) {
+      return { id: query || 'custom-gpu', queryName: query || 'custom-gpu', name: detectedName.trim() };
+    }
+
     return this.gpuIdMap['rtx 5060 ti'];
   }
 

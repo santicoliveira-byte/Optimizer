@@ -19,6 +19,7 @@ export class HardwareService {
     windowsVersion: string;
     windowsBuild: string;
     cpuModel?: string;
+    gpuModel?: string;
     ramSpeedMhz?: number;
     diskModel?: string;
     networkAdapterName?: string;
@@ -31,7 +32,7 @@ export class HardwareService {
   private currentGpuMetrics: { usage: number; temp: number; name: string; vramMb?: number } = {
     usage: 0,
     temp: 0,
-    name: 'GPU'
+    name: 'Placa Gráfica'
   };
 
   private constructor() {
@@ -95,12 +96,18 @@ export class HardwareService {
         this.currentGpuMetrics = {
           usage: parseInt(parts[0], 10) || 0,
           temp: parseInt(parts[1], 10) || 0,
-          name: parts[2] || 'NVIDIA GeForce',
+          name: parts[2] || this.cachedStaticHardware?.gpuModel || 'Placa Gráfica',
           vramMb: parseInt(parts[3], 10) || undefined
         };
+        return;
       }
     } catch {
       // Non-NVIDIA or command unavailable
+    }
+
+    // Dynamic fallback for AMD Radeon, Intel Arc, and integrated GPUs
+    if (this.cachedStaticHardware?.gpuModel) {
+      this.currentGpuMetrics.name = this.cachedStaticHardware.gpuModel;
     }
   }
 
@@ -142,8 +149,14 @@ export class HardwareService {
     if (!force && fs.existsSync(cachePath)) {
       try {
         const raw = fs.readFileSync(cachePath, 'utf-8');
-        this.cachedStaticHardware = JSON.parse(raw);
-        return;
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.gpuModel) {
+          this.cachedStaticHardware = parsed;
+          if (this.cachedStaticHardware?.gpuModel) {
+            this.currentGpuMetrics.name = this.cachedStaticHardware.gpuModel;
+          }
+          return;
+        }
       } catch {}
     }
 
@@ -157,13 +170,18 @@ export class HardwareService {
         $chassis = (Get-CimInstance Win32_SystemEnclosure -ErrorAction SilentlyContinue).ChassisTypes
         $isLaptop = $hasBattery -or ($chassis -contains 9 -or $chassis -contains 10 -or $chassis -contains 14)
 
-        $gpus = Get-CimInstance Win32_VideoController -ErrorAction SilentlyContinue
+        $gpus = @(Get-CimInstance Win32_VideoController -ErrorAction SilentlyContinue)
         $hasDedicated = $false
+        $primaryGpu = ""
         foreach ($g in $gpus) {
           $name = $g.Name
           if ($name -match 'NVIDIA|GeForce|RTX|GTX|Radeon RX|Radeon Pro|Intel Arc') {
             $hasDedicated = $true
+            if (-not $primaryGpu) { $primaryGpu = $name }
           }
+        }
+        if (-not $primaryGpu -and $gpus.Count -gt 0) {
+          $primaryGpu = $gpus[0].Name
         }
 
         $wifi = (Get-CimInstance Win32_NetworkAdapter -ErrorAction SilentlyContinue | Where-Object { $_.NetConnectionStatus -eq 2 -and ($_.Name -match 'Wireless|Wi-Fi|802.11|WLAN') } | Measure-Object).Count -gt 0
@@ -193,6 +211,7 @@ export class HardwareService {
           winVer = $winVer
           build = $os.BuildNumber
           cpuModel = $cpu
+          gpuModel = $primaryGpu
           ramSpeed = $ramSpeed
           diskModel = $disk
           netAdapter = $netAdapter
@@ -209,10 +228,14 @@ export class HardwareService {
           windowsVersion: data.winVer ?? 'Windows 11',
           windowsBuild: data.build ?? '22631',
           cpuModel: data.cpuModel || os.cpus()[0]?.model || 'Processador',
+          gpuModel: data.gpuModel || 'Placa Gráfica',
           ramSpeedMhz: data.ramSpeed || 4800,
           diskModel: data.diskModel || 'SSD NVMe',
           networkAdapterName: data.netAdapter || 'Ethernet / Wi-Fi'
         };
+        if (this.cachedStaticHardware.gpuModel && this.currentGpuMetrics.name === 'Placa Gráfica') {
+          this.currentGpuMetrics.name = this.cachedStaticHardware.gpuModel;
+        }
         try {
           fs.writeFileSync(cachePath, JSON.stringify(this.cachedStaticHardware, null, 2), 'utf-8');
         } catch {}
@@ -286,7 +309,9 @@ export class HardwareService {
       ramSpeedMhz: st.ramSpeedMhz,
       gpuUsagePercent: this.currentGpuMetrics.usage,
       gpuTempC: this.currentGpuMetrics.temp,
-      gpuName: this.currentGpuMetrics.name,
+      gpuName: (this.currentGpuMetrics.name && this.currentGpuMetrics.name !== 'Placa Gráfica' && this.currentGpuMetrics.name !== 'GPU')
+        ? this.currentGpuMetrics.name
+        : (st.gpuModel || this.currentGpuMetrics.name || 'Placa Gráfica'),
       gpuVramMb: this.currentGpuMetrics.vramMb,
       diskUsagePercent: disk.percent,
       diskUsedGb: disk.usedGb,
