@@ -210,9 +210,24 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({
               )}
 
               {errorMsg && (
-                <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-3 flex items-center gap-2 text-rose-300 text-xs">
-                  <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
-                  <span>{errorMsg}</span>
+                <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-3 space-y-2 text-rose-300 text-xs">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                    <span className="font-semibold">{errorMsg}</span>
+                  </div>
+                  {updateInfo?.downloadUrl && (
+                    <div className="pt-1 flex items-center gap-2">
+                      <a
+                        href={updateInfo.downloadUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600/30 hover:bg-rose-600/50 border border-rose-500/40 text-white font-bold text-[11px] transition-colors"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        Descarregar Ficheiro Diretamente pelo Navegador
+                      </a>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
