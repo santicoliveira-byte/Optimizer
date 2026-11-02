@@ -1,6 +1,6 @@
 {
   "name": "optimizer-desktop",
-  "version": "2.2.15",
+  "version": "2.3.0",
   "description": "Windows 10/11 Performance, Input Delay & Network Optimizer",
   "main": "dist-electron/main/main.js",
   "scripts": {
@@ -12,9 +12,11 @@
     "dist": "npm run build && electron-builder --win nsis",
     "dist:portable": "npm run build && electron-builder --win portable",
     "dist:all": "npm run build && electron-builder --win nsis portable",
-    "release": "node scripts/release.js --patch",
-    "release:patch": "node scripts/release.js --patch",
+    "release": "node scripts/release.js --minor",
+    "release:feature": "node scripts/release.js --minor",
     "release:minor": "node scripts/release.js --minor",
+    "release:fix": "node scripts/release.js --patch",
+    "release:patch": "node scripts/release.js --patch",
     "release:major": "node scripts/release.js --major",
     "generate-keys": "node scripts/generate-keys.js",
     "test": "vitest run",

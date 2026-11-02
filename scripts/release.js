@@ -163,13 +163,16 @@ function main() {
       const remotes = execSync('git remote', { cwd: rootDir, encoding: 'utf8' }).trim();
       if (remotes) {
         console.log(`A enviar alterações e tags para o GitHub...`);
-        run('git push');
+        run('git push origin main');
         run(`git push origin ${tag}`);
+        if (remotes.includes('backup')) {
+          run('git push backup main --force');
+        }
       } else {
         console.log('⚠️ Nenhum remote Git configurado ainda.');
       }
     } catch (e) {
-      console.log('Nota: Push para remote pendente de autenticação.');
+      console.log('Nota: Push para remote pendente de autenticação: ' + e.message);
     }
 
     // Criar GitHub Release via gh CLI se disponível
@@ -177,16 +180,17 @@ function main() {
       const ghPath = 'C:\\Program Files\\GitHub CLI\\gh.exe';
       const ghCmd = fs.existsSync(ghPath) ? `"${ghPath}"` : 'gh';
       
-      const releaseNotes = `### Novidades da versão ${newTag} - PRO Monetization & eSports Tier 👑🚀\n\n` +
-        `- **Sistema de Licenciamento PRO Criptográfico**: Autenticação offline segura por HMAC-SHA256, chaves alfanuméricas ativadas instantaneamente sem latência.\n` +
-        `- **Recursos Exclusivos PRO (Gated Tier)**:\n` +
-        `  • **HUD Overlay em Tempo Real (Alt+O)**: Monitorização de FPS, Frametimes, CPU, GPU e RAM sem sair da partida.\n` +
-        `  • **Benchmark e Análise de 1% Lows (Alt+B)**: Gravação e telemetria profunda com comparativo Antes vs Depois.\n` +
-        `  • **Modo Torneio eSports 0.500ms**: Bloqueio de hardware timer para a menor latência de input possível.\n` +
-        `  • **Otimização de P-Cores (Process Lasso)**: Afinidade de threads em CPUs híbridas Intel/AMD.\n` +
-        `  • **Teto G-Sync / FreeSync Automático**: Ajuste de 1 clique para todos os jogos detectados.\n` +
-        `  • **Prioridade de Interrupções MSI**: Afinidade direta na placa gráfica e placa de rede.\n` +
-        `- **Plano Gratuito Mantido**: Otimizador completo com 364 tweaks de registro, limpeza de disco, DNS benchmark e diagnósticos.`;
+      const releaseNotes = `### 🚀 Novidades da versão ${newTag} - Esports Peripherals Lab & HD Branding\n\n` +
+        `- **Laboratório de Periféricos & Latência eSports (Novo)**:\n` +
+        `  • **Mouse Lab**: Monitorização de Polling Rate em tempo real (125Hz até 8000Hz), teste de velocidade de cliques (CPS) e teste de tempo de reação visual / input lag.\n` +
+        `  • **Keyboard Lab**: Matriz visual interativa de teclado mecânico, deteção de anti-ghosting e contador simultâneo de NKRO (N-Key Rollover).\n` +
+        `  • **Audio & Headset Lab**: Cálculo de latência do buffer de áudio (ms), teste de separação estéreo (Esquerda/Centro/Direita), simulação 3D de passos competitivos e teste de microfone em loopback com medidor de decibéis.\n` +
+        `- **Nova Identidade Visual & Ícone Oficial 3D**:\n` +
+        `  • Ícone de alta definição integrado no executável portátil, instalador NSIS, barra de tarefas e bandeja do sistema (Tray).\n` +
+        `- **Deteção Dinâmica de Hardware Multi-PC**:\n` +
+        `  • Leitura dinâmica e independente de CPU, GPU e Motherboard sem conflito entre diferentes computadores.\n` +
+        `- **Central de Atualizações Aperfeiçoada**:\n` +
+        `  • Download multi-camada resiliente e pop-up de novidades exibido apenas uma única vez após atualização.`;
       const notesFile = path.join(rootDir, 'release', 'release-notes.tmp');
       fs.writeFileSync(notesFile, releaseNotes, 'utf8');
 
