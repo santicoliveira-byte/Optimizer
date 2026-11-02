@@ -7,7 +7,8 @@ import {
   Cpu,
   Mouse,
   Wrench,
-  Settings
+  Settings,
+  Gauge
 } from 'lucide-react';
 import { useI18n, ACCENT_COLORS } from '../i18n';
 import { APP_VERSION, getDisplayVersion } from '../utils/version';
@@ -19,6 +20,7 @@ export type MainSection =
   | 'cpuz'
   | 'network'
   | 'peripherals'
+  | 'benchmark'
   | 'system'
   | 'maintenance';
 
@@ -87,6 +89,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       description: t('nav.peripherals.desc'),
       icon: <Mouse className="w-4 h-4" />,
       color: 'text-purple-400'
+    },
+    {
+      id: 'benchmark',
+      name: t('nav.benchmark'),
+      description: t('nav.benchmark.desc'),
+      icon: <Gauge className="w-4 h-4" />,
+      color: 'text-amber-400'
     },
     {
       id: 'maintenance',
