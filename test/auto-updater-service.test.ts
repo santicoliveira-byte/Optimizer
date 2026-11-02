@@ -29,4 +29,11 @@ describe('AutoUpdaterService', () => {
     expect(typeof info.hasUpdate).toBe('boolean');
     expect(info.htmlUrl).toContain('github.com/santicoliveira-byte/Optimizer');
   }, 15000);
+
+  it('resolves valid target executable path for in-place desktop update', () => {
+    const targetPath = updater.resolveTargetExecutablePath();
+    expect(targetPath).toBeDefined();
+    expect(typeof targetPath).toBe('string');
+    expect(targetPath.toLowerCase()).toMatch(/\.exe$/);
+  });
 });

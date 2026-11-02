@@ -56,16 +56,19 @@ function main() {
   const isPatch = args.includes('--patch') || args.includes('--fix') || args.includes('--bugfix');
   const customVersionIdx = args.indexOf('--version');
   
-  let newSemver, newTag;
+  let newSemver, newTag, major, minor, patch;
   if (customVersionIdx !== -1 && args[customVersionIdx + 1]) {
     const raw = args[customVersionIdx + 1].replace(/^v/, '');
     const parts = raw.split('.').map((p) => parseInt(p, 10) || 0);
-    const major = parts[0] || 1;
-    const minor = parts.length > 1 ? parts[1] : 0;
-    const patch = parts.length > 2 ? parts[2] : 0;
+    major = parts[0] || 1;
+    minor = parts.length > 1 ? parts[1] : 0;
+    patch = parts.length > 2 ? parts[2] : 0;
     newTag = patch > 0 ? `${major}.${minor}.${patch}` : (minor === 0 ? `${major}.0` : `${major}.${minor}`);
     newSemver = `${major}.${minor}.${patch}`;
   } else if (args.includes('--init')) {
+    major = 1;
+    minor = 0;
+    patch = 0;
     newTag = '1.0';
     newSemver = '1.0.0';
   } else {
@@ -78,6 +81,9 @@ function main() {
     const next = getNextVersion(currentVersion, releaseType);
     newSemver = next.semver;
     newTag = next.displayTag;
+    major = next.major;
+    minor = next.minor;
+    patch = next.patch;
   }
 
   console.log('==================================================');
@@ -180,17 +186,30 @@ function main() {
       const ghPath = 'C:\\Program Files\\GitHub CLI\\gh.exe';
       const ghCmd = fs.existsSync(ghPath) ? `"${ghPath}"` : 'gh';
       
-      const releaseNotes = `### 🚀 Novidades da versão ${newTag} - Esports Peripherals Lab & HD Branding\n\n` +
-        `- **Laboratório de Periféricos & Latência eSports (Novo)**:\n` +
-        `  • **Mouse Lab**: Monitorização de Polling Rate em tempo real (125Hz até 8000Hz), teste de velocidade de cliques (CPS) e teste de tempo de reação visual / input lag.\n` +
-        `  • **Keyboard Lab**: Matriz visual interativa de teclado mecânico, deteção de anti-ghosting e contador simultâneo de NKRO (N-Key Rollover).\n` +
-        `  • **Audio & Headset Lab**: Cálculo de latência do buffer de áudio (ms), teste de separação estéreo (Esquerda/Centro/Direita), simulação 3D de passos competitivos e teste de microfone em loopback com medidor de decibéis.\n` +
-        `- **Nova Identidade Visual & Ícone Oficial 3D**:\n` +
-        `  • Ícone de alta definição integrado no executável portátil, instalador NSIS, barra de tarefas e bandeja do sistema (Tray).\n` +
-        `- **Deteção Dinâmica de Hardware Multi-PC**:\n` +
-        `  • Leitura dinâmica e independente de CPU, GPU e Motherboard sem conflito entre diferentes computadores.\n` +
-        `- **Central de Atualizações Aperfeiçoada**:\n` +
-        `  • Download multi-camada resiliente e pop-up de novidades exibido apenas uma única vez após atualização.`;
+      let releaseNotes = '';
+      if (patch > 0) {
+        releaseNotes = `### 🛠️ Correções e Melhorias da versão ${newTag}\n\n` +
+          `- **Atualização In-Place no Ambiente de Trabalho (Fix)**:\n` +
+          `  • O atualizador automático agora substitui diretamente o executável original no Ambiente de Trabalho em background logo que a aplicação fecha.\n` +
+          `  • Garante que o ícone do Ambiente de Trabalho abre sempre e permanentemente a versão mais recente em qualquer computador, sem duplicar apps ou correr a partir de pastas temporárias.\n` +
+          `  • Deteção universal de caminhos e gestão automática de bloqueios de ficheiros do Windows (file lock release).\n\n` +
+          `### 🚀 Funcionalidades da base v${major}.${minor}\n` +
+          `- **Laboratório de Periféricos & Latência eSports**: Mouse Polling Rate (125-8000Hz), Keyboard NKRO Anti-Ghosting, 3D Audio & Teste de Microfone.\n` +
+          `- **Nova Identidade Visual & Ícone Oficial 3D**: Ícone de alta resolução integrado em toda a aplicação e instaladores.\n` +
+          `- **Deteção Dinâmica de Hardware**: Leitura precisa e dinâmica de CPU, GPU e Motherboard sem conflitos entre diferentes PCs.`;
+      } else {
+        releaseNotes = `### 🚀 Novidades da versão ${newTag} - Esports Peripherals Lab & HD Branding\n\n` +
+          `- **Laboratório de Periféricos & Latência eSports (Novo)**:\n` +
+          `  • **Mouse Lab**: Monitorização de Polling Rate em tempo real (125Hz até 8000Hz), teste de velocidade de cliques (CPS) e teste de tempo de reação visual / input lag.\n` +
+          `  • **Keyboard Lab**: Matriz visual interativa de teclado mecânico, deteção de anti-ghosting e contador simultâneo de NKRO (N-Key Rollover).\n` +
+          `  • **Audio & Headset Lab**: Cálculo de latência do buffer de áudio (ms), teste de separação estéreo (Esquerda/Centro/Direita), simulação 3D de passos competitivos e teste de microfone em loopback com medidor de decibéis.\n` +
+          `- **Nova Identidade Visual & Ícone Oficial 3D**:\n` +
+          `  • Ícone de alta definição integrado no executável portátil, instalador NSIS, barra de tarefas e bandeja do sistema (Tray).\n` +
+          `- **Deteção Dinâmica de Hardware Multi-PC**:\n` +
+          `  • Leitura dinâmica e independente de CPU, GPU e Motherboard sem conflito entre diferentes computadores.\n` +
+          `- **Central de Atualizações Aperfeiçoada**:\n` +
+          `  • Download multi-camada resiliente e pop-up de novidades exibido apenas uma única vez após atualização.`;
+      }
       const notesFile = path.join(rootDir, 'release', 'release-notes.tmp');
       fs.writeFileSync(notesFile, releaseNotes, 'utf8');
 

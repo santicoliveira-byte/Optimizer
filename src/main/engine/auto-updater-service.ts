@@ -125,13 +125,18 @@ export class AutoUpdaterService {
             let assetSize = 0;
 
             if (Array.isArray(release.assets)) {
-              const exeAsset = release.assets.find((a: any) =>
+              // Prefer portable executable for in-place replacement
+              const portableAsset = release.assets.find((a: any) =>
+                a.name && a.name.toLowerCase().includes('portable') && a.name.toLowerCase().endsWith('.exe')
+              );
+              const anyExeAsset = release.assets.find((a: any) =>
                 a.name && a.name.toLowerCase().endsWith('.exe')
               );
-              if (exeAsset) {
-                downloadUrl = exeAsset.browser_download_url;
-                assetName = exeAsset.name;
-                assetSize = exeAsset.size;
+              const chosen = portableAsset || anyExeAsset;
+              if (chosen) {
+                downloadUrl = chosen.browser_download_url;
+                assetName = chosen.name;
+                assetSize = chosen.size;
               }
             }
 
@@ -198,6 +203,35 @@ export class AutoUpdaterService {
   }
 
   /**
+   * Resolves the target executable file path to overwrite during update.
+   * On Windows Portable Electron apps, `process.env.PORTABLE_EXECUTABLE_FILE` points
+   * to the actual .exe file the user clicked (e.g. C:\Users\<name>\Desktop\Optimizer-Portable.exe).
+   */
+  public resolveTargetExecutablePath(): string {
+    if (process.env.PORTABLE_EXECUTABLE_FILE && fs.existsSync(process.env.PORTABLE_EXECUTABLE_FILE)) {
+      return process.env.PORTABLE_EXECUTABLE_FILE;
+    }
+
+    const homedir = os.homedir();
+    const userProfile = process.env.USERPROFILE || homedir;
+    const desktopPath = path.join(userProfile, 'Desktop');
+
+    const candidates = [
+      path.join(desktopPath, 'Optimizer-Portable.exe'),
+      path.join(desktopPath, 'Optimizer.exe'),
+      process.execPath
+    ];
+
+    for (const candidate of candidates) {
+      if (candidate && fs.existsSync(candidate)) {
+        return candidate;
+      }
+    }
+
+    return path.join(desktopPath, 'Optimizer-Portable.exe');
+  }
+
+  /**
    * Downloads the latest portable executable and launches it with triple-tier resilience:
    * 1. Node.js HTTPS (IPv4 forced)
    * 2. Windows Native curl.exe with auto-redirects
@@ -223,15 +257,69 @@ export class AutoUpdaterService {
     const targetFile = path.join(tempDir, `Optimizer-Update-${Date.now()}.exe`);
 
     const launchAndQuit = (): { success: boolean; path: string } => {
-      const desktopPath = path.join(process.env.USERPROFILE || 'C:\\Users\\Santiago', 'Desktop', 'Optimizer-Portable.exe');
-      try {
-        fs.copyFileSync(targetFile, desktopPath);
-      } catch {}
+      const targetExe = this.resolveTargetExecutablePath();
+      const homedir = os.homedir();
+      const userProfile = process.env.USERPROFILE || homedir;
+      const desktopExe = path.join(userProfile, 'Desktop', 'Optimizer-Portable.exe');
 
-      spawn(targetFile, [], {
-        detached: true,
-        stdio: 'ignore'
-      }).unref();
+      const updaterScriptPath = path.join(tempDir, `optimizer-in-place-update-${Date.now()}.cmd`);
+
+      const cmdScript = `@echo off
+setlocal enabledelayedexpansion
+
+:: Aguarda 2 segundos para o processo atual terminar e libertar o ficheiro
+timeout /t 2 /nobreak >nul
+
+set "TARGET_EXE=${targetExe}"
+set "DESKTOP_EXE=${desktopExe}"
+set "NEW_EXE=${targetFile}"
+
+:: Substitui o executavel original pelo novo (ate 30 tentativas caso ainda esteja bloqueado)
+set /a attempts=0
+:retry_copy
+copy /y "!NEW_EXE!" "!TARGET_EXE!" >nul 2>&1
+if errorlevel 1 (
+    set /a attempts+=1
+    if !attempts! lss 30 (
+        timeout /t 1 /nobreak >nul
+        goto retry_copy
+    )
+)
+
+:: Se o executavel no Ambiente de Trabalho for diferente, atualiza-o tambem
+if /i "!DESKTOP_EXE!" neq "!TARGET_EXE!" (
+    if exist "!DESKTOP_EXE!" (
+        copy /y "!NEW_EXE!" "!DESKTOP_EXE!" >nul 2>&1
+    )
+)
+
+:: Limpa o executavel temporario apos substituir o original
+if exist "!TARGET_EXE!" (
+    del /f /q "!NEW_EXE!" >nul 2>&1
+)
+
+:: Inicia a nova versao a partir do mesmo caminho original no ambiente de trabalho!
+start "" "!TARGET_EXE!"
+
+:: Auto-elimina o script de atualizacao
+del /f /q "%~f0" >nul 2>&1
+exit
+`;
+
+      try {
+        fs.writeFileSync(updaterScriptPath, cmdScript, 'utf8');
+
+        spawn('cmd.exe', ['/c', updaterScriptPath], {
+          detached: true,
+          stdio: 'ignore',
+          windowsHide: true
+        }).unref();
+      } catch {
+        spawn(targetFile, [], {
+          detached: true,
+          stdio: 'ignore'
+        }).unref();
+      }
 
       setTimeout(() => {
         if (app) {
@@ -239,9 +327,9 @@ export class AutoUpdaterService {
         } else {
           process.exit(0);
         }
-      }, 1000);
+      }, 800);
 
-      return { success: true, path: targetFile };
+      return { success: true, path: targetExe };
     };
 
     // Layer 1: Node.js https.get with family: 4 (bypasses Windows IPv6 resolution glitches)
