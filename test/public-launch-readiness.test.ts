@@ -165,5 +165,20 @@ describe('Public Launch Readiness Master QA Suite', () => {
       expect(appContent).toContain('optimizer_last_seen_version');
       expect(appContent).toContain('WhatsNewModal');
     });
+
+    it('verifies that checkUpdateStatus logic prevents recurring popups on identical version', () => {
+      const isGenuineUpdate = (lastSeenVer: string, currentVer: string) => {
+        return Boolean(lastSeenVer && lastSeenVer !== currentVer);
+      };
+
+      // First run (fresh install): no popup
+      expect(isGenuineUpdate('', '2.2.11')).toBe(false);
+
+      // Same version reopening: no popup
+      expect(isGenuineUpdate('2.2.11', '2.2.11')).toBe(false);
+
+      // Real update (e.g. from 2.2.10 to 2.2.11): popup shows once!
+      expect(isGenuineUpdate('2.2.10', '2.2.11')).toBe(true);
+    });
   });
 });

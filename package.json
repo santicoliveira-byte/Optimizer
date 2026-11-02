@@ -16,6 +16,7 @@
     "release:patch": "node scripts/release.js --patch",
     "release:minor": "node scripts/release.js --minor",
     "release:major": "node scripts/release.js --major",
+    "generate-keys": "node scripts/generate-keys.js",
     "test": "vitest run",
     "test:watch": "vitest"
   },

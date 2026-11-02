@@ -43,6 +43,18 @@ app.commandLine.appendSwitch('enable-zero-copy');
 app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion');
 app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
 
+// Ensure consistent persistent userData directory across Portable and Setup builds
+try {
+  const appData = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
+  const persistentUserData = path.join(appData, 'Optimizer');
+  if (!fs.existsSync(persistentUserData)) {
+    fs.mkdirSync(persistentUserData, { recursive: true });
+  }
+  app.setPath('userData', persistentUserData);
+} catch (e) {
+  console.error('Failed to set persistent userData path:', e);
+}
+
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let isQuitting = false;
@@ -1154,6 +1166,46 @@ function registerIpc() {
 
   ipcMain.handle('app:get-version', async () => {
     return app.getVersion();
+  });
+
+  const versionTrackerFile = path.join(app.getPath('userData'), 'version_tracker.json');
+
+  ipcMain.handle('app:check-update-status', async () => {
+    const currentVer = app.getVersion();
+    let lastSeenVer = '';
+    try {
+      if (fs.existsSync(versionTrackerFile)) {
+        const data = JSON.parse(fs.readFileSync(versionTrackerFile, 'utf8'));
+        lastSeenVer = data.lastSeenVersion || '';
+      }
+    } catch {}
+
+    // É uma atualização genuína apenas se lastSeenVer existia e era de uma versão anterior!
+    // Se for a primeira vez que a app é aberta após instalação limpa, não é update.
+    const isUpdate = Boolean(lastSeenVer && lastSeenVer !== currentVer);
+
+    // Se ainda não existia histórico, regista a versão atual para que nas próximas aberturas não considere update
+    if (!lastSeenVer) {
+      try {
+        fs.writeFileSync(versionTrackerFile, JSON.stringify({ lastSeenVersion: currentVer, updatedAt: new Date().toISOString() }, null, 2), 'utf8');
+      } catch {}
+    }
+
+    return {
+      isUpdate,
+      lastSeenVersion: lastSeenVer,
+      currentVersion: currentVer
+    };
+  });
+
+  ipcMain.handle('app:mark-version-seen', async (_, version?: string) => {
+    try {
+      const ver = version || app.getVersion();
+      fs.writeFileSync(versionTrackerFile, JSON.stringify({ lastSeenVersion: ver, updatedAt: new Date().toISOString() }, null, 2), 'utf8');
+      return { success: true };
+    } catch {
+      return { success: false };
+    }
   });
 
   ipcMain.handle('updater:check', async () => {

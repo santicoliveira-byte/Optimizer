@@ -177,19 +177,36 @@ export const App: React.FC = () => {
     checkUpdates();
   }, []);
 
-  // Check if app was updated and show What's New initial screen
+  // Check if app was updated and show What's New initial screen ONLY ONCE after an update
   useEffect(() => {
-    if (appVersion) {
+    if (window.optimizerApi?.checkUpdateStatus) {
+      window.optimizerApi.checkUpdateStatus().then((status) => {
+        if (status?.isUpdate) {
+          setIsWhatsNewOpen(true);
+          window.optimizerApi.markVersionSeen(status.currentVersion);
+          try {
+            localStorage.setItem('optimizer_last_seen_version', status.currentVersion);
+          } catch {}
+        }
+      });
+    } else if (appVersion) {
+      // Fallback para ambiente sem Electron direto
       try {
         const lastSeen = localStorage.getItem('optimizer_last_seen_version');
-        if (!lastSeen || lastSeen !== appVersion) {
+        if (lastSeen && lastSeen !== appVersion) {
           setIsWhatsNewOpen(true);
+          localStorage.setItem('optimizer_last_seen_version', appVersion);
+        } else if (!lastSeen) {
+          localStorage.setItem('optimizer_last_seen_version', appVersion);
         }
       } catch {}
     }
   }, [appVersion]);
 
   const handleCloseWhatsNew = () => {
+    if (window.optimizerApi?.markVersionSeen) {
+      window.optimizerApi.markVersionSeen(appVersion);
+    }
     try {
       localStorage.setItem('optimizer_last_seen_version', appVersion);
     } catch {}
