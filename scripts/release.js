@@ -189,10 +189,12 @@ function main() {
       let releaseNotes = '';
       if (patch > 0) {
         releaseNotes = `### 🛠️ Correções e Melhorias da versão ${newTag}\n\n` +
+          `- **Permissão de Microfone no Laboratório de Periféricos (Fix)**:\n` +
+          `  • Autorização de acesso a dispositivos de áudio/microfone no processo principal do Electron sem bloqueios de segurança.\n` +
+          `  • Retoma automática do contexto de áudio (\`ctx.resume\`) para teste de decibéis e loopback em tempo real sem erros.\n` +
           `- **Atualização In-Place no Ambiente de Trabalho (Fix)**:\n` +
-          `  • O atualizador automático agora substitui diretamente o executável original no Ambiente de Trabalho em background logo que a aplicação fecha.\n` +
-          `  • Garante que o ícone do Ambiente de Trabalho abre sempre e permanentemente a versão mais recente em qualquer computador, sem duplicar apps ou correr a partir de pastas temporárias.\n` +
-          `  • Deteção universal de caminhos e gestão automática de bloqueios de ficheiros do Windows (file lock release).\n\n` +
+          `  • O atualizador automático substitui diretamente o executável original no Ambiente de Trabalho em background logo que a aplicação fecha.\n` +
+          `  • Garante que o ícone do Ambiente de Trabalho abre sempre e permanentemente a versão mais recente em qualquer computador.\n\n` +
           `### 🚀 Funcionalidades da base v${major}.${minor}\n` +
           `- **Laboratório de Periféricos & Latência eSports**: Mouse Polling Rate (125-8000Hz), Keyboard NKRO Anti-Ghosting, 3D Audio & Teste de Microfone.\n` +
           `- **Nova Identidade Visual & Ícone Oficial 3D**: Ícone de alta resolução integrado em toda a aplicação e instaladores.\n` +

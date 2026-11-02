@@ -1382,9 +1382,27 @@ function registerIpc() {
 }
 
 app.whenReady().then(() => {
-  // Security Hardening: Deny all sensitive permission requests (camera, mic, geolocation, notifications, etc.)
-  session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => {
+  // Security Hardening: Allow audio/mic for Peripherals Lab while strictly denying camera, geolocation, notifications, etc.
+  session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback, details: any) => {
+    if (permission === 'media') {
+      const mediaType = details?.mediaType || (Array.isArray(details?.mediaTypes) ? details.mediaTypes[0] : null);
+      if (mediaType === 'video') {
+        return callback(false);
+      }
+      return callback(true);
+    }
     callback(false);
+  });
+
+  session.defaultSession.setPermissionCheckHandler((_webContents, permission, _requestingOrigin, details: any) => {
+    if (permission === 'media') {
+      const mediaType = details?.mediaType || (Array.isArray(details?.mediaTypes) ? details.mediaTypes[0] : null);
+      if (mediaType === 'video') {
+        return false;
+      }
+      return true;
+    }
+    return false;
   });
 
   // Security Hardening: Dynamic Content-Security-Policy header

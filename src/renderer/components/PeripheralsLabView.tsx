@@ -727,11 +727,21 @@ const AudioLabTab: React.FC = () => {
   // Microphone Testing
   const startMicTest = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const ctx = getAudioContext();
+      if (ctx.state === 'suspended') {
+        await ctx.resume();
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false
+        }
+      });
       micStreamRef.current = stream;
       setIsMicTesting(true);
 
-      const ctx = getAudioContext();
       const source = ctx.createMediaStreamSource(stream);
       micSourceRef.current = source;
       const analyser = ctx.createAnalyser();
@@ -761,7 +771,8 @@ const AudioLabTab: React.FC = () => {
       };
       checkVolume();
     } catch (err: any) {
-      alert('Não foi possível aceder ao microfone. Verifica se o Windows concedeu permissão.');
+      console.error('Mic error:', err);
+      alert('Não foi possível aceder ao microfone. Verifica se o microfone está conectado e se o acesso ao microfone está ativado nas Definições de Privacidade do Windows.');
     }
   };
 
