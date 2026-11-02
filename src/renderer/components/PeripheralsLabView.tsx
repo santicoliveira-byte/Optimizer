@@ -17,11 +17,8 @@ import {
   Maximize2,
   Minimize2,
   Eye,
-  Sliders,
   SunMedium,
-  Grid,
-  CheckCircle2,
-  AlertCircle
+  Grid
 } from 'lucide-react';
 import { TopTabBar, TabItem } from './TopTabBar';
 
@@ -1008,10 +1005,24 @@ const DisplayLabTab: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animFrameRef = useRef<number | null>(null);
   const ufoPosRef = useRef<number>(0);
+  const lane2PosRef = useRef<number>(0);
+  const lane3PosRef = useRef<number>(0);
+  const lane2FrameCountRef = useRef<number>(0);
+  const lane3TimerRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
-  const frameCountRef = useRef<number>(0);
   const hzStartRef = useRef<number>(0);
   const hzCountRef = useRef<number>(0);
+  const measuredHzRef = useRef<number>(60);
+
+  // Sync animation parameters to refs so the loop never has to be cancelled and recreated
+  const ufoSpeedRef = useRef<number>(ufoSpeed);
+  ufoSpeedRef.current = ufoSpeed;
+
+  const ufoBgRef = useRef<'space' | 'grid' | 'dark'>(ufoBg);
+  ufoBgRef.current = ufoBg;
+
+  const isUfoRunningRef = useRef<boolean>(isUfoRunning);
+  isUfoRunningRef.current = isUfoRunning;
 
   const screenWidth = typeof window !== 'undefined' && window.screen ? window.screen.width : 1920;
   const screenHeight = typeof window !== 'undefined' && window.screen ? window.screen.height : 1080;
@@ -1029,40 +1040,73 @@ const DisplayLabTab: React.FC = () => {
     { name: 'Amarelo (#FFFF00)', hex: '#ffff00', note: 'Equilíbrio de subpíxeis Vermelho + Verde' }
   ];
 
-  // Refresh Rate & UFO Animation Loop
+  // Refresh Rate & UFO Animation Loop (Independent of React state renders)
   useEffect(() => {
     hzStartRef.current = performance.now();
     hzCountRef.current = 0;
     lastTimeRef.current = performance.now();
 
     const loop = (now: number) => {
-      // 1. Measure real refresh rate continuously
+      // 1. Measure real refresh rate continuously and snap to standard display rates
       hzCountRef.current++;
-      if (hzCountRef.current >= 60) {
+      if (hzCountRef.current >= 120) {
         const elapsed = now - hzStartRef.current;
         if (elapsed > 0) {
-          const hz = Math.round((hzCountRef.current * 1000) / elapsed);
-          if (hz >= 30 && hz <= 600) {
-            setMeasuredHz(hz);
+          const rawHz = (hzCountRef.current * 1000) / elapsed;
+          const roundedHz = Math.round(rawHz);
+          // Standard gaming refresh rates to eliminate 1Hz jitter (e.g. 139/140, 279/280)
+          const standardRates = [60, 75, 100, 120, 144, 165, 180, 240, 280, 360, 500];
+          const snapped = standardRates.find((r) => Math.abs(r - roundedHz) <= 2) || roundedHz;
+          if (snapped >= 30 && snapped <= 600) {
+            measuredHzRef.current = snapped;
+            setMeasuredHz((prev) => (prev !== snapped ? snapped : prev));
           }
         }
         hzStartRef.current = now;
         hzCountRef.current = 0;
       }
 
-      // 2. Animate UFOs
+      // 2. Animate UFOs smoothly
       const cvs = canvasRef.current;
-      if (cvs && isUfoRunning) {
+      if (cvs && isUfoRunningRef.current) {
         const ctx = cvs.getContext('2d');
         if (ctx) {
-          const dt = (now - lastTimeRef.current) / 1000;
+          const dt = Math.min((now - lastTimeRef.current) / 1000, 0.1);
           lastTimeRef.current = now;
 
-          ufoPosRef.current = (ufoPosRef.current + ufoSpeed * dt) % (cvs.width + 120);
-          frameCountRef.current++;
+          const currentHz = measuredHzRef.current || 60;
+          const halfHz = Math.max(15, Math.round(currentHz / 2));
+          const baseHz = currentHz > 120 ? 60 : (currentHz > 60 ? 30 : 15);
+
+          const offset = 80;
+          const totalTrack = cvs.width + offset * 2;
+
+          // Master continuous position (never resets, never jumps)
+          ufoPosRef.current = (ufoPosRef.current + ufoSpeedRef.current * dt) % totalTrack;
+
+          // Lane 1: Native 100% Refresh Rate (moves smoothly every monitor frame)
+          const x1 = ufoPosRef.current - offset;
+
+          // Lane 2: 50% Refresh Rate (Sample-and-Hold for exactly 2 display frames)
+          lane2FrameCountRef.current++;
+          if (lane2FrameCountRef.current >= 2) {
+            lane2FrameCountRef.current = 0;
+            lane2PosRef.current = ufoPosRef.current;
+          }
+          const x2 = (lane2PosRef.current ?? ufoPosRef.current) - offset;
+
+          // Lane 3: Baseline Rate (60 FPS / 30 FPS / 15 FPS: Sample-and-Hold based on time interval)
+          const baseInterval = 1 / baseHz;
+          lane3TimerRef.current += dt;
+          if (lane3TimerRef.current >= baseInterval) {
+            lane3TimerRef.current = lane3TimerRef.current % baseInterval;
+            lane3PosRef.current = ufoPosRef.current;
+          }
+          const x3 = (lane3PosRef.current ?? ufoPosRef.current) - offset;
 
           // Background
-          if (ufoBg === 'space') {
+          const currentBg = ufoBgRef.current;
+          if (currentBg === 'space') {
             ctx.fillStyle = '#060A14';
             ctx.fillRect(0, 0, cvs.width, cvs.height);
             ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
@@ -1071,7 +1115,7 @@ const DisplayLabTab: React.FC = () => {
               const sy = (i * 61) % cvs.height;
               ctx.fillRect(sx, sy, 1.5, 1.5);
             }
-          } else if (ufoBg === 'grid') {
+          } else if (currentBg === 'grid') {
             ctx.fillStyle = '#081326';
             ctx.fillRect(0, 0, cvs.width, cvs.height);
             ctx.strokeStyle = 'rgba(6, 182, 212, 0.12)';
@@ -1105,18 +1149,12 @@ const DisplayLabTab: React.FC = () => {
           ctx.stroke();
 
           // Lane 1: Native 100% Refresh Rate
-          const x1 = ufoPosRef.current - 60;
-          drawUfo(ctx, x1, laneH * 0.5 - 6, `${measuredHz} FPS (Taxa Nativa)`, '#00f2fe');
+          drawUfo(ctx, x1, laneH * 0.5 - 6, `${currentHz} FPS (Taxa Nativa)`, '#00f2fe');
 
           // Lane 2: 50% Half-rate
-          const halfHz = Math.round(measuredHz / 2);
-          const x2 = (Math.floor(frameCountRef.current / 2) * 2 * (ufoSpeed / (measuredHz || 60))) % (cvs.width + 120) - 60;
           drawUfo(ctx, x2, laneH * 1.5 - 6, `${halfHz} FPS (Taxa Reduzida)`, '#fbbf24');
 
-          // Lane 3: 30 / 60 FPS Baseline
-          const baseHz = Math.min(60, Math.round(measuredHz / 4));
-          const step = Math.max(1, Math.round(measuredHz / baseHz));
-          const x3 = (Math.floor(frameCountRef.current / step) * step * (ufoSpeed / (measuredHz || 60))) % (cvs.width + 120) - 60;
+          // Lane 3: 60 FPS / Baseline
           drawUfo(ctx, x3, laneH * 2.5 - 6, `${baseHz} FPS (Baseline Padrão)`, '#f43f5e');
         }
       } else {
@@ -1130,7 +1168,7 @@ const DisplayLabTab: React.FC = () => {
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [ufoSpeed, ufoBg, isUfoRunning, measuredHz]);
+  }, []);
 
   // Handle Canvas resize
   useEffect(() => {

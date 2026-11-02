@@ -189,16 +189,18 @@ function main() {
       let releaseNotes = '';
       if (patch > 0) {
         releaseNotes = `### 🛠️ Correções e Melhorias da versão ${newTag}\n\n` +
+          `- **Sincronização & Fluidez do Teste UFO Ghosting (Fix)**:\n` +
+          `  • Resolução definitiva do problema de teletransporte/saltos nos OVNIs de taxas reduzidas (ex: 140 FPS e 60 FPS).\n` +
+          `  • Estabilização contínua da leitura de Hz sem cancelamento de ciclos de renderização nem quedas de frames.\n` +
+          `  • Algoritmo Sample-and-Hold sincronizado em lockstep absoluto com a taxa nativa do monitor.\n` +
           `- **Permissão de Microfone no Laboratório de Periféricos (Fix)**:\n` +
           `  • Autorização de acesso a dispositivos de áudio/microfone no processo principal do Electron sem bloqueios de segurança.\n` +
-          `  • Retoma automática do contexto de áudio (\`ctx.resume\`) para teste de decibéis e loopback em tempo real sem erros.\n` +
           `- **Atualização In-Place no Ambiente de Trabalho (Fix)**:\n` +
-          `  • O atualizador automático substitui diretamente o executável original no Ambiente de Trabalho em background logo que a aplicação fecha.\n` +
-          `  • Garante que o ícone do Ambiente de Trabalho abre sempre e permanentemente a versão mais recente em qualquer computador.\n\n` +
-          `### 🚀 Funcionalidades da base v${major}.${minor}\n` +
-          `- **Laboratório de Periféricos & Latência eSports**: Mouse Polling Rate (125-8000Hz), Keyboard NKRO Anti-Ghosting, 3D Audio & Teste de Microfone.\n` +
-          `- **Nova Identidade Visual & Ícone Oficial 3D**: Ícone de alta resolução integrado em toda a aplicação e instaladores.\n` +
-          `- **Deteção Dinâmica de Hardware**: Leitura precisa e dinâmica de CPU, GPU e Motherboard sem conflitos entre diferentes PCs.`;
+          `  • O atualizador automático substitui diretamente o executável original no Ambiente de Trabalho em background logo que a aplicação fecha.\n\n` +
+          `### 🚀 Funcionalidades da v${major}.${minor}\n` +
+          `- **Arena de Benchmark Oficial "Antes vs Depois"**: Teste de física de 1200 partículas, telemetria de FPS Médio, 1% Lows e cálculo de ganhos percentuais.\n` +
+          `- **Laboratório de Monitor & UFO Ghosting**: Teste de tempo de resposta GtG, Dead Pixel Finder e Black Equalizer.\n` +
+          `- **Laboratório de Periféricos**: Polling Rate (até 8000Hz), NKRO e Áudio 3D.`;
       } else {
         releaseNotes = `### 🚀 Novidades da versão ${newTag} - Benchmark Antes vs Depois & Monitor UFO Lab\n\n` +
           `- **Arena de Benchmark Oficial "Antes vs Depois" (Novo)**:\n` +

@@ -1,18 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Gauge,
   Play,
   RotateCcw,
   Sparkles,
   TrendingUp,
-  Zap,
   Activity,
   CheckCircle2,
   AlertTriangle,
-  ArrowRight,
-  ShieldCheck,
-  Cpu,
-  Monitor
+  ShieldCheck
 } from 'lucide-react';
 
 interface BenchmarkResult {
@@ -29,7 +25,6 @@ export const BenchmarkView: React.FC = () => {
   const [progress, setProgress] = useState(0);
   const [currentFps, setCurrentFps] = useState(0);
   const [currentFrametime, setCurrentFrametime] = useState(0);
-  const [liveFpsHistory, setLiveFpsHistory] = useState<number[]>([]);
 
   // Persistent Before (Baseline) & After (Optimized)
   const [baseline, setBaseline] = useState<BenchmarkResult | null>(() => {
@@ -91,7 +86,6 @@ export const BenchmarkView: React.FC = () => {
 
     setIsRunning(true);
     setProgress(0);
-    setLiveFpsHistory([]);
     benchmarkDataRef.current = {
       fpsSamples: [],
       frametimes: [],
@@ -122,10 +116,6 @@ export const BenchmarkView: React.FC = () => {
         benchmarkDataRef.current.frametimes.push(dt);
         setCurrentFps(fps);
         setCurrentFrametime(parseFloat(dt.toFixed(1)));
-
-        if (benchmarkDataRef.current.fpsSamples.length % 5 === 0) {
-          setLiveFpsHistory((prev) => [...prev.slice(-40), fps]);
-        }
       }
 
       // Draw particle physics test
