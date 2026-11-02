@@ -140,6 +140,26 @@ export class UwpDebloaterService {
       isInstalled: false,
       isSafe: true,
       estimatedRamMb: 40
+    },
+    {
+      id: 'microsoft_teams',
+      name: 'Microsoft Teams Pessoal (Chat)',
+      description: 'Aplicação de chat e reuniões integrada no Windows 11 com múltiplos processos em segundo plano.',
+      category: 'bloatware',
+      packagePattern: '*MicrosoftTeams*',
+      isInstalled: false,
+      isSafe: true,
+      estimatedRamMb: 110
+    },
+    {
+      id: 'windows_widgets',
+      name: 'Widgets & Notícias da Barra de Tarefas (WebExperience)',
+      description: 'Feed de notícias, meteorologia e tráfego que consome memória WebView2 contínua.',
+      category: 'telemetry',
+      packagePattern: '*WebExperience*',
+      isInstalled: false,
+      isSafe: true,
+      estimatedRamMb: 90
     }
   ];
 
@@ -271,7 +291,7 @@ export class UwpDebloaterService {
     let freedRamMb = 0;
 
     for (const app of toRemove) {
-      const res = await this.uninstallApp(app.id);
+      const res = app.id === 'onedrive' ? await this.removeOneDrive() : await this.uninstallApp(app.id);
       if (res.success) {
         count++;
         freedRamMb += app.estimatedRamMb;

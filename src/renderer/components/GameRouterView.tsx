@@ -23,10 +23,17 @@ import { GameRouteItem, ExitLagStackStatus, ExitLagServerRoute } from '../../sha
 
 interface GameRouterViewProps {
   onShowNotification: (msg: string, type: 'success' | 'error' | 'info') => void;
+  initialSubTab?: 'games' | 'stack' | 'routes';
 }
 
-export const GameRouterView: React.FC<GameRouterViewProps> = ({ onShowNotification }) => {
-  const [activeSubTab, setActiveSubTab] = useState<'games' | 'stack' | 'routes'>('games');
+export const GameRouterView: React.FC<GameRouterViewProps> = ({ onShowNotification, initialSubTab = 'games' }) => {
+  const [activeSubTab, setActiveSubTab] = useState<'games' | 'stack' | 'routes'>(initialSubTab);
+
+  useEffect(() => {
+    if (initialSubTab) {
+      setActiveSubTab(initialSubTab);
+    }
+  }, [initialSubTab]);
   const [games, setGames] = useState<GameRouteItem[]>([]);
   const [stackStatus, setStackStatus] = useState<ExitLagStackStatus | null>(null);
   const [serverRoutes, setServerRoutes] = useState<ExitLagServerRoute[]>([]);

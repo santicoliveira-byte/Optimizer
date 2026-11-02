@@ -202,18 +202,23 @@ function main() {
           `- **Laboratório de Monitor & UFO Ghosting**: Teste de tempo de resposta GtG, Dead Pixel Finder e Black Equalizer.\n` +
           `- **Laboratório de Periféricos**: Polling Rate (até 8000Hz), NKRO e Áudio 3D.`;
       } else {
-        releaseNotes = `### 🚀 Novidades da versão ${newTag} - Benchmark Antes vs Depois & Monitor UFO Lab\n\n` +
-          `- **Arena de Benchmark Oficial "Antes vs Depois" (Novo)**:\n` +
-          `  • Teste de render e física de partículas em tempo real com telemetria contínua.\n` +
-          `  • Medição de FPS Médio, 1% Lows (micro-travamentos), latência de frametime (ms) e pontuação de estabilidade.\n` +
-          `  • Cartão comparativo oficial "Antes da Otimização" vs "Depois da Otimização" com cálculo automático de ganhos percentuais (+FPS, +Estabilidade, -Latência).\n` +
-          `- **Laboratório de Monitor, Ecrã & UFO Ghosting (Novo)**:\n` +
-          `  • **Teste UFO Motion Blur**: Naves espaciais animadas até 360Hz em 3 faixas de velocidade para avaliar tempo de resposta (GtG), arrasto de movimento e overshoot de Overdrive.\n` +
-          `  • **Localizador de Píxeis Mortos**: Modo ecrã inteiro com alternância entre preto, branco, vermelho, verde, azul, ciano, magenta e amarelo.\n` +
-          `  • **Reanimador de Píxeis Presos**: Janela estroboscópica RGB a 50Hz para estimulação e reativação de subpíxeis presos.\n` +
-          `  • **Calibração Black Equalizer**: Matriz de 12 níveis de cinzento escuro para garantir máxima visibilidade de adversários na sombra.\n` +
-          `  • **Calculador de Resoluções Esticadas (Stretched Res)**: Perfis competitivos 4:3 (1440x1080, 1280x960, 1024x768) e 16:10 calculados para a resolução nativa do monitor.\n` +
-          `- **Laboratório de Periféricos Completo**: Rato (Polling Rate até 8000Hz, CPS, Latência), Teclado (Matriz NKRO Anti-Ghosting) e Áudio (Separação 3D e Microfone).`;
+        releaseNotes = `### 🚀 Novidades da versão ${newTag} - Suíte de Manutenção Pro & Streaming Optimizer\n\n` +
+          `- **Desinstalador de Bloatware Windows 11 (UWP)**:\n` +
+          `  • Remoção limpa com 1 clique de apps inúteis integradas (Cortana, Clipchamp, Widgets/Notícias da Barra de Tarefas, Teams Pessoal, OneDrive forçado e extras Xbox redundantes).\n` +
+          `  • Liberta processos de fundo e memória RAM de WebViews desnecessárias.\n` +
+          `- **Manutenção Avançada do Windows & Disco**:\n` +
+          `  • **Reparador SFC + DISM Integrado**: Execução sequencial da restauração da imagem do Windows e reparação de ficheiros de sistema protegidos em 1 clique.\n` +
+          `  • **Limpador WinSxS & SoftwareDistribution**: Limpeza profunda de ficheiros temporários de atualizações antigas para libertar até 30GB no disco C:.\n` +
+          `  • **Otimizador de SSD (TRIM Manual) & Anti-Indexação**: Envio forçado de TRIM e desativação de indexação agressiva em unidades de jogos.\n` +
+          `- **Gestor de Arranque (Startup Manager)**:\n` +
+          `  • Auditoria completa de programas de inicialização (HKCU, HKLM e Pasta Arranque) com classificação de impacto no boot e toggle seguro.\n` +
+          `- **Radar de Servidores de Jogos & Benchmark DNS**:\n` +
+          `  • Acesso direto ao Radar de Servidores eSports europeus (Frankfurt, Paris, Madrid, Londres) com telemetria de ping (ms), jitter e QoS ZeroLag.\n` +
+          `  • Teste de velocidade DNS com 1 clique entre Cloudflare, Google, Quad9 e OpenDNS.\n` +
+          `- **Otimizador de Discord & OBS Studio**:\n` +
+          `  • **Discord**: Desativação de aceleração de hardware defeituosa, desativação de hooks de captura pesados e limpeza de cache de mídia.\n` +
+          `  • **OBS Studio**: Modo de Alta Prioridade de CPU no IFEO, fixação de GPU Primária de Alto Desempenho e regra de QoS de Rede (DSCP 46) para tráfego RTMP sem frames perdidos.\n` +
+          `- **Arena de Benchmark e Laboratório de Periféricos**: Benchmark "Antes vs Depois" e teste UFO Motion Blur sincronizado a 60-360Hz.`;
       }
       const notesFile = path.join(rootDir, 'release', 'release-notes.tmp');
       fs.writeFileSync(notesFile, releaseNotes, 'utf8');

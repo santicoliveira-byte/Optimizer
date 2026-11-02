@@ -23,6 +23,7 @@ import { GameBoosterDaemon } from './engine/game-booster-daemon';
 import { GameConfigTunerService } from './engine/game-config-tuner-service';
 import { HoneSuiteService } from './engine/hone-suite-service';
 import { WindowsMaintenanceService } from './engine/windows-maintenance-service';
+import { StreamingOptimizerService } from './engine/streaming-optimizer-service';
 import { BottleneckGameService } from './engine/bottleneck-game-service';
 import { HowManyFpsService } from './engine/howmanyfps-service';
 import { CpuZInspectorService } from './engine/cpuz-inspector-service';
@@ -1130,6 +1131,27 @@ function registerIpc() {
 
   ipcMain.handle('maint:run-full', async () => {
     return WindowsMaintenanceService.getInstance().runFullMaintenance();
+  });
+
+  // Discord & OBS Studio Streaming Optimizer
+  ipcMain.handle('streaming:get-status', async () => {
+    return StreamingOptimizerService.getInstance().getStatus();
+  });
+
+  ipcMain.handle('streaming:optimize-discord', async () => {
+    return StreamingOptimizerService.getInstance().optimizeDiscord();
+  });
+
+  ipcMain.handle('streaming:optimize-obs', async () => {
+    return StreamingOptimizerService.getInstance().optimizeObs();
+  });
+
+  ipcMain.handle('streaming:clean-discord-cache', async () => {
+    return StreamingOptimizerService.getInstance().cleanDiscordCache();
+  });
+
+  ipcMain.handle('streaming:optimize-all', async () => {
+    return StreamingOptimizerService.getInstance().optimizeAll();
   });
 
   // Bottleneck Calculator & Can I Run It

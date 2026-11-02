@@ -102,6 +102,22 @@ export class WindowsMaintenanceService {
         category: 'repair',
         icon: 'RefreshCw',
         estimatedDuration: '~25 seg'
+      },
+      {
+        id: 'sfc_dism_combo',
+        name: 'Reparador do Sistema em 1 Clique (SFC + DISM Integrados)',
+        description: 'Executa a sequência oficial completa de diagnóstico e reparação: restauração da imagem do Windows (DISM) seguida de reposição de ficheiros protegidos (SFC /scannow).',
+        category: 'repair',
+        icon: 'ShieldCheck',
+        estimatedDuration: '~4-8 min'
+      },
+      {
+        id: 'disable_search_indexing',
+        name: 'Anti-Indexação para Jogos (Windows Search Otimizado)',
+        description: 'Otimiza o serviço Windows Search para modo Manual e reduz o ciclo de leitura/escrita contínua em discos e pastas de jogos.',
+        category: 'storage',
+        icon: 'HardDrive',
+        estimatedDuration: '~10 seg'
       }
     ];
 
@@ -203,6 +219,28 @@ export class WindowsMaintenanceService {
           Write-Output "Serviços do Windows Update reiniciados com sucesso."
         `;
         taskTimeout = 90000;
+        break;
+
+      case 'sfc_dism_combo':
+        script = `
+          Write-Output "=== [1/2] A reparar imagem base do Windows com DISM ==="
+          Dism.exe /Online /Cleanup-Image /RestoreHealth
+          
+          Write-Output "=== [2/2] A executar verificação e restauração de ficheiros de sistema protegidos com SFC ==="
+          sfc /scannow
+          Write-Output "Reparação integrada do sistema concluída com sucesso."
+        `;
+        taskTimeout = 900000; // 15 min
+        break;
+
+      case 'disable_search_indexing':
+        script = `
+          Write-Output "A otimizar Windows Search para reduzir ciclos de I/O em discos..."
+          Stop-Service "WSearch" -Force -ErrorAction SilentlyContinue
+          Set-Service "WSearch" -StartupType Manual -ErrorAction SilentlyContinue
+          Write-Output "Serviço Windows Search configurado para arranque Manual. Leituras desnecessárias em jogos eliminadas."
+        `;
+        taskTimeout = 30000;
         break;
 
       default:

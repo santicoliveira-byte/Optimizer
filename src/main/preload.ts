@@ -95,6 +95,11 @@ export interface OptimizerApi {
   maintGetTasks: () => Promise<any[]>;
   maintRunTask: (taskId: string) => Promise<{ taskId: string; success: boolean; message: string; output: string; durationMs: number }>;
   maintRunFull: () => Promise<{ success: boolean; completedTasks: number; totalTasks: number; durationMs: number; results: any[]; message: string }>;
+  streamingGetStatus: () => Promise<any>;
+  streamingOptimizeDiscord: () => Promise<{ success: boolean; message: string; details?: string[] }>;
+  streamingOptimizeObs: () => Promise<{ success: boolean; message: string; details?: string[] }>;
+  streamingCleanDiscordCache: () => Promise<{ success: boolean; message: string; freedMb: number }>;
+  streamingOptimizeAll: () => Promise<{ success: boolean; message: string; details?: string[] }>;
   bottleneckGetSystemRig: () => Promise<any>;
   bottleneckCalculate: (cpuName: string, gpuName: string, resolution: string, workload: string) => Promise<any>;
   caniGetGames: (search?: string, genre?: string) => Promise<any[]>;
@@ -268,6 +273,11 @@ const api: OptimizerApi = {
   maintGetTasks: () => ipcRenderer.invoke('maint:get-tasks'),
   maintRunTask: (taskId: string) => ipcRenderer.invoke('maint:run-task', taskId),
   maintRunFull: () => ipcRenderer.invoke('maint:run-full'),
+  streamingGetStatus: () => ipcRenderer.invoke('streaming:get-status'),
+  streamingOptimizeDiscord: () => ipcRenderer.invoke('streaming:optimize-discord'),
+  streamingOptimizeObs: () => ipcRenderer.invoke('streaming:optimize-obs'),
+  streamingCleanDiscordCache: () => ipcRenderer.invoke('streaming:clean-discord-cache'),
+  streamingOptimizeAll: () => ipcRenderer.invoke('streaming:optimize-all'),
   bottleneckGetSystemRig: () => ipcRenderer.invoke('bottleneck:get-system-rig'),
   bottleneckCalculate: (cpuName: string, gpuName: string, resolution: string, workload: string) =>
     ipcRenderer.invoke('bottleneck:calculate', cpuName, gpuName, resolution, workload),

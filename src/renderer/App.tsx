@@ -13,6 +13,8 @@ import { Sidebar, MainSection, SectionStats } from './components/Sidebar';
 import { TopTabBar } from './components/TopTabBar';
 import { UwpDebloaterView } from './components/UwpDebloaterView';
 import { WindowsMaintenanceView } from './components/WindowsMaintenanceView';
+import { StartupManagerView } from './components/StartupManagerView';
+import { StreamingOptimizerView } from './components/StreamingOptimizerView';
 import { BottleneckCanIRunItView } from './components/BottleneckCanIRunItView';
 import { CpuZHardwareView } from './components/CpuZHardwareView';
 import { PeripheralsLabView } from './components/PeripheralsLabView';
@@ -62,10 +64,10 @@ const COMMON_GAME_PROCESSES = [
 
 export const App: React.FC = () => {
   const [currentSection, setCurrentSection] = useState<MainSection>('dashboard');
-  const [gamingTab, setGamingTab] = useState<'profiles' | 'pipeline'>('profiles');
+  const [gamingTab, setGamingTab] = useState<'profiles' | 'pipeline' | 'streaming'>('profiles');
   const [hardwareTab, setHardwareTab] = useState<'inspector' | 'bottleneck'>('inspector');
-  const [networkTab, setNetworkTab] = useState<'router' | 'dns'>('router');
-  const [maintTab, setMaintTab] = useState<'windows_maint' | 'debloater' | 'history'>('windows_maint');
+  const [networkTab, setNetworkTab] = useState<'router' | 'routes' | 'dns'>('router');
+  const [maintTab, setMaintTab] = useState<'windows_maint' | 'debloater' | 'startup' | 'history'>('windows_maint');
 
   const [states, setStates] = useState<OptimizationState[]>([]);
   const [metrics, setMetrics] = useState<SystemMetrics | null>(null);
@@ -880,7 +882,8 @@ export const App: React.FC = () => {
                     onSelectTab={(t: any) => setGamingTab(t)}
                     tabs={[
                       { id: 'profiles', label: 'Perfis de Jogos & Modo Ultra', badge: '12 Títulos' },
-                      { id: 'pipeline', label: 'Input Delay & Latência', badge: '0.5ms' }
+                      { id: 'pipeline', label: 'Input Delay & Latência', badge: '0.5ms' },
+                      { id: 'streaming', label: 'Discord & OBS Studio', badge: 'Anti-Drop FPS' }
                     ]}
                   />
 
@@ -910,7 +913,7 @@ export const App: React.FC = () => {
                       }}
                       isOperating={isOperating}
                     />
-                  ) : (
+                  ) : gamingTab === 'pipeline' ? (
                     <LatencyPipelineView
                       states={hardwareFilteredStates}
                       onApply={handleApplyClick}
@@ -948,6 +951,8 @@ export const App: React.FC = () => {
                       }}
                       isOperating={isOperating}
                     />
+                  ) : (
+                    <StreamingOptimizerView onShowNotification={showNotification} />
                   )}
                 </div>
               )}
@@ -981,13 +986,16 @@ export const App: React.FC = () => {
                     activeTab={networkTab}
                     onSelectTab={(t: any) => setNetworkTab(t)}
                     tabs={[
-                      { id: 'router', label: 'ZeroLag QoS & Otimização de Ping', badge: 'DSCP 46' },
+                      { id: 'router', label: 'ZeroLag QoS por Jogo', badge: 'DSCP 46' },
+                      { id: 'routes', label: 'Radar de Servidores (Frankfurt, Madrid, Paris)', badge: 'Ping Radar' },
                       { id: 'dns', label: 'DNS Benchmark', badge: 'Ping 53' }
                     ]}
                   />
 
                   {networkTab === 'router' ? (
-                    <GameRouterView onShowNotification={showNotification} />
+                    <GameRouterView onShowNotification={showNotification} initialSubTab="games" />
+                  ) : networkTab === 'routes' ? (
+                    <GameRouterView onShowNotification={showNotification} initialSubTab="routes" />
                   ) : (
                     <DnsBenchmarkView />
                   )}
@@ -1014,6 +1022,7 @@ export const App: React.FC = () => {
                     tabs={[
                       { id: 'windows_maint', label: 'Manutenção do Windows', badge: '1-Clique • SFC • TRIM' },
                       { id: 'debloater', label: 'Windows Debloater', badge: 'Apps • Telemetria' },
+                      { id: 'startup', label: 'Gestor de Arranque', badge: 'Boot Rápido' },
                       { id: 'history', label: 'Histórico & Restauro', badge: `${logs.length}` }
                     ]}
                   />
@@ -1024,6 +1033,10 @@ export const App: React.FC = () => {
 
                   {maintTab === 'debloater' && (
                     <UwpDebloaterView onShowNotification={showNotification} />
+                  )}
+
+                  {maintTab === 'startup' && (
+                    <StartupManagerView />
                   )}
 
                   {maintTab === 'history' && (
