@@ -15,6 +15,7 @@ import { UwpDebloaterView } from './components/UwpDebloaterView';
 import { WindowsMaintenanceView } from './components/WindowsMaintenanceView';
 import { BottleneckCanIRunItView } from './components/BottleneckCanIRunItView';
 import { CpuZHardwareView } from './components/CpuZHardwareView';
+import { PeripheralsLabView } from './components/PeripheralsLabView';
 import { AutoUpdaterModal } from './components/AutoUpdaterModal';
 import { SettingsModal } from './components/SettingsModal';
 import { WhatsNewModal } from './components/WhatsNewModal';
@@ -405,6 +406,7 @@ export const App: React.FC = () => {
       network: { applied: 0, total: 0 },
       system: { applied: 0, total: 0 },
       maintenance: { applied: 0, total: 0 },
+      peripherals: { applied: 3, total: 3 },
       bottleneck: { applied: 25, total: 25 },
       cpuz: { applied: 6, total: 6 }
     };
@@ -990,7 +992,12 @@ export const App: React.FC = () => {
                 </div>
               )}
 
-              {/* Section 5: Sistema & Manutenção Hub */}
+              {/* Section 5: Periféricos & Latência Hub */}
+              {currentSection === 'peripherals' && (
+                <PeripheralsLabView />
+              )}
+
+              {/* Section 6: Sistema & Manutenção Hub */}
               {(currentSection === 'maintenance' || currentSection === 'system') && (
                 <div>
                   <TopTabBar

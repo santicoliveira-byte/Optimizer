@@ -12,6 +12,7 @@ describe('i18n and Theme Colors', () => {
       'nav.bottleneck',
       'nav.hardware',
       'nav.network',
+      'nav.peripherals',
       'nav.system',
       'nav.maintenance',
       'settings.title',

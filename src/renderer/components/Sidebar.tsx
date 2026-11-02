@@ -5,6 +5,7 @@ import {
   Gamepad2,
   Network,
   Cpu,
+  Mouse,
   Wrench,
   Settings
 } from 'lucide-react';
@@ -17,6 +18,7 @@ export type MainSection =
   | 'bottleneck'
   | 'cpuz'
   | 'network'
+  | 'peripherals'
   | 'system'
   | 'maintenance';
 
@@ -78,6 +80,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       description: t('nav.network.desc'),
       icon: <Network className="w-4 h-4" />,
       color: 'text-cyan-400'
+    },
+    {
+      id: 'peripherals',
+      name: t('nav.peripherals'),
+      description: t('nav.peripherals.desc'),
+      icon: <Mouse className="w-4 h-4" />,
+      color: 'text-purple-400'
     },
     {
       id: 'maintenance',
