@@ -793,14 +793,14 @@ export const App: React.FC = () => {
 
         {/* Initial First-Time Scan Banner */}
         {isInitialScanning && (
-          <div className="bg-indigo-600/20 border-b border-indigo-500/30 px-6 py-2.5 flex items-center justify-between text-xs text-indigo-200">
-            <div className="flex items-center gap-2.5">
-              <div className="w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
-              <span>
+          <div className="bg-indigo-600/20 border-b border-indigo-500/30 px-6 py-2.5 flex items-center justify-between text-xs text-indigo-200 gap-4">
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+              <div className="w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin shrink-0" />
+              <span className="truncate">
                 <strong>A realizar análise inicial do sistema...</strong> A mapear configurações do Windows e hardware para carregamento instantâneo nas próximas utilizações.
               </span>
             </div>
-            <span className="text-[11px] text-indigo-300 font-mono">
+            <span className="text-[11px] text-indigo-300 font-mono shrink-0 whitespace-nowrap bg-indigo-500/20 border border-indigo-500/30 px-2.5 py-0.5 rounded-full">
               {hardwareFilteredStates.length || 214} itens
             </span>
           </div>

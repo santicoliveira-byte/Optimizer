@@ -62,6 +62,20 @@ let tray: Tray | null = null;
 let isQuitting = false;
 const isDev = process.env.NODE_ENV === 'development';
 
+// Ensure single-instance application: prevent duplicate overlapping windows
+const gotSingleInstanceLock = app.requestSingleInstanceLock();
+if (!gotSingleInstanceLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      if (!mainWindow.isVisible()) mainWindow.show();
+      mainWindow.focus();
+    }
+  });
+}
+
 function getAppIconPath(): string {
   const possiblePaths = [
     app.isPackaged ? path.join(process.resourcesPath, 'icon.ico') : '',
@@ -86,10 +100,11 @@ function createWindow() {
     height: 840,
     minWidth: 1024,
     minHeight: 700,
-    title: 'Optimizer - Windows 10/11 Performance & Latency',
+    title: 'Optimizer',
     backgroundColor: '#0B0F19',
     icon: appIcon,
     frame: false,
+    titleBarStyle: 'hidden',
     show: !isSilentLaunch,
     autoHideMenuBar: true,
     webPreferences: {

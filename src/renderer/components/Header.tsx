@@ -78,7 +78,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Global Status & Quick Actions */}
-      <div className="flex items-center gap-2" style={{ WebkitAppRegion: 'no-drag' } as any}>
+      <div className="flex items-center gap-2 shrink-0" style={{ WebkitAppRegion: 'no-drag' } as any}>
         {/* Real-time Timer Resolution Badge */}
         <div
           className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-mono font-bold transition-all ${

@@ -454,7 +454,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
           {/* Left: Title & Quick Stats */}
-          <div className="space-y-3 max-w-xl">
+          <div className="flex flex-col gap-2.5 max-w-xl">
             <div className="flex items-center gap-2">
               <span className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                 <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
@@ -465,10 +465,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </span>
             </div>
 
-            <h2 className="text-2xl font-bold text-white tracking-tight">
+            <h2 className="block w-full text-2xl font-bold text-white tracking-tight leading-snug">
               Otimização de Desempenho e Conectividade
             </h2>
-            <p className="text-xs text-gray-300 leading-relaxed">
+            <p className="block w-full text-xs text-gray-300 leading-relaxed">
               Catálogo completo de 364 otimizações seguras, documentadas e totalmente reversíveis.
               Reduz a latência de entrada do rato e teclado, otimiza o bufferbloat da rede e liberta ciclos de CPU.
             </p>

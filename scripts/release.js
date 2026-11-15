@@ -188,19 +188,19 @@ function main() {
       
       let releaseNotes = '';
       if (patch > 0) {
-        releaseNotes = `### 🛠️ Correções e Melhorias da versão ${newTag}\n\n` +
-          `- **Sincronização & Fluidez do Teste UFO Ghosting (Fix)**:\n` +
-          `  • Resolução definitiva do problema de teletransporte/saltos nos OVNIs de taxas reduzidas (ex: 140 FPS e 60 FPS).\n` +
-          `  • Estabilização contínua da leitura de Hz sem cancelamento de ciclos de renderização nem quedas de frames.\n` +
-          `  • Algoritmo Sample-and-Hold sincronizado em lockstep absoluto com a taxa nativa do monitor.\n` +
-          `- **Permissão de Microfone no Laboratório de Periféricos (Fix)**:\n` +
-          `  • Autorização de acesso a dispositivos de áudio/microfone no processo principal do Electron sem bloqueios de segurança.\n` +
-          `- **Atualização In-Place no Ambiente de Trabalho (Fix)**:\n` +
-          `  • O atualizador automático substitui diretamente o executável original no Ambiente de Trabalho em background logo que a aplicação fecha.\n\n` +
-          `### 🚀 Funcionalidades da v${major}.${minor}\n` +
-          `- **Arena de Benchmark Oficial "Antes vs Depois"**: Teste de física de 1200 partículas, telemetria de FPS Médio, 1% Lows e cálculo de ganhos percentuais.\n` +
-          `- **Laboratório de Monitor & UFO Ghosting**: Teste de tempo de resposta GtG, Dead Pixel Finder e Black Equalizer.\n` +
-          `- **Laboratório de Periféricos**: Polling Rate (até 8000Hz), NKRO e Áudio 3D.`;
+        releaseNotes = `### 🛠️ Correções e Melhorias Visuais da versão ${newTag}\n\n` +
+          `- **Correção de Colisão e Quebra de Texto no Dashboard (Fix)**:\n` +
+          `  • Resolução definitiva da colisão entre o título "Otimização de Desempenho e Conectividade" e a descrição do catálogo no Hero Banner.\n` +
+          `  • Estruturação em Flex Column com blocos independentes e espaçamento vertical limpo.\n` +
+          `- **Bloqueio de Múltiplas Instâncias & Anti-Ghosting (Fix)**:\n` +
+          `  • Implementação de \`app.requestSingleInstanceLock()\` para impedir que múltiplos processos abram janelas sobrepostas.\n` +
+          `  • Eliminação de resíduos visuais e artefatos de título DWM no topo da barra de ferramentas com \`titleBarStyle: 'hidden'\`.\n` +
+          `- **Correção do Contador no Banner de Análise Inicial (Fix)**:\n` +
+          `  • O badge de contagem de itens (ex: "496 itens") agora possui tamanho fixo e proteção contra truncamento (\`496 i\`).\n\n` +
+          `### 🚀 Novidades da v${major}.${minor}\n` +
+          `- **Net-Merge: Fusão de Redes Multi-WAN (Wi-Fi + Ethernet)**: Agregação simultânea de conexões com suporte a jogos (Steam, Epic, EA) e balanceamento de tráfego.\n` +
+          `- **Arena de Benchmark Oficial "Antes vs Depois"**: Teste de física de 1200 partículas, FPS Médio e 1% Lows.\n` +
+          `- **Laboratório de Monitor & Periféricos**: Teste UFO Ghosting, Dead Pixel Finder e Polling Rate até 8000Hz.`;
       } else {
         releaseNotes = `### 🚀 Novidades da versão ${newTag} - Fusão Net-Merge Multi-WAN (Wi-Fi + Ethernet)\n\n` +
           `- **Net-Merge: Fusão de Redes Multi-WAN (Novo)**:\n` +
