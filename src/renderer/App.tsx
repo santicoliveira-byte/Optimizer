@@ -15,6 +15,7 @@ import { UwpDebloaterView } from './components/UwpDebloaterView';
 import { WindowsMaintenanceView } from './components/WindowsMaintenanceView';
 import { StartupManagerView } from './components/StartupManagerView';
 import { StreamingOptimizerView } from './components/StreamingOptimizerView';
+import { NetMergeView } from './components/NetMergeView';
 import { BottleneckCanIRunItView } from './components/BottleneckCanIRunItView';
 import { CpuZHardwareView } from './components/CpuZHardwareView';
 import { PeripheralsLabView } from './components/PeripheralsLabView';
@@ -66,7 +67,7 @@ export const App: React.FC = () => {
   const [currentSection, setCurrentSection] = useState<MainSection>('dashboard');
   const [gamingTab, setGamingTab] = useState<'profiles' | 'pipeline' | 'streaming'>('profiles');
   const [hardwareTab, setHardwareTab] = useState<'inspector' | 'bottleneck'>('inspector');
-  const [networkTab, setNetworkTab] = useState<'router' | 'routes' | 'dns'>('router');
+  const [networkTab, setNetworkTab] = useState<'router' | 'routes' | 'dns' | 'bonding'>('router');
   const [maintTab, setMaintTab] = useState<'windows_maint' | 'debloater' | 'startup' | 'history'>('windows_maint');
 
   const [states, setStates] = useState<OptimizationState[]>([]);
@@ -987,6 +988,7 @@ export const App: React.FC = () => {
                     onSelectTab={(t: any) => setNetworkTab(t)}
                     tabs={[
                       { id: 'router', label: 'ZeroLag QoS por Jogo', badge: 'DSCP 46' },
+                      { id: 'bonding', label: 'Fusão Net-Merge (Wi-Fi + Ethernet)', badge: 'Multi-WAN' },
                       { id: 'routes', label: 'Radar de Servidores (Frankfurt, Madrid, Paris)', badge: 'Ping Radar' },
                       { id: 'dns', label: 'DNS Benchmark', badge: 'Ping 53' }
                     ]}
@@ -994,6 +996,8 @@ export const App: React.FC = () => {
 
                   {networkTab === 'router' ? (
                     <GameRouterView onShowNotification={showNotification} initialSubTab="games" />
+                  ) : networkTab === 'bonding' ? (
+                    <NetMergeView onShowNotification={showNotification} />
                   ) : networkTab === 'routes' ? (
                     <GameRouterView onShowNotification={showNotification} initialSubTab="routes" />
                   ) : (

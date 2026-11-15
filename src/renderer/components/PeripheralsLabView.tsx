@@ -18,7 +18,10 @@ import {
   Minimize2,
   Eye,
   SunMedium,
-  Grid
+  Grid,
+  AlertTriangle,
+  ExternalLink,
+  RefreshCw
 } from 'lucide-react';
 import { TopTabBar, TabItem } from './TopTabBar';
 
@@ -633,6 +636,11 @@ const AudioLabTab: React.FC = () => {
   const [isMicTesting, setIsMicTesting] = useState<boolean>(false);
   const [micVolume, setMicVolume] = useState<number>(0);
   const [isLoopbackEnabled, setIsLoopbackEnabled] = useState<boolean>(false);
+  const [micDevices, setMicDevices] = useState<Array<{ deviceId: string; label: string }>>([]);
+  const [selectedMicId, setSelectedMicId] = useState<string>('');
+  const [micError, setMicError] = useState<string | null>(null);
+  const [micErrorType, setMicErrorType] = useState<'permission' | 'not_found' | 'busy' | 'general' | null>(null);
+
   const micStreamRef = useRef<MediaStream | null>(null);
   const micSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const micGainRef = useRef<GainNode | null>(null);
@@ -649,6 +657,29 @@ const AudioLabTab: React.FC = () => {
     }
     return audioCtxRef.current;
   };
+
+  const refreshMicDevices = async () => {
+    try {
+      if (!navigator.mediaDevices?.enumerateDevices) return;
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const audioInputs = devices
+        .filter((d) => d.kind === 'audioinput')
+        .map((d, index) => ({
+          deviceId: d.deviceId,
+          label: d.label || `Microfone ${index + 1}`
+        }));
+      setMicDevices(audioInputs);
+      if (audioInputs.length > 0 && !selectedMicId) {
+        setSelectedMicId(audioInputs[0].deviceId);
+      }
+    } catch (e) {
+      console.warn('Failed to enumerate audio devices:', e);
+    }
+  };
+
+  useEffect(() => {
+    refreshMicDevices();
+  }, []);
 
   // Measure audio driver latency via AudioContext
   useEffect(() => {
@@ -733,22 +764,52 @@ const AudioLabTab: React.FC = () => {
   };
 
   // Microphone Testing
-  const startMicTest = async () => {
+  const startMicTest = async (overrideDeviceId?: string) => {
+    stopMicTest();
+    setMicError(null);
+    setMicErrorType(null);
+
+    const deviceIdToUse = overrideDeviceId !== undefined ? overrideDeviceId : selectedMicId;
+
     try {
       const ctx = getAudioContext();
       if (ctx.state === 'suspended') {
         await ctx.resume();
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: false,
-          noiseSuppression: false,
-          autoGainControl: false
-        }
-      });
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error('API de captura de áudio indisponível neste ambiente.');
+      }
+
+      let stream: MediaStream;
+      try {
+        const constraints: MediaStreamConstraints = {
+          audio: deviceIdToUse
+            ? {
+                deviceId: { exact: deviceIdToUse },
+                echoCancellation: false,
+                noiseSuppression: false,
+                autoGainControl: false
+              }
+            : {
+                echoCancellation: false,
+                noiseSuppression: false,
+                autoGainControl: false
+              }
+        };
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+      } catch (firstErr: any) {
+        console.warn('Initial mic constraints failed, attempting fallback audio constraints:', firstErr);
+        const fallbackConstraints: MediaStreamConstraints = {
+          audio: deviceIdToUse ? { deviceId: { exact: deviceIdToUse } } : true
+        };
+        stream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
+      }
+
       micStreamRef.current = stream;
       setIsMicTesting(true);
+
+      refreshMicDevices();
 
       const source = ctx.createMediaStreamSource(stream);
       micSourceRef.current = source;
@@ -780,7 +841,39 @@ const AudioLabTab: React.FC = () => {
       checkVolume();
     } catch (err: any) {
       console.error('Mic error:', err);
-      alert('Não foi possível aceder ao microfone. Verifica se o microfone está conectado e se o acesso ao microfone está ativado nas Definições de Privacidade do Windows.');
+      setIsMicTesting(false);
+      setMicVolume(0);
+
+      const errorName = err.name || '';
+      const errorMsg = (err.message || '').toLowerCase();
+
+      if (
+        errorName === 'NotAllowedError' ||
+        errorName === 'PermissionDeniedError' ||
+        errorMsg.includes('permission denied') ||
+        errorMsg.includes('not allowed')
+      ) {
+        setMicErrorType('permission');
+        setMicError('O Windows ou as permissões de privacidade estão a bloquear o acesso ao microfone. Confirma se o acesso de aplicações de ambiente de trabalho está ativo nas Definições de Privacidade do Windows.');
+      } else if (
+        errorName === 'NotFoundError' ||
+        errorName === 'DevicesNotFoundError' ||
+        errorMsg.includes('not found') ||
+        errorMsg.includes('no device')
+      ) {
+        setMicErrorType('not_found');
+        setMicError('Nenhum microfone detetado. Verifica se os teus auscultadores ou cabo áudio/USB estão bem ligados.');
+      } else if (
+        errorName === 'NotReadableError' ||
+        errorName === 'TrackStartError' ||
+        errorMsg.includes('could not start')
+      ) {
+        setMicErrorType('busy');
+        setMicError('O microfone está em modo exclusivo por outra aplicação (ex: Discord, OBS Studio, jogo). Fecha a outra app ou desativa o modo exclusivo.');
+      } else {
+        setMicErrorType('general');
+        setMicError(`Não foi possível aceder ao microfone (${err.name || 'Erro'}): ${err.message || 'Verifica as permissões.'}`);
+      }
     }
   };
 
@@ -901,7 +994,7 @@ const AudioLabTab: React.FC = () => {
 
       {/* 2. Microphone Check & Loopback */}
       <div className="bg-[#0E1526] border border-[#1E293B] rounded-2xl p-6 space-y-5 shadow-lg">
-        <div className="flex items-center justify-between border-b border-[#1E293B] pb-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-[#1E293B] pb-4 gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
               <Mic className="w-5 h-5" />
@@ -916,7 +1009,29 @@ const AudioLabTab: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Device Selector */}
+            {micDevices.length > 1 && (
+              <select
+                value={selectedMicId}
+                onChange={(e) => {
+                  const newId = e.target.value;
+                  setSelectedMicId(newId);
+                  if (isMicTesting) {
+                    startMicTest(newId);
+                  }
+                }}
+                className="bg-[#151E33] border border-[#232F4D] text-xs text-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-emerald-500"
+                title="Selecionar dispositivo de microfone"
+              >
+                {micDevices.map((d) => (
+                  <option key={d.deviceId} value={d.deviceId}>
+                    {d.label}
+                  </option>
+                ))}
+              </select>
+            )}
+
             {isMicTesting && (
               <button
                 onClick={toggleLoopback}
@@ -933,11 +1048,11 @@ const AudioLabTab: React.FC = () => {
             )}
 
             <button
-              onClick={isMicTesting ? stopMicTest : startMicTest}
+              onClick={() => (isMicTesting ? stopMicTest() : startMicTest())}
               className={`flex items-center gap-2 px-4 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md ${
                 isMicTesting
-                  ? 'bg-rose-600 hover:bg-rose-500 text-white'
-                  : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                  ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-600/30'
+                  : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/30'
               }`}
             >
               {isMicTesting ? (
@@ -954,6 +1069,54 @@ const AudioLabTab: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* Error / Permission Guidance Banner */}
+        {micError && (
+          <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-4 space-y-3 animate-fade-in">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+              <div className="flex-1 space-y-1">
+                <h4 className="text-xs font-bold text-rose-300">
+                  {micErrorType === 'permission'
+                    ? 'Permissão de Microfone Bloqueada pelo Windows'
+                    : micErrorType === 'not_found'
+                    ? 'Nenhum Dispositivo de Microfone Detetado'
+                    : micErrorType === 'busy'
+                    ? 'Microfone Bloqueado por Outra Aplicação'
+                    : 'Erro de Acesso ao Microfone'}
+                </h4>
+                <p className="text-xs text-rose-200/80 leading-relaxed">{micError}</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              {micErrorType === 'permission' && (
+                <button
+                  onClick={() => (window as any).optimizerApi?.openMicSettings?.()}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow transition-colors"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Abrir Definições de Privacidade do Windows</span>
+                </button>
+              )}
+              <button
+                onClick={() => startMicTest()}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#151E33] hover:bg-[#1C2844] text-gray-200 border border-[#232F4D] transition-colors"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Tentar Novamente</span>
+              </button>
+              <button
+                onClick={() => {
+                  setMicError(null);
+                  setMicErrorType(null);
+                }}
+                className="px-3 py-1.5 rounded-lg text-xs text-gray-400 hover:text-white transition-colors"
+              >
+                Dispensar
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Real-time Decibel Volume Bar */}
         <div className="bg-[#090E1A] p-4 rounded-xl border border-white/5 space-y-2">

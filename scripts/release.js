@@ -202,23 +202,23 @@ function main() {
           `- **Laboratório de Monitor & UFO Ghosting**: Teste de tempo de resposta GtG, Dead Pixel Finder e Black Equalizer.\n` +
           `- **Laboratório de Periféricos**: Polling Rate (até 8000Hz), NKRO e Áudio 3D.`;
       } else {
-        releaseNotes = `### 🚀 Novidades da versão ${newTag} - Suíte de Manutenção Pro & Streaming Optimizer\n\n` +
-          `- **Desinstalador de Bloatware Windows 11 (UWP)**:\n` +
-          `  • Remoção limpa com 1 clique de apps inúteis integradas (Cortana, Clipchamp, Widgets/Notícias da Barra de Tarefas, Teams Pessoal, OneDrive forçado e extras Xbox redundantes).\n` +
-          `  • Liberta processos de fundo e memória RAM de WebViews desnecessárias.\n` +
-          `- **Manutenção Avançada do Windows & Disco**:\n` +
-          `  • **Reparador SFC + DISM Integrado**: Execução sequencial da restauração da imagem do Windows e reparação de ficheiros de sistema protegidos em 1 clique.\n` +
-          `  • **Limpador WinSxS & SoftwareDistribution**: Limpeza profunda de ficheiros temporários de atualizações antigas para libertar até 30GB no disco C:.\n` +
-          `  • **Otimizador de SSD (TRIM Manual) & Anti-Indexação**: Envio forçado de TRIM e desativação de indexação agressiva em unidades de jogos.\n` +
-          `- **Gestor de Arranque (Startup Manager)**:\n` +
-          `  • Auditoria completa de programas de inicialização (HKCU, HKLM e Pasta Arranque) com classificação de impacto no boot e toggle seguro.\n` +
-          `- **Radar de Servidores de Jogos & Benchmark DNS**:\n` +
-          `  • Acesso direto ao Radar de Servidores eSports europeus (Frankfurt, Paris, Madrid, Londres) com telemetria de ping (ms), jitter e QoS ZeroLag.\n` +
-          `  • Teste de velocidade DNS com 1 clique entre Cloudflare, Google, Quad9 e OpenDNS.\n` +
-          `- **Otimizador de Discord & OBS Studio**:\n` +
-          `  • **Discord**: Desativação de aceleração de hardware defeituosa, desativação de hooks de captura pesados e limpeza de cache de mídia.\n` +
-          `  • **OBS Studio**: Modo de Alta Prioridade de CPU no IFEO, fixação de GPU Primária de Alto Desempenho e regra de QoS de Rede (DSCP 46) para tráfego RTMP sem frames perdidos.\n` +
-          `- **Arena de Benchmark e Laboratório de Periféricos**: Benchmark "Antes vs Depois" e teste UFO Motion Blur sincronizado a 60-360Hz.`;
+        releaseNotes = `### 🚀 Novidades da versão ${newTag} - Fusão Net-Merge Multi-WAN (Wi-Fi + Ethernet)\n\n` +
+          `- **Net-Merge: Fusão de Redes Multi-WAN (Novo)**:\n` +
+          `  • Integração e engenharia reversa do motor Net-Merge baseado em Wintun e tun2socks para Windows.\n` +
+          `  • Agregação de largura de banda: combina Wi-Fi, Ethernet e Hotspots de telemóvel para somar a velocidade de download em jogos (Steam, Epic, EA) e navegadores.\n` +
+          `  • Telemetria ao vivo de Download/Upload combinado, fluxos paralelos e balanceamento dinâmico de tráfego por peso de conexão.\n` +
+          `  • Seletor individual de limite de banda por placa de rede (Ilimitado, 10, 25, 50, 100 Mbit/s).\n` +
+          `  • Desbloqueio da política do Windows Connection Manager (fMinimizeConnections=0) e WeakHostSend/WeakHostReceive para impedir que o Windows desligue o Wi-Fi ao ligar o cabo Ethernet.\n` +
+          `  • Ferramenta de 1 clique para limpeza e restauração de rotas virtuais (cleanup).\n` +
+          `- **Laboratório de Periféricos & Microfone Studio (Fix & Melhoria)**:\n` +
+          `  • Resolução definitiva do acesso ao microfone no Electron com permissões seguras para gravação de áudio de estúdio.\n` +
+          `  • Seletor de dispositivo de entrada para escolher entre auscultadores USB, placa dedicada ou microfone integrado.\n` +
+          `  • Diagnóstico inteligente com 1 clique para abrir as Definições de Privacidade do Windows (ms-settings:privacy-microphone) se o sistema bloquear a gravação.\n` +
+          `- **Suíte de Manutenção Pro & Streaming Optimizer (v2.5)**:\n` +
+          `  • Reparador SFC + DISM integrado, Limpador WinSxS profundo, TRIM de SSD manual e Anti-Indexação para jogos.\n` +
+          `  • Desinstalador de Bloatware Windows 11 (Cortana, Clipchamp, Teams, Widgets, OneDrive).\n` +
+          `  • Gestor de Arranque (Startup Manager) com medição de impacto no boot.\n` +
+          `  • Otimizador de Discord & OBS Studio com modo anti-drop de FPS e QoS DSCP 46.`;
       }
       const notesFile = path.join(rootDir, 'release', 'release-notes.tmp');
       fs.writeFileSync(notesFile, releaseNotes, 'utf8');

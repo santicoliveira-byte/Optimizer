@@ -24,6 +24,7 @@ import { GameConfigTunerService } from './engine/game-config-tuner-service';
 import { HoneSuiteService } from './engine/hone-suite-service';
 import { WindowsMaintenanceService } from './engine/windows-maintenance-service';
 import { StreamingOptimizerService } from './engine/streaming-optimizer-service';
+import { NetMergeService } from './engine/net-merge-service';
 import { BottleneckGameService } from './engine/bottleneck-game-service';
 import { HowManyFpsService } from './engine/howmanyfps-service';
 import { CpuZInspectorService } from './engine/cpuz-inspector-service';
@@ -1154,6 +1155,31 @@ function registerIpc() {
     return StreamingOptimizerService.getInstance().optimizeAll();
   });
 
+  // Net-Merge Multi-WAN Connection Fusion
+  ipcMain.handle('netmerge:get-status', async () => {
+    return NetMergeService.getInstance().getStatus();
+  });
+
+  ipcMain.handle('netmerge:set-merging', async (_, enabled: boolean) => {
+    return NetMergeService.getInstance().setMerging(enabled);
+  });
+
+  ipcMain.handle('netmerge:set-limit', async (_, adapterName: string, limitMbps: number) => {
+    return NetMergeService.getInstance().setAdapterLimit(adapterName, limitMbps);
+  });
+
+  ipcMain.handle('netmerge:apply-policy', async () => {
+    return NetMergeService.getInstance().applySimultaneousPolicy();
+  });
+
+  ipcMain.handle('netmerge:cleanup', async () => {
+    return NetMergeService.getInstance().cleanupRoutes();
+  });
+
+  ipcMain.handle('netmerge:set-autostart', async (_, enabled: boolean) => {
+    return NetMergeService.getInstance().setAutostart(enabled);
+  });
+
   // Bottleneck Calculator & Can I Run It
   ipcMain.handle('bottleneck:get-system-rig', async () => {
     return BottleneckGameService.getInstance().getSystemRig();
@@ -1401,14 +1427,23 @@ function registerIpc() {
   ipcMain.handle('license:deactivate', async () => {
     return LicenseService.getInstance().deactivate();
   });
+
+  ipcMain.handle('system:open-mic-settings', async () => {
+    try {
+      await shell.openExternal('ms-settings:privacy-microphone');
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e.message };
+    }
+  });
 }
 
 app.whenReady().then(() => {
   // Security Hardening: Allow audio/mic for Peripherals Lab while strictly denying camera, geolocation, notifications, etc.
   session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback, details: any) => {
-    if (permission === 'media') {
-      const mediaType = details?.mediaType || (Array.isArray(details?.mediaTypes) ? details.mediaTypes[0] : null);
-      if (mediaType === 'video') {
+    if ((permission as string) === 'media' || (permission as string) === 'microphone') {
+      const mediaTypes = details?.mediaTypes || (details?.mediaType ? [details.mediaType] : []);
+      if (mediaTypes.includes('video') && !mediaTypes.includes('audio')) {
         return callback(false);
       }
       return callback(true);
@@ -1417,8 +1452,8 @@ app.whenReady().then(() => {
   });
 
   session.defaultSession.setPermissionCheckHandler((_webContents, permission, _requestingOrigin, details: any) => {
-    if (permission === 'media') {
-      const mediaType = details?.mediaType || (Array.isArray(details?.mediaTypes) ? details.mediaTypes[0] : null);
+    if ((permission as string) === 'media' || (permission as string) === 'microphone') {
+      const mediaType = details?.mediaType;
       if (mediaType === 'video') {
         return false;
       }

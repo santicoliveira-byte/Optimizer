@@ -1,0 +1,2 @@
+ID,Data/Hora,Jogo,Duracao(s),Amostras,FPS Medio,1% Low FPS,0.1% Low FPS,FPS Min,FPS Max,Frametime Medio(ms),Estabilidade(%),Classificacao
+"bench_1793560848436","19:20:48","Test Game CS2",1,1,60,60,60,60,60,16.7,100,"B"

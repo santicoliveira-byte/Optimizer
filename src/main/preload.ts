@@ -100,6 +100,12 @@ export interface OptimizerApi {
   streamingOptimizeObs: () => Promise<{ success: boolean; message: string; details?: string[] }>;
   streamingCleanDiscordCache: () => Promise<{ success: boolean; message: string; freedMb: number }>;
   streamingOptimizeAll: () => Promise<{ success: boolean; message: string; details?: string[] }>;
+  netmergeGetStatus: () => Promise<any>;
+  netmergeSetMerging: (enabled: boolean) => Promise<{ success: boolean; message: string }>;
+  netmergeSetLimit: (adapterName: string, limitMbps: number) => Promise<{ success: boolean; message: string }>;
+  netmergeApplyPolicy: () => Promise<{ success: boolean; message: string }>;
+  netmergeCleanup: () => Promise<{ success: boolean; message: string }>;
+  netmergeSetAutostart: (enabled: boolean) => Promise<{ success: boolean; message: string }>;
   bottleneckGetSystemRig: () => Promise<any>;
   bottleneckCalculate: (cpuName: string, gpuName: string, resolution: string, workload: string) => Promise<any>;
   caniGetGames: (search?: string, genre?: string) => Promise<any[]>;
@@ -146,6 +152,7 @@ export interface OptimizerApi {
   licenseGetStatus: () => Promise<LicenseStatus>;
   licenseActivate: (key: string, name?: string) => Promise<{ success: boolean; message: string; isPro: boolean }>;
   licenseDeactivate: () => Promise<{ success: boolean; message: string }>;
+  openMicSettings: () => Promise<{ success: boolean; error?: string }>;
   onProRequired: (callback: (data: { feature: string; message: string }) => void) => () => void;
 }
 
@@ -278,6 +285,12 @@ const api: OptimizerApi = {
   streamingOptimizeObs: () => ipcRenderer.invoke('streaming:optimize-obs'),
   streamingCleanDiscordCache: () => ipcRenderer.invoke('streaming:clean-discord-cache'),
   streamingOptimizeAll: () => ipcRenderer.invoke('streaming:optimize-all'),
+  netmergeGetStatus: () => ipcRenderer.invoke('netmerge:get-status'),
+  netmergeSetMerging: (enabled: boolean) => ipcRenderer.invoke('netmerge:set-merging', enabled),
+  netmergeSetLimit: (adapterName: string, limitMbps: number) => ipcRenderer.invoke('netmerge:set-limit', adapterName, limitMbps),
+  netmergeApplyPolicy: () => ipcRenderer.invoke('netmerge:apply-policy'),
+  netmergeCleanup: () => ipcRenderer.invoke('netmerge:cleanup'),
+  netmergeSetAutostart: (enabled: boolean) => ipcRenderer.invoke('netmerge:set-autostart', enabled),
   bottleneckGetSystemRig: () => ipcRenderer.invoke('bottleneck:get-system-rig'),
   bottleneckCalculate: (cpuName: string, gpuName: string, resolution: string, workload: string) =>
     ipcRenderer.invoke('bottleneck:calculate', cpuName, gpuName, resolution, workload),
@@ -344,6 +357,7 @@ const api: OptimizerApi = {
   licenseGetStatus: () => ipcRenderer.invoke('license:get-status'),
   licenseActivate: (key: string, name?: string) => ipcRenderer.invoke('license:activate', key, name),
   licenseDeactivate: () => ipcRenderer.invoke('license:deactivate'),
+  openMicSettings: () => ipcRenderer.invoke('system:open-mic-settings'),
   onProRequired: (callback: (data: { feature: string; message: string }) => void) => {
     const handler = (_: any, data: any) => callback(data);
     ipcRenderer.on('pro:required', handler);
