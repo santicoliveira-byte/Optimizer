@@ -1,6 +1,6 @@
 {
   "name": "optimizer-desktop",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "description": "Windows 10/11 Performance, Input Delay & Network Optimizer",
   "main": "dist-electron/main/main.js",
   "scripts": {
@@ -45,6 +45,10 @@
       {
         "from": "build/icon.png",
         "to": "icon.png"
+      },
+      {
+        "from": "build/bin/net-merge",
+        "to": "bin/net-merge"
       }
     ],
     "win": {

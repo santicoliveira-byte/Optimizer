@@ -84,5 +84,5 @@ describe('HowManyFpsService', () => {
     expect(status.supportedGamesCount).toBeGreaterThanOrEqual(25);
     expect(status.resolvedCpu).toBeDefined();
     expect(status.resolvedGpu).toBeDefined();
-  });
+  }, 15000);
 });

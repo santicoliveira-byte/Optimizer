@@ -284,12 +284,14 @@ export const NetMergeView: React.FC<NetMergeViewProps> = ({ onShowNotification }
                       <div>
                         <div className="flex items-center gap-2">
                           <h4 className="text-base font-bold text-white">{adapter.name}</h4>
-                          <span className={`text-[10px] font-mono px-2 py-0.2 rounded font-bold ${
-                            adapter.status === 'USE'
+                          <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold ${
+                            !status?.isMerging
+                              ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                              : adapter.status === 'USE'
                               ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                               : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                           }`}>
-                            {adapter.status === 'USE' ? 'EM USO' : 'IGNORADO'}
+                            {!status?.isMerging ? 'PRONTO' : adapter.status === 'USE' ? 'EM FUSÃO' : 'IGNORADO'}
                           </span>
                         </div>
                         <div className="text-[11px] font-mono text-gray-400 mt-0.5">
